@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imgui.netTestProgram", "Imgui.netTestProgram\Imgui.netTestProgram.csproj", "{6512D717-50AC-4317-9597-24BAC6B1A933}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6512D717-50AC-4317-9597-24BAC6B1A933}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6512D717-50AC-4317-9597-24BAC6B1A933}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6512D717-50AC-4317-9597-24BAC6B1A933}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6512D717-50AC-4317-9597-24BAC6B1A933}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FBB6A431-2933-4116-8DD3-7844B755E5CA}
+	EndGlobalSection
+EndGlobal
