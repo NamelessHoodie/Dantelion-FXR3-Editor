@@ -26,6 +26,17 @@ namespace DSFFXEditor
         private static bool _showMemoryEditor = false;
         private static byte[] _memoryEditorData;
         private static uint s_tab_bar_flags = (uint)ImGuiTabBarFlags.Reorderable;
+
+        //Listboxmeme
+        private static int _selectedItem = 0;
+        private static String[] _items = { "meme", "meme1", "meme2" };
+
+        //colorpicka
+        private static Vector3 _CPickerColor = new Vector3(0, 0, 0);
+
+        //checkbox
+        private static bool _CPickerCheckbox = false;
+
         static bool[] s_opened = { true, true, true, true }; // Persistent user state
 
         static void SetThing(out float i, float val) { i = val; }
@@ -56,6 +67,7 @@ namespace DSFFXEditor
                 if (!_window.Exists) { break; }
                 _controller.Update(1f / 60f, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
 
+                ImGui.StyleColorsClassic();
                 SubmitUI();
 
                 _cl.Begin();
@@ -82,24 +94,54 @@ namespace DSFFXEditor
             // 1. Show a simple window.
             // Tip: if we don't call ImGui.BeginWindow()/ImGui.EndWindow() the widgets automatically appears in a window called "Debug".
             {
+                ImGui.SetNextWindowPos(new Vector2(-1, -1));
+                ImGui.Begin("ohno", ImGuiWindowFlags.NoResize|ImGuiWindowFlags.NoMove|ImGuiWindowFlags.NoTitleBar|ImGuiWindowFlags.MenuBar|ImGuiWindowFlags.NoBringToFrontOnFocus|ImGuiWindowFlags.NoFocusOnAppearing);
+                ImGui.SetWindowSize(new Vector2(_window.Width + 2, _window.Height + 2));
+                if (ImGui.BeginMainMenuBar())
+                {
+                    if (ImGui.BeginMenu("File"))
+                    {
+                        if (ImGui.MenuItem("New"))
+                        {
+                            //Do something
+                        }
+                        ImGui.EndMenu();
+                    }
+                    if (ImGui.BeginMenu("File2"))
+                    {
+                        ImGui.EndMenu();
+                    }
+                    if (ImGui.BeginMenu("File3"))
+                    {
+                        ImGui.EndMenu();
+                    }
+
+                    ImGui.EndMainMenuBar();
+                }
                 ImGui.Text("Hello, world!");                                        // Display some text (you can use a format string too)
                 ImGui.SliderFloat("float", ref _f, 0, 1, _f.ToString("0.000"));  // Edit 1 float using a slider from 0.0f to 1.0f    
                 //ImGui.ColorEdit3("clear color", ref _clearColor);                   // Edit 3 floats representing a color
-
                 ImGui.Text($"Mouse position: {ImGui.GetMousePos()}");
-
-                ImGui.Checkbox("Demo Window", ref _showDemoWindow);                 // Edit bools storing our windows open/close state
+                //ImGui.Checkbox("Demo Window", ref _showDemoWindow);                 // Edit bools storing our windows open/close state
                 ImGui.Checkbox("Another Window", ref _showAnotherWindow);
-                ImGui.Checkbox("Memory Editor", ref _showMemoryEditor);
-                if (ImGui.Button("Button"))                                         // Buttons return true when clicked (NB: most widgets return true when edited/activated)
-                    _counter++;
-                ImGui.SameLine(0, -1);
+                //ImGui.Checkbox("Memory Editor", ref _showMemoryEditor);
+                //ImGui.SameLine(0, -1);
                 ImGui.Text($"counter = {_counter}");
 
                 ImGui.DragInt("Draggable Int", ref _dragInt);
 
                 float framerate = ImGui.GetIO().Framerate;
                 ImGui.Text($"Application average {1000.0f / framerate:0.##} ms/frame ({framerate:0.#} FPS)");
+                ImGui.Separator();
+                ImGui.ListBox("idklol", ref _selectedItem, _items,  _items.Length, 10);
+                ImGui.Combo("idklol", ref _selectedItem, _items, _items.Length);
+                ImGui.Checkbox("Button", ref _CPickerCheckbox);
+                ImGui.ColorButton("Stored Color", new Vector4(_CPickerColor, 1.0f));
+                if (_CPickerCheckbox)
+                    ImGui.ColorPicker3("dork", ref _CPickerColor);
+                //ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(1, 0, 0, 1));
+
+                ImGui.End();
             }
 
             // 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name your windows.
@@ -112,7 +154,7 @@ namespace DSFFXEditor
                 ImGui.End();
             }
 
-            // 3. Show the ImGui demo window. Most of the sample code is in ImGui.ShowDemoWindow(). Read its code to learn more about Dear ImGui!
+            /*// 3. Show the ImGui demo window. Most of the sample code is in ImGui.ShowDemoWindow(). Read its code to learn more about Dear ImGui!
             if (_showDemoWindow)
             {
                 // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway.
@@ -196,7 +238,7 @@ namespace DSFFXEditor
             if (_showMemoryEditor)
             {
                 _memoryEditor.Draw("Memory Editor", _memoryEditorData, _memoryEditorData.Length);
-            }
+            }*/
         }
     }
 }
