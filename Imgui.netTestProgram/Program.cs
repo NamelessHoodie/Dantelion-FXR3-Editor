@@ -60,6 +60,9 @@ namespace DSFFXEditor
             Random random = new Random();
             _memoryEditorData = Enumerable.Range(0, 1024).Select(i => (byte)random.Next(255)).ToArray();
 
+            ImGuiIOPtr io = ImGui.GetIO();
+            io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+
             // Main application loop
             while (_window.Exists)
             {
@@ -67,7 +70,7 @@ namespace DSFFXEditor
                 if (!_window.Exists) { break; }
                 _controller.Update(1f / 60f, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
 
-                ImGui.StyleColorsClassic();
+                ImGui.StyleColorsDark();
                 SubmitUI();
 
                 _cl.Begin();
@@ -93,10 +96,22 @@ namespace DSFFXEditor
 
             // 1. Show a simple window.
             // Tip: if we don't call ImGui.BeginWindow()/ImGui.EndWindow() the widgets automatically appears in a window called "Debug".
+            Meme();
+            ImGuiViewport* viewport = ImGui.GetMainViewport();
+            var MainViewport = ImGui.GetID("MainViewPort");
             {
-                ImGui.SetNextWindowPos(new Vector2(-1, -1));
-                ImGui.Begin("ohno", ImGuiWindowFlags.NoResize|ImGuiWindowFlags.NoMove|ImGuiWindowFlags.NoTitleBar|ImGuiWindowFlags.MenuBar|ImGuiWindowFlags.NoBringToFrontOnFocus|ImGuiWindowFlags.NoFocusOnAppearing);
-                ImGui.SetWindowSize(new Vector2(_window.Width + 2, _window.Height + 2));
+                // Docking setup
+                ImGui.SetNextWindowPos(new Vector2(viewport->Pos.X, viewport->Pos.Y + 18.0f));
+                ImGui.SetNextWindowSize(new Vector2(viewport->Size.X, viewport->Size.Y - 18.0f));
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f);
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0.0f, 0.0f));
+                ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 0.0f);
+                ImGuiWindowFlags flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove;
+                flags |= ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoDocking;
+                flags |= ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus;
+                ImGui.Begin("Main Viewport", flags);
+                ImGui.PopStyleVar(4);
                 if (ImGui.BeginMainMenuBar())
                 {
                     if (ImGui.BeginMenu("File"))
@@ -118,13 +133,18 @@ namespace DSFFXEditor
 
                     ImGui.EndMainMenuBar();
                 }
+                ImGui.DockSpace(MainViewport, new Vector2(0, 0));
+                ImGui.End();
+            }
+
+            {
+                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
+                ImGui.Begin("Window1");
+                ImGui.Button("haha");
                 ImGui.Text("Hello, world!");                                        // Display some text (you can use a format string too)
                 ImGui.SliderFloat("float", ref _f, 0, 1, _f.ToString("0.000"));  // Edit 1 float using a slider from 0.0f to 1.0f    
-                //ImGui.ColorEdit3("clear color", ref _clearColor);                   // Edit 3 floats representing a color
                 ImGui.Text($"Mouse position: {ImGui.GetMousePos()}");
-                //ImGui.Checkbox("Demo Window", ref _showDemoWindow);                 // Edit bools storing our windows open/close state
                 ImGui.Checkbox("Another Window", ref _showAnotherWindow);
-                //ImGui.Checkbox("Memory Editor", ref _showMemoryEditor);
                 //ImGui.SameLine(0, -1);
                 ImGui.Text($"counter = {_counter}");
 
@@ -133,112 +153,80 @@ namespace DSFFXEditor
                 float framerate = ImGui.GetIO().Framerate;
                 ImGui.Text($"Application average {1000.0f / framerate:0.##} ms/frame ({framerate:0.#} FPS)");
                 ImGui.Separator();
-                ImGui.ListBox("idklol", ref _selectedItem, _items,  _items.Length, 10);
-                ImGui.Combo("idklol", ref _selectedItem, _items, _items.Length);
                 ImGui.Checkbox("Button", ref _CPickerCheckbox);
                 ImGui.ColorButton("Stored Color", new Vector4(_CPickerColor, 1.0f));
-                if (_CPickerCheckbox)
-                    ImGui.ColorPicker3("dork", ref _CPickerColor);
-                //ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(1, 0, 0, 1));
-
                 ImGui.End();
             }
 
             // 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name your windows.
             if (_showAnotherWindow)
             {
+                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
                 ImGui.Begin("Another Window", ref _showAnotherWindow);
                 ImGui.Text("Hello from another window!");
                 if (ImGui.Button("Close Me"))
                     _showAnotherWindow = false;
+                if (_CPickerCheckbox) 
+                {
+                    ImGui.ColorPicker3("dork", ref _CPickerColor, ImGuiColorEditFlags.DisplayRGB);
+                    float[] meme = {0,0,0};
+                    _CPickerColor.CopyTo(meme);
+                    ImGui.TextColored(new Vector4(_CPickerColor, 1f),$"R:{Math.Round(meme[0], 2)} G:{Math.Round(meme[1], 2)} B:{Math.Round(meme[2], 2)}");
+                }
                 ImGui.End();
             }
+        }
+        public static void Meme() 
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.00f, 1.00f)); //Pretty Self explanatory
+            //ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.60f, 1.0f, 0.60f, 1.00f)); //idk yet
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.17f, 0.16f, 0.16f, 1.0f)); //Window Background
+            ImGui.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.3f, 0.3f, 0.3f, 1.00f)); //Popup Background
+            ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0.50f, 0.50f, 0.50f, 0.30f)); //Context Menu Border
+            ImGui.PushStyleColor(ImGuiCol.BorderShadow, new Vector4(0.00f, 0.00f, 0.00f, 0.39f)); //idk
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.37f, 0.30f, 0.30f, 0.94f)); // Not clicked/hovered Control Background
+            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, new Vector4(0.5f, 0.22f, 0.22f, 0.40f)); // Hovered Control Background
+            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, new Vector4(0.0f, 0.0f, 0.0f, 0.67f)); // Clicked Control Background
+            ImGui.PushStyleColor(ImGuiCol.TitleBg, new Vector4(0.5f, 0.39f, 0.39f, 0.50f)); // Unselected window title color
+            ImGui.PushStyleColor(ImGuiCol.TitleBgCollapsed, new Vector4(1.00f, 1.00f, 1.00f, 0.51f)); // Collapsed window title color
+            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, new Vector4(0.5f, 0.39f, 0.39f, 1.00f)); // Selected window title color
+            ImGui.PushStyleColor(ImGuiCol.MenuBarBg, new Vector4(0.3f, 0.3f, 0.3f, 1.00f)); // MenuBar color
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarBg, new Vector4(0.98f, 0.98f, 0.98f, 0.53f)); // Scroll bar Background
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0.69f, 0.69f, 0.69f, 1.00f)); // Scroll bar HELD Click
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0.59f, 0.59f, 0.59f, 1.00f)); // Scroll bar Hover
+            //ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, new Vector4(0.49f, 0.49f, 0.49f, 1.00f)); // idk
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0.77f, 0.24f, 0.3f, 1.00f)); // Checkbox Sign Color
+            //ImGui.PushStyleColor(ImGuiCol.SliderGrab, new Vector4(0.24f, 0.52f, 0.88f, 1.00f));
+            //ImGui.PushStyleColor(ImGuiCol.SliderGrabActive, new Vector4(0.26f, 0.59f, 0.98f, 1.00f));
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.49f, 0.31f, 0.31f, 1.00f)); //Button Control Color Overrides
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.59f, 0.31f, 0.31f, 1.00f)); //Button Control Color Overrides
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.57f, 0.24f, 0.3f, 1.00f)); //Button Control Color Overrides
+            ImGui.PushStyleColor(ImGuiCol.DockingPreview, new Vector4(0.00f, 0.00f, 0.00f, 0.39f));
+            //ImGui.PushStyleColor(ImGuiCol.DockingEmptyBg, new Vector4(0.00f, 0.00f, 0.00f, 0.39f));
+            //ImGui.PushStyleColor(ImGuiCol.Tab, new Vector4(0.00f, 0.00f, 0.00f, 0.39f)); //Idk related to docked windows?
+            ImGui.PushStyleColor(ImGuiCol.TabHovered, new Vector4(0.00f, 0.00f, 0.00f, 0.39f)); //Window Tab Color when hovered
+            ImGui.PushStyleColor(ImGuiCol.TabActive, new Vector4(0.35f, 0.30f, 0.30f, 0.90f)); //Focused Window Tab color
+            ImGui.PushStyleColor(ImGuiCol.TabUnfocused, new Vector4(0.00f, 0.00f, 0.00f, 0.39f));
+            ImGui.PushStyleColor(ImGuiCol.TabUnfocusedActive, new Vector4(0.35f, 0.30f, 0.30f, 0.50f)); //Unfocused Window Tab color
 
-            /*// 3. Show the ImGui demo window. Most of the sample code is in ImGui.ShowDemoWindow(). Read its code to learn more about Dear ImGui!
-            if (_showDemoWindow)
-            {
-                // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway.
-                // Here we just want to make the demo initial state a bit more friendly!
-                ImGui.SetNextWindowPos(new Vector2(650, 20), ImGuiCond.FirstUseEver);
-                ImGui.ShowDemoWindow(ref _showDemoWindow);
-            }
 
-            if (ImGui.TreeNode("Tabs"))
-            {
-                if (ImGui.TreeNode("Basic"))
-                {
-                    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags.None;
-                    if (ImGui.BeginTabBar("MyTabBar", tab_bar_flags))
-                    {
-                        if (ImGui.BeginTabItem("Avocado"))
-                        {
-                            ImGui.Text("This is the Avocado tab!\nblah blah blah blah blah");
-                            ImGui.EndTabItem();
-                        }
-                        if (ImGui.BeginTabItem("Broccoli"))
-                        {
-                            ImGui.Text("This is the Broccoli tab!\nblah blah blah blah blah");
-                            ImGui.EndTabItem();
-                        }
-                        if (ImGui.BeginTabItem("Cucumber"))
-                        {
-                            ImGui.Text("This is the Cucumber tab!\nblah blah blah blah blah");
-                            ImGui.EndTabItem();
-                        }
-                        ImGui.EndTabBar();
-                    }
-                    ImGui.Separator();
-                    ImGui.TreePop();
-                }
 
-                if (ImGui.TreeNode("Advanced & Close Button"))
-                {
-                    // Expose a couple of the available flags. In most cases you may just call BeginTabBar() with no flags (0).
-                    ImGui.CheckboxFlags("ImGuiTabBarFlags_Reorderable", ref s_tab_bar_flags, (uint)ImGuiTabBarFlags.Reorderable);
-                    ImGui.CheckboxFlags("ImGuiTabBarFlags_AutoSelectNewTabs", ref s_tab_bar_flags, (uint)ImGuiTabBarFlags.AutoSelectNewTabs);
-                    ImGui.CheckboxFlags("ImGuiTabBarFlags_NoCloseWithMiddleMouseButton", ref s_tab_bar_flags, (uint)ImGuiTabBarFlags.NoCloseWithMiddleMouseButton);
-                    if ((s_tab_bar_flags & (uint)ImGuiTabBarFlags.FittingPolicyMask) == 0)
-                        s_tab_bar_flags |= (uint)ImGuiTabBarFlags.FittingPolicyDefault;
-                    if (ImGui.CheckboxFlags("ImGuiTabBarFlags_FittingPolicyResizeDown", ref s_tab_bar_flags, (uint)ImGuiTabBarFlags.FittingPolicyResizeDown))
-                s_tab_bar_flags &= ~((uint)ImGuiTabBarFlags.FittingPolicyMask ^ (uint)ImGuiTabBarFlags.FittingPolicyResizeDown);
-                    if (ImGui.CheckboxFlags("ImGuiTabBarFlags_FittingPolicyScroll", ref s_tab_bar_flags, (uint)ImGuiTabBarFlags.FittingPolicyScroll))
-                s_tab_bar_flags &= ~((uint)ImGuiTabBarFlags.FittingPolicyMask ^ (uint)ImGuiTabBarFlags.FittingPolicyScroll);
 
-                    // Tab Bar
-                    string[] names = { "Artichoke", "Beetroot", "Celery", "Daikon" };
 
-                    for (int n = 0; n < s_opened.Length; n++)
-                    {
-                        if (n > 0) { ImGui.SameLine(); }
-                        ImGui.Checkbox(names[n], ref s_opened[n]);
-                    }
 
-                    // Passing a bool* to BeginTabItem() is similar to passing one to Begin(): the underlying bool will be set to false when the tab is closed.
-                    if (ImGui.BeginTabBar("MyTabBar", (ImGuiTabBarFlags)s_tab_bar_flags))
-                    {
-                        for (int n = 0; n < s_opened.Length; n++)
-                            if (s_opened[n] && ImGui.BeginTabItem(names[n], ref s_opened[n]))
-                            {
-                                ImGui.Text($"This is the {names[n]} tab!");
-                                if ((n & 1) != 0)
-                                    ImGui.Text("I am an odd tab.");
-                                ImGui.EndTabItem();
-                            }
-                        ImGui.EndTabBar();
-                    }
-                    ImGui.Separator();
-                    ImGui.TreePop();
-                }
-                ImGui.TreePop();
-            }
 
-            ImGuiIOPtr io = ImGui.GetIO();
-            SetThing(out io.DeltaTime, 2f);
 
-            if (_showMemoryEditor)
-            {
-                _memoryEditor.Draw("Memory Editor", _memoryEditorData, _memoryEditorData.Length);
-            }*/
+            //ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.26f, 0.59f, 0.98f, 0.31f));
+            //ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.26f, 0.59f, 0.98f, 0.80f));
+            //ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.26f, 0.59f, 0.98f, 1.00f));
+            //ImGui.PushStyleColor(ImGuiCol.ResizeGrip, new Vector4(1.00f, 1.00f, 1.00f, 0.50f));
+            //ImGui.PushStyleColor(ImGuiCol.ResizeGripHovered, new Vector4(0.26f, 0.59f, 0.98f, 0.67f));
+            //ImGui.PushStyleColor(ImGuiCol.ResizeGripActive, new Vector4(0.26f, 0.59f, 0.98f, 0.95f));
+            //ImGui.PushStyleColor(ImGuiCol.PlotLines, new Vector4(0.39f, 0.39f, 0.39f, 1.00f));
+            //ImGui.PushStyleColor(ImGuiCol.PlotLinesHovered, new Vector4(1.00f, 0.43f, 0.35f, 1.00f));
+            //ImGui.PushStyleColor(ImGuiCol.PlotHistogram, new Vector4(0.90f, 0.70f, 0.00f, 1.00f));
+            //ImGui.PushStyleColor(ImGuiCol.PlotHistogramHovered, new Vector4(1.00f, 0.60f, 0.00f, 1.00f));
+            //ImGui.PushStyleColor(ImGuiCol.TextSelectedBg, new Vector4(0.26f, 0.59f, 0.98f, 0.35f)); // Most Likely Selected Text
         }
     }
 }
