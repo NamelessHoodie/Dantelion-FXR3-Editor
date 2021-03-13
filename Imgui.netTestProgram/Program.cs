@@ -109,7 +109,7 @@ namespace DSFFXEditor
                 ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 0.0f);
                 ImGuiWindowFlags flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove;
                 flags |= ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoDocking;
-                flags |= ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus;
+                flags |= ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.DockNodeHost;
                 ImGui.Begin("Main Viewport", flags);
                 ImGui.PopStyleVar(4);
                 if (ImGui.BeginMainMenuBar())
@@ -139,7 +139,7 @@ namespace DSFFXEditor
 
             {
                 ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
-                ImGui.Begin("Window1");
+                ImGui.Begin("Window1", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
                 ImGui.Button("haha");
                 ImGui.Text("Hello, world!");                                        // Display some text (you can use a format string too)
                 ImGui.SliderFloat("float", ref _f, 0, 1, _f.ToString("0.000"));  // Edit 1 float using a slider from 0.0f to 1.0f    
@@ -181,41 +181,33 @@ namespace DSFFXEditor
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.00f, 1.00f)); //Pretty Self explanatory
             //ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.60f, 1.0f, 0.60f, 1.00f)); //idk yet
             ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.17f, 0.16f, 0.16f, 1.0f)); //Window Background
-            ImGui.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.3f, 0.3f, 0.3f, 1.00f)); //Popup Background
-            ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0.50f, 0.50f, 0.50f, 0.30f)); //Context Menu Border
+            ImGui.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.24f, 0.15f, 0.15f, 1.00f)); //Popup Background
+            ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0.61f, 0.50f, 0.50f, 0.90f)); //Context Menu Border
             ImGui.PushStyleColor(ImGuiCol.BorderShadow, new Vector4(0.00f, 0.00f, 0.00f, 0.39f)); //idk
-            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.37f, 0.30f, 0.30f, 0.94f)); // Not clicked/hovered Control Background
-            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, new Vector4(0.5f, 0.22f, 0.22f, 0.40f)); // Hovered Control Background
-            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, new Vector4(0.0f, 0.0f, 0.0f, 0.67f)); // Clicked Control Background
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.37f, 0.30f, 0.30f, 0.50f)); // Not clicked/hovered Control Background
+            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, new Vector4(0.42f, 0.30f, 0.30f, 0.60f)); // Hovered Control Background
+            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, new Vector4(0.46f, 0.30f, 0.30f, 0.70f)); // Clicked Control Background
             ImGui.PushStyleColor(ImGuiCol.TitleBg, new Vector4(0.5f, 0.39f, 0.39f, 0.50f)); // Unselected window title color
             ImGui.PushStyleColor(ImGuiCol.TitleBgCollapsed, new Vector4(1.00f, 1.00f, 1.00f, 0.51f)); // Collapsed window title color
-            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, new Vector4(0.5f, 0.39f, 0.39f, 1.00f)); // Selected window title color
-            ImGui.PushStyleColor(ImGuiCol.MenuBarBg, new Vector4(0.3f, 0.3f, 0.3f, 1.00f)); // MenuBar color
-            ImGui.PushStyleColor(ImGuiCol.ScrollbarBg, new Vector4(0.98f, 0.98f, 0.98f, 0.53f)); // Scroll bar Background
-            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0.69f, 0.69f, 0.69f, 1.00f)); // Scroll bar HELD Click
-            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0.59f, 0.59f, 0.59f, 1.00f)); // Scroll bar Hover
-            //ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, new Vector4(0.49f, 0.49f, 0.49f, 1.00f)); // idk
-            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0.77f, 0.24f, 0.3f, 1.00f)); // Checkbox Sign Color
+            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, new Vector4(0.5f, 0.39f, 0.39f, 0.85f)); // Selected window title color
+            ImGui.PushStyleColor(ImGuiCol.MenuBarBg, new Vector4(0.5f, 0.39f, 0.39f, 0.50f)); // MenuBar color
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarBg, new Vector4(0.5f, 0.39f, 0.39f, 0.50f)); // Scroll bar Background
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0.5f, 0.39f, 0.39f, 1.00f)); // Scroll bar Grabby bit color
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0.55f, 0.39f, 0.39f, 1.00f)); // Scroll bar grabby bit Hover
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, new Vector4(0.60f, 0.39f, 0.39f, 1.00f)); // Scroll bar color when clicked
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0.5f, 0.39f, 0.39f, 1.00f)); // Checkbox Sign Color
             //ImGui.PushStyleColor(ImGuiCol.SliderGrab, new Vector4(0.24f, 0.52f, 0.88f, 1.00f));
             //ImGui.PushStyleColor(ImGuiCol.SliderGrabActive, new Vector4(0.26f, 0.59f, 0.98f, 1.00f));
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.49f, 0.31f, 0.31f, 1.00f)); //Button Control Color Overrides
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.59f, 0.31f, 0.31f, 1.00f)); //Button Control Color Overrides
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.57f, 0.24f, 0.3f, 1.00f)); //Button Control Color Overrides
-            ImGui.PushStyleColor(ImGuiCol.DockingPreview, new Vector4(0.00f, 0.00f, 0.00f, 0.39f));
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.37f, 0.30f, 0.30f, 1.00f)); //Button Control Color Overrides
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.42f, 0.30f, 0.30f, 0.94f)); //Button Control Color Overrides
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.46f, 0.30f, 0.30f, 0.94f)); //Button Control Color Overrides
+            ImGui.PushStyleColor(ImGuiCol.DockingPreview, new Vector4(0.00f, 0.00f, 0.00f, 0.67f));
             //ImGui.PushStyleColor(ImGuiCol.DockingEmptyBg, new Vector4(0.00f, 0.00f, 0.00f, 0.39f));
-            //ImGui.PushStyleColor(ImGuiCol.Tab, new Vector4(0.00f, 0.00f, 0.00f, 0.39f)); //Idk related to docked windows?
+            ImGui.PushStyleColor(ImGuiCol.Tab, new Vector4(0.35f, 0.30f, 0.30f, 0.90f)); //Unfocused Tab Color?
             ImGui.PushStyleColor(ImGuiCol.TabHovered, new Vector4(0.00f, 0.00f, 0.00f, 0.39f)); //Window Tab Color when hovered
-            ImGui.PushStyleColor(ImGuiCol.TabActive, new Vector4(0.35f, 0.30f, 0.30f, 0.90f)); //Focused Window Tab color
+            ImGui.PushStyleColor(ImGuiCol.TabActive, new Vector4(0.00f, 0.00f, 0.00f, 0.39f)); //Focused Window Tab color
             ImGui.PushStyleColor(ImGuiCol.TabUnfocused, new Vector4(0.00f, 0.00f, 0.00f, 0.39f));
             ImGui.PushStyleColor(ImGuiCol.TabUnfocusedActive, new Vector4(0.35f, 0.30f, 0.30f, 0.50f)); //Unfocused Window Tab color
-
-
-
-
-
-
-
-
             //ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.26f, 0.59f, 0.98f, 0.31f));
             //ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.26f, 0.59f, 0.98f, 0.80f));
             //ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.26f, 0.59f, 0.98f, 1.00f));
