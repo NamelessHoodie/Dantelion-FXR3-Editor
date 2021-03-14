@@ -132,8 +132,19 @@ namespace DSFFXEditor
                         }
                         ImGui.EndMenu();
                     }
-                    if (ImGui.BeginMenu("File2"))
+                    if (ImGui.BeginMenu("This is a Meme"))
                     {
+                        ImGui.Checkbox("This opens a WindowMeme", ref _showAnotherWindow);
+                        ImGui.Checkbox("Color Picker in WindowMeme", ref _CPickerCheckbox);
+                        if (_CPickerCheckbox)
+                        {
+                            ImGui.Separator();
+                            ImGui.Indent();
+                            ImGui.Text("haha");
+                            ImGui.Unindent();
+                            ImGui.Separator();
+
+                        }
                         ImGui.EndMenu();
                     }
                     if (ImGui.BeginMenu("File3"))
@@ -173,19 +184,8 @@ namespace DSFFXEditor
             {
                 ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
                 ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
-                ImGui.Columns(3);
+                ImGui.Columns(2);
                 ImGui.BeginChild("FFXTreeView");
-                ImGui.Checkbox("Another Window", ref _showAnotherWindow);
-                ImGui.Checkbox("Button", ref _CPickerCheckbox);
-                if (_CPickerCheckbox)
-                {
-                    ImGui.Separator();
-                    ImGui.Indent();
-                    ImGui.Text("haha");
-                    ImGui.Unindent();
-                    ImGui.Separator();
-
-                }
                 if (XMLOpen == true)
                 {
                     string[] ActionIDs = { "603", "609" };
@@ -197,23 +197,25 @@ namespace DSFFXEditor
                     ImGui.NextColumn();
                     FFXEditor("runtime");
                 }
-                ImGui.End();
-            }
-
-            // 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name your windows.
-            if (_showAnotherWindow)
-            {
-                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
-                ImGui.Begin("Another Window", ref _showAnotherWindow);
-                ImGui.Text("Hello from another window!");
-                if (ImGui.Button("Close Me"))
-                    _showAnotherWindow = false;
-                if (_CPickerCheckbox)
+                if (_cPickerIsEnable)
                 {
-                    ImGui.ColorPicker3("dork", ref _CPickerColor, ImGuiColorEditFlags.DisplayRGB);
-                    float[] meme = { 0, 0, 0 };
-                    _CPickerColor.CopyTo(meme);
-                    ImGui.TextColored(new Vector4(_CPickerColor, 1f), $"R:{Math.Round(meme[0], 2)} G:{Math.Round(meme[1], 2)} B:{Math.Round(meme[2], 2)}");
+                    ImGui.Begin("FFX Color Picker");
+                    ImGui.Text(_cPickerRed.Attributes[1].Value);
+                    ImGui.Text(_cPickerGreen.Attributes[1].Value);
+                    ImGui.Text(_cPickerBlue.Attributes[1].Value);
+                    ImGui.Text(_cPickerAlpha.Attributes[1].Value);
+                    if (ImGui.Button("Close Color Picker"))
+                        _cPickerIsEnable = false;
+                    ImGui.SameLine();
+                    if (ImGui.Button("Commit Color Change"))
+                    {
+                        _cPickerRed.Attributes[1].Value = _cPicker.X.ToString();
+                        _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString();
+                        _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString();
+                        _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString();
+                    }
+                    ImGui.ColorPicker4("CPicker", ref _cPicker);
+                    ImGui.End();
                 }
                 ImGui.End();
             }
@@ -247,9 +249,10 @@ namespace DSFFXEditor
                                             {
                                                 XmlNodeList NodeListProcessing = node2.SelectNodes("Fields")[0].ChildNodes;
                                                 ImGui.SameLine();
-                                                if (ImGui.Button("Edit Here")) 
+                                                if (ImGui.Button("Edit Here"))
                                                 {
                                                     NodeListEditor = NodeListProcessing;
+                                                    AXBX = $"A{node2.Attributes[0].Value}B{node2.Attributes[1].Value}";
                                                     FFXEditor("init");
                                                 }
                                                 ImGui.TreePop();
@@ -278,6 +281,8 @@ namespace DSFFXEditor
         public static bool _showFFXEditor = false;
         public static int currentitem = 0;
         public static XmlNodeList NodeListEditor;
+        public static string AXBX;
+        public static bool pselected = false;
 
         public static void FFXEditor(string callFlag)
         {
@@ -290,21 +295,51 @@ namespace DSFFXEditor
             {
                 ImGui.BeginChild("TxtEdit");
                 ArrayList arrayList = new ArrayList();
-                foreach (XmlNode node in NodeListEditor)
+                if (AXBX == "A67B19")
                 {
-                    arrayList.Add($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
+                    int Pos = 0;
+                    int StopsCount = Int32.Parse(NodeListEditor.Item(0).Attributes[1].Value);
+                    if (ImGui.Selectable($"Number of Stops = {StopsCount}"))
+                    {
+                        pselected = true;
+                        ImGui.Text("aaaaaaaa");
+                    }
+                    Pos++;
+                    for (int i = 0; i < 8; i++)
+                    {
+                        arrayList.Add("");
+                        Pos++;
+                    }
+                    for (int i = 0; i != StopsCount; i++)
+                    {
+                        arrayList.Add($"Stop {i} position = {NodeListEditor.Item(i + 9).Attributes[1].Value}");
+                        Pos++;
+                    }
+                    for (int i = 0; i != StopsCount * 4; i += 4)
+                    {
+                        if (ImGui.Selectable($"Stop Position {i / 4}: Color"))
+                        {
+                            _cPickerRed = NodeListEditor.Item(Pos);
+                            _cPickerGreen = NodeListEditor.Item(Pos + 1);
+                            _cPickerBlue = NodeListEditor.Item(Pos + 2);
+                            _cPickerAlpha = NodeListEditor.Item(Pos + 3);
+                            _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
+                            _cPickerIsEnable = true;
+                        }
+                        ImGui.SameLine();
+                        ImGui.ColorButton($"Stop Position {i / 4}: Color Color Button", new Vector4(float.Parse(NodeListEditor.Item(Pos).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 1).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 2).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 3).Attributes[1].Value)));
+                        Pos += 4;
+                    }
+                }
+                else
+                {
+                    foreach (XmlNode node in NodeListEditor)
+                    {
+                        arrayList.Add($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
+                    }
                 }
                 string[] Entries = (string[])arrayList.ToArray(typeof(string));
-                ImGui.ListBox("Editor Entry's", ref currentitem, Entries, Entries.Length, (int)ImGui.GetWindowSize().Y / 18);
-                ImGui.EndChild();
-                ImGui.NextColumn();
-                ImGui.BeginChild("params");
-                ImGui.Text("aaaa");
-                ImGui.Text("aaaa");
-                ImGui.Text("aaaa");
-                ImGui.Text("aaaa");
-                ImGui.Text("aaaa");
-                ImGui.Text("aaaa");
+                //ImGui.ListBox("Editor Entry's", ref currentitem, Entries, Entries.Length, (int)ImGui.GetWindowSize().Y / 18);
                 ImGui.EndChild();
             }
             if (callFlag == "uninit")
@@ -313,5 +348,17 @@ namespace DSFFXEditor
                 return;
             }
         }
+
+        public static bool _cPickerIsEnable = false;
+
+        public static XmlNode _cPickerRed;
+
+        public static XmlNode _cPickerGreen;
+
+        public static XmlNode _cPickerBlue;
+
+        public static XmlNode _cPickerAlpha;
+
+        public static Vector4 _cPicker = new Vector4();
     }
 }
