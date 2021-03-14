@@ -5,6 +5,8 @@ using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using ImGuiNET;
+using System.Xml;
+using System.Collections;
 
 namespace DSFFXEditor
 {
@@ -17,20 +19,11 @@ namespace DSFFXEditor
         private static MemoryEditor _memoryEditor;
 
         // UI state
-        private static float _f = 0.0f;
-        private static int _counter = 0;
-        private static int _dragInt = 0;
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
-        private static bool _showDemoWindow = true;
         private static bool _showAnotherWindow = false;
-        private static bool _showMemoryEditor = false;
         private static byte[] _memoryEditorData;
-        private static uint s_tab_bar_flags = (uint)ImGuiTabBarFlags.Reorderable;
         private static string _activeTheme = "DarkRedClay"; //Initialized Default Theme
-
-        //Listboxmeme
-        private static int _selectedItem = 0;
-        private static String[] _items = { "meme", "meme1", "meme2" };
+        private static uint MainViewport;
 
         //colorpicka
         private static Vector3 _CPickerColor = new Vector3(0, 0, 0);
@@ -44,8 +37,13 @@ namespace DSFFXEditor
         private static int _themeSelectorSelectedItem = 0;
         private static String[] _themeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Light", "ImGui Classic" };
 
+        //XML
+        private static XmlDocument xDoc = new XmlDocument();
+        private static bool XMLOpen = false;
+
         static void SetThing(out float i, float val) { i = val; }
 
+        [STAThread]
         static void Main(string[] args)
         {
             // Create window, GraphicsDevice, and all resources necessary for the demo.
@@ -95,6 +93,7 @@ namespace DSFFXEditor
             _gd.Dispose();
         }
 
+
         private static unsafe void SubmitUI()
         {
             // Demo code adapted from the official Dear ImGui demo program:
@@ -103,7 +102,7 @@ namespace DSFFXEditor
             // 1. Show a simple window.
             // Tip: if we don't call ImGui.BeginWindow()/ImGui.EndWindow() the widgets automatically appears in a window called "Debug".
             ImGuiViewport* viewport = ImGui.GetMainViewport();
-            var MainViewport = ImGui.GetID("MainViewPort");
+            MainViewport = ImGui.GetID("MainViewPort");
             {
                 // Docking setup
                 ImGui.SetNextWindowPos(new Vector2(viewport->Pos.X, viewport->Pos.Y + 18.0f));
@@ -168,21 +167,36 @@ namespace DSFFXEditor
             {
                 ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
                 ImGui.Begin("Window1", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
-                ImGui.Button("haha");
-                ImGui.Text("Hello, world!");                                        // Display some text (you can use a format string too)
-                ImGui.SliderFloat("float", ref _f, 0, 1, _f.ToString("0.000"));  // Edit 1 float using a slider from 0.0f to 1.0f    
-                ImGui.Text($"Mouse position: {ImGui.GetMousePos()}");
+                if (_showFFXEditor) 
+                {
+                    FFXEditor("runtime");
+                }
+                if (ImGui.Button("OpenXML"))
+                {
+                    System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
+                    ofd.Filter = "XML|*.xml";
+                    if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        xDoc.Load(ofd.FileName);
+                    }
+                    XMLOpen = true;
+                }
                 ImGui.Checkbox("Another Window", ref _showAnotherWindow);
-                //ImGui.SameLine(0, -1);
-                ImGui.Text($"counter = {_counter}");
-
-                ImGui.DragInt("Draggable Int", ref _dragInt);
-
-                float framerate = ImGui.GetIO().Framerate;
-                ImGui.Text($"Application average {1000.0f / framerate:0.##} ms/frame ({framerate:0.#} FPS)");
-                ImGui.Separator();
                 ImGui.Checkbox("Button", ref _CPickerCheckbox);
-                ImGui.ColorButton("Stored Color", new Vector4(_CPickerColor, 1.0f));
+                if (_CPickerCheckbox)
+                {
+                    ImGui.Separator();
+                    ImGui.Indent();
+                    ImGui.Text("haha");
+                    ImGui.Unindent();
+                    ImGui.Separator();
+
+                }
+                if (XMLOpen == true)
+                {
+                    string[] ActionIDs = { "603", "609" };
+                    populateTree(xDoc, ActionIDs);
+                }
                 ImGui.End();
             }
 
@@ -261,6 +275,83 @@ namespace DSFFXEditor
             else if (themeName == "ImGuiClassic")
             {
                 ImGui.StyleColorsClassic();
+            }
+        }
+
+        public static void populateTree(XmlDocument XMLDoc, string[] ActionIDs)
+        {
+            XmlNodeList nodeList = XMLDoc.SelectNodes("descendant::FFXEffectCallA/EffectBs");
+            if (ImGui.TreeNodeEx("FFX Parts", ImGuiTreeNodeFlags.None))
+            {
+                int i = 0;
+                foreach (XmlNode node in nodeList)
+                {
+                    if (ImGui.TreeNodeEx($"{node.Name}-ID={i}", ImGuiTreeNodeFlags.Leaf))
+                    {
+                        foreach (String ActionID in ActionIDs)
+                        {
+                            foreach (XmlNode node1 in node.SelectNodes($"descendant::*[@*='{ActionID}']"))
+                            {
+                                if (ImGui.TreeNodeEx($"ActionID={node1.Attributes[0].Value}-ID={i}", ImGuiTreeNodeFlags.Leaf))
+                                {
+                                    foreach (XmlNode node2 in node1.SelectNodes("descendant::FFXProperty"))
+                                    {
+                                        if (node2.Attributes[0].Value == "67" & node2.Attributes[1].Value == "19")
+                                        {
+                                            if (ImGui.TreeNodeEx($"A{node2.Attributes[0].Value}B{node2.Attributes[1].Value} ID={i}"))
+                                            {
+                                                XmlNodeList NodeListProcessing = node2.SelectNodes("Fields")[0].ChildNodes;
+                                                if(ImGui.Button("Edit Here")) 
+                                                {
+                                                    NodeListEditor = NodeListProcessing;
+                                                    FFXEditor("init");
+                                                }
+                                                ImGui.TreePop();
+                                                i++;
+                                            }
+                                            i++;
+                                        }
+                                    }
+                                    ImGui.TreePop();
+                                }
+                                i++;
+                            }
+                        }
+                        ImGui.TreePop();
+                    }
+                    i++;
+                }
+                ImGui.TreePop();
+            }
+        }
+
+        public static bool _showFFXEditor = false;
+        public static int currentitem = 0;
+        public static XmlNodeList NodeListEditor;
+
+        public static void FFXEditor(string callFlag)
+        {
+            if (callFlag == "init")
+            {
+                _showFFXEditor = true;
+                FFXEditor("runtime");
+            }
+            else if (callFlag == "runtime")
+            {
+                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
+                ImGui.Begin("FFX Editor");
+                ArrayList arrayList = new ArrayList();
+                foreach (XmlNode node in NodeListEditor)
+                {
+                    arrayList.Add($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
+                }
+                string[] Entries = (string[])arrayList.ToArray(typeof(string));
+                ImGui.ListBox("Editor Entry's", ref currentitem, Entries, Entries.Length, (int)ImGui.GetWindowSize().Y / 18);
+                ImGui.End();
+            }
+            if (callFlag == "uninit")
+            {
+                _showFFXEditor = false;
             }
         }
     }
