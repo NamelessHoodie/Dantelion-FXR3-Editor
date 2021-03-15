@@ -20,7 +20,6 @@ namespace DSFFXEditor
 
         // UI state
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
-        private static bool _showAnotherWindow = false;
         private static byte[] _memoryEditorData;
         private static string _activeTheme = "DarkRedClay"; //Initialized Default Theme
         private static uint MainViewport;
@@ -29,7 +28,6 @@ namespace DSFFXEditor
         private static Vector3 _CPickerColor = new Vector3(0, 0, 0);
 
         //checkbox
-        private static bool _CPickerCheckbox = false;
 
         static bool[] s_opened = { true, true, true, true }; // Persistent user state
 
@@ -40,6 +38,26 @@ namespace DSFFXEditor
         //XML
         private static XmlDocument xDoc = new XmlDocument();
         private static bool XMLOpen = false;
+
+        //FFX Workshop Tools
+            //<Color Editor>
+                public static bool _cPickerIsEnable = false;
+
+                public static XmlNode _cPickerRed;
+
+                public static XmlNode _cPickerGreen;
+
+                public static XmlNode _cPickerBlue;
+
+                public static XmlNode _cPickerAlpha;
+
+                public static Vector4 _cPicker = new Vector4();
+                
+                public static float[] _colorOverloadArray = { 1.0f, 1.0f, 1.0f, 1.0f };
+            //</Color Editor>
+            //<Floating Point Editor>
+                public static bool _floatEditorIsEnable = false;
+            //</Floating Point Editor>
 
         static void SetThing(out float i, float val) { i = val; }
 
@@ -132,25 +150,6 @@ namespace DSFFXEditor
                         }
                         ImGui.EndMenu();
                     }
-                    if (ImGui.BeginMenu("This is a Meme"))
-                    {
-                        ImGui.Checkbox("This opens a WindowMeme", ref _showAnotherWindow);
-                        ImGui.Checkbox("Color Picker in WindowMeme", ref _CPickerCheckbox);
-                        if (_CPickerCheckbox)
-                        {
-                            ImGui.Separator();
-                            ImGui.Indent();
-                            ImGui.Text("haha");
-                            ImGui.Unindent();
-                            ImGui.Separator();
-
-                        }
-                        ImGui.EndMenu();
-                    }
-                    if (ImGui.BeginMenu("File3"))
-                    {
-                        ImGui.EndMenu();
-                    }
                     if (ImGui.BeginMenu("Themes"))
                     {
                         ImGui.Combo("Theme Selector", ref _themeSelectorSelectedItem, _themeSelectorEntriesArray, _themeSelectorEntriesArray.Length);
@@ -184,12 +183,12 @@ namespace DSFFXEditor
             {
                 ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
                 ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
-                ImGui.Columns(2);
+                ImGui.Columns(3);
                 ImGui.BeginChild("FFXTreeView");
                 if (XMLOpen == true)
                 {
                     string[] ActionIDs = { "603", "609" };
-                    populateTree(xDoc, ActionIDs);
+                    PopulateTree(xDoc, ActionIDs);
                 }
                 ImGui.EndChild();
                 if (_showFFXEditor)
@@ -197,31 +196,64 @@ namespace DSFFXEditor
                     ImGui.NextColumn();
                     FFXEditor("runtime");
                 }
-                if (_cPickerIsEnable)
+                //Tools DockSpace Declaration
+                uint WorkshopDockspace = ImGui.GetID("FFX Workshop");
+                ImGui.NextColumn();
+                ImGui.BeginChild("FFX Workshop");
+                ImGui.DockSpace(WorkshopDockspace);
+                ImGui.EndChild();
+                //Declare Workshop Tools below here
                 {
-                    ImGui.Begin("FFX Color Picker");
-                    ImGui.Text(_cPickerRed.Attributes[1].Value);
-                    ImGui.Text(_cPickerGreen.Attributes[1].Value);
-                    ImGui.Text(_cPickerBlue.Attributes[1].Value);
-                    ImGui.Text(_cPickerAlpha.Attributes[1].Value);
-                    if (ImGui.Button("Close Color Picker"))
-                        _cPickerIsEnable = false;
-                    ImGui.SameLine();
-                    if (ImGui.Button("Commit Color Change"))
+                    if (_cPickerIsEnable)
                     {
-                        _cPickerRed.Attributes[1].Value = _cPicker.X.ToString();
-                        _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString();
-                        _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString();
-                        _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString();
+                        ImGui.SetNextWindowDockID(WorkshopDockspace, ImGuiCond.Appearing);
+                        ImGui.Begin("FFX Color Picker");
+                        if (ImGui.Button("Close Color Picker"))
+                            _cPickerIsEnable = false;
+                        ImGui.SameLine();
+                        if (ImGui.Button("Commit Color Change"))
+                        {
+                            _cPickerRed.Attributes[1].Value = _cPicker.X.ToString();
+                            _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString();
+                            _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString();
+                            _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString();
+                        }
+                        ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar);
+                        ImGui.Separator();
+                        if (ImGui.TreeNode("Color OverLoad Multipliers:"))
+                        {
+                            ImGui.SliderFloat("Red###O.M.Red", ref _colorOverloadArray[0], 1.0f, 10.0f);
+                            ImGui.SliderFloat("Green###O.M.Green", ref _colorOverloadArray[1], 1.0f, 10.0f);
+                            ImGui.SliderFloat("Blue###O.M.Blue", ref _colorOverloadArray[2], 1.0f, 10.0f);
+                            ImGui.SliderFloat("Alpha###O.M.Alpha", ref _colorOverloadArray[3], 1.0f, 10.0f);
+                            if (ImGui.Button("Commit Overload Multipliers"))
+                            {
+                                _cPicker.X *= _colorOverloadArray[0];
+                                _cPicker.Y *= _colorOverloadArray[1];
+                                _cPicker.Z *= _colorOverloadArray[2];
+                                _cPicker.W *= _colorOverloadArray[3];
+                            }
+                            ImGui.Separator();
+                        }
+                        ImGui.End();
                     }
-                    ImGui.ColorPicker4("CPicker", ref _cPicker);
+                }
+
+                {
+                    if (_floatEditorIsEnable)
+                    {
+                        ImGui.SetNextWindowDockID(WorkshopDockspace, ImGuiCond.Appearing);
+                        ImGui.Begin("Floating Point Editor");
+                        if (ImGui.Button("Close Floating Point Editor"))
+                            _floatEditorIsEnable = false;
+                        ImGui.End();
+                    }
                     ImGui.End();
                 }
-                ImGui.End();
             }
         }
 
-        public static void populateTree(XmlDocument XMLDoc, string[] ActionIDs)
+        public static void PopulateTree(XmlDocument XMLDoc, string[] ActionIDs)
         {
             XmlNodeList nodeList = XMLDoc.SelectNodes("descendant::FFXEffectCallA/EffectBs");
             if (ImGui.TreeNodeEx("FFX Parts", ImGuiTreeNodeFlags.None))
@@ -241,7 +273,7 @@ namespace DSFFXEditor
                                 {
                                     foreach (XmlNode node2 in node1.SelectNodes("descendant::FFXProperty"))
                                     {
-                                        if (node2.Attributes[0].Value == "67" & node2.Attributes[1].Value == "19")
+                                        if ((node2.Attributes[0].Value == "67" & node2.Attributes[1].Value == "19") || (node2.Attributes[0].Value == "35" & node2.Attributes[1].Value == "11") || (node2.Attributes[0].Value == "99" & node2.Attributes[1].Value == "27") || (node2.Attributes[0].Value == "4163" & node2.Attributes[1].Value == "35"))
                                         {
                                             ImGui.Indent();
                                             ImGui.Indent();
@@ -294,30 +326,44 @@ namespace DSFFXEditor
             else if (callFlag == "runtime")
             {
                 ImGui.BeginChild("TxtEdit");
-                ArrayList arrayList = new ArrayList();
                 if (AXBX == "A67B19")
                 {
                     int Pos = 0;
                     int StopsCount = Int32.Parse(NodeListEditor.Item(0).Attributes[1].Value);
-                    if (ImGui.Selectable($"Number of Stops = {StopsCount}"))
+                    if (ImGui.Selectable($"Number of Stages = {StopsCount}"))
                     {
-                        pselected = true;
-                        ImGui.Text("aaaaaaaa");
                     }
-                    Pos++;
-                    for (int i = 0; i < 8; i++)
-                    {
-                        arrayList.Add("");
-                        Pos++;
-                    }
+                    Pos += 9;
+                    ImGui.BulletText("Stages: Times");
+                    ImGui.Indent();
+                    ImGui.Indent();
                     for (int i = 0; i != StopsCount; i++)
                     {
-                        arrayList.Add($"Stop {i} position = {NodeListEditor.Item(i + 9).Attributes[1].Value}");
+                        float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
+                        ImGui.BulletText($"Stage {i} position = {NodeListEditor.Item(i + 9).Attributes[1].Value}");
+                        ImGui.Indent();
+                        if (ImGui.SliderFloat($"###Stage{i}Slider", ref localSlider, 0.0f, 2.0f))
+                        {
+                                NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
+                        }
+                        ImGui.SameLine();
+                        ImGui.InputFloat($"###Stage{i}FloatInput", ref localSlider);
+                        if (ImGui.IsItemDeactivatedAfterEdit())
+                        {
+                            NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
+                        }
+                        ImGui.Text(NodeListEditor.Item(i + 9).Attributes[1].Value);
+                        ImGui.Unindent();
                         Pos++;
                     }
+                    ImGui.Unindent();
+                    ImGui.Unindent();
+                    ImGui.BulletText("Stages: Colors");
+                    ImGui.Indent();
+                    ImGui.Indent();
                     for (int i = 0; i != StopsCount * 4; i += 4)
                     {
-                        if (ImGui.Selectable($"Stop Position {i / 4}: Color"))
+                        if (ImGui.ColorButton($"Stage Position {i / 4}: Color", new Vector4(float.Parse(NodeListEditor.Item(Pos).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 1).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 2).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 3).Attributes[1].Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30,30)))
                         {
                             _cPickerRed = NodeListEditor.Item(Pos);
                             _cPickerGreen = NodeListEditor.Item(Pos + 1);
@@ -325,21 +371,39 @@ namespace DSFFXEditor
                             _cPickerAlpha = NodeListEditor.Item(Pos + 3);
                             _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
                             _cPickerIsEnable = true;
+                            ImGui.SetWindowFocus("FFX Color Picker");
                         }
                         ImGui.SameLine();
-                        ImGui.ColorButton($"Stop Position {i / 4}: Color Color Button", new Vector4(float.Parse(NodeListEditor.Item(Pos).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 1).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 2).Attributes[1].Value), float.Parse(NodeListEditor.Item(Pos + 3).Attributes[1].Value)));
                         Pos += 4;
                     }
+                    ImGui.Unindent();
+                    ImGui.Unindent();
+                }
+                else if (AXBX == "A35B11")
+                {
+                    ImGui.BulletText("Single Static Color:");
+                    ImGui.Indent();
+                    ImGui.Indent();
+                    if (ImGui.ColorButton($"Static Color", new Vector4(float.Parse(NodeListEditor.Item(0).Attributes[1].Value), float.Parse(NodeListEditor.Item(1).Attributes[1].Value), float.Parse(NodeListEditor.Item(2).Attributes[1].Value), float.Parse(NodeListEditor.Item(3).Attributes[1].Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
+                    {
+                        _cPickerRed = NodeListEditor.Item(0);
+                        _cPickerGreen = NodeListEditor.Item(1);
+                        _cPickerBlue = NodeListEditor.Item(2);
+                        _cPickerAlpha = NodeListEditor.Item(3);
+                        _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
+                        _cPickerIsEnable = true;
+                        ImGui.SetWindowFocus("FFX Color Picker");
+                    }
+                    ImGui.Unindent();
+                    ImGui.Unindent();
                 }
                 else
                 {
                     foreach (XmlNode node in NodeListEditor)
                     {
-                        arrayList.Add($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
+                        ImGui.TextWrapped($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
                     }
                 }
-                string[] Entries = (string[])arrayList.ToArray(typeof(string));
-                //ImGui.ListBox("Editor Entry's", ref currentitem, Entries, Entries.Length, (int)ImGui.GetWindowSize().Y / 18);
                 ImGui.EndChild();
             }
             if (callFlag == "uninit")
@@ -348,17 +412,5 @@ namespace DSFFXEditor
                 return;
             }
         }
-
-        public static bool _cPickerIsEnable = false;
-
-        public static XmlNode _cPickerRed;
-
-        public static XmlNode _cPickerGreen;
-
-        public static XmlNode _cPickerBlue;
-
-        public static XmlNode _cPickerAlpha;
-
-        public static Vector4 _cPicker = new Vector4();
     }
 }
