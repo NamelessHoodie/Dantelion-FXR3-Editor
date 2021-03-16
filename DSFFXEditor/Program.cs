@@ -7,6 +7,7 @@ using Veldrid.StartupUtilities;
 using ImGuiNET;
 using System.Xml;
 using System.Collections;
+using ImGuiNETAddons;
 
 namespace DSFFXEditor
 {
@@ -23,6 +24,7 @@ namespace DSFFXEditor
         private static byte[] _memoryEditorData;
         private static string _activeTheme = "DarkRedClay"; //Initialized Default Theme
         private static uint MainViewport;
+        private static bool _keyboardInputGuide = false;
 
         //colorpicka
         private static Vector3 _CPickerColor = new Vector3(0, 0, 0);
@@ -173,14 +175,33 @@ namespace DSFFXEditor
                         DSFFXThemes.ThemesSelector(_activeTheme);
                         ImGui.EndMenu();
                     }
-
+                    //ImGui.ShowUserGuide();
+                    if (ImGui.BeginMenu("Useful Info"))
+                    {
+                        ImGui.Text("Keyboard Interactions Guide");
+                        ImGui.SameLine();
+                        ImGuiAddons.ToggleButton("Keyboard InteractionsToggle", ref _keyboardInputGuide);
+                        ImGui.EndMenu();
+                    }
                     ImGui.EndMainMenuBar();
                 }
                 ImGui.DockSpace(MainViewport, new Vector2(0, 0));
                 ImGui.End();
             }
 
-            {
+            { //Declare Standalone Windows here
+                if (_keyboardInputGuide)
+                {
+                    ImGui.SetNextWindowDockID(MainViewport);
+                    ImGui.Begin("Keyboard Guide", ImGuiWindowFlags.MenuBar);
+                    ImGui.BeginMenuBar();
+                    ImGui.EndMenuBar();
+                    ImGui.ShowUserGuide();
+                    ImGui.End();
+                }
+            }
+
+            { //Main Window Here
                 ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
                 ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
                 ImGui.Columns(3);
@@ -230,11 +251,18 @@ namespace DSFFXEditor
                             _cPicker.Z *= _colorOverload;
                         }
                         ImGui.Separator();
+                        /*if (ImGuiAddons.ButtonGradient("Hello i'm a big buttonajfhsjabfdjsabfjdsafbsdjb###EDIRE", new Vector2(200f,200f))) 
+                        {
+                            _keyboardInputGuide = true;
+                        }
+                        if (ImGuiAddons.ButtonGradient("Hello i'm a small button###IDONTEVENKNOW"))
+                        {
+                            _keyboardInputGuide = false;
+                        }
+                        */
                         ImGui.End();
                     }
-                }
 
-                {
                     if (_floatEditorIsEnable)
                     {
                         ImGui.SetNextWindowDockID(WorkshopDockspace, ImGuiCond.Appearing);
@@ -405,5 +433,6 @@ namespace DSFFXEditor
                 return;
             }
         }
+
     }
 }
