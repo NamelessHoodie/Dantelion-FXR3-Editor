@@ -43,8 +43,8 @@ namespace ImGuiNETAddons
             Vector2 p = ImGuiNET.ImGui.GetCursorScreenPos();
             Vector2 sizeText = ImGui.CalcTextSize(str_idArray[0]);
             ImDrawListPtr draw_list = ImGuiNET.ImGui.GetWindowDrawList();
-            float ButtonHeight = ImGuiNET.ImGui.GetFrameHeight(); //Dynamically Allocated Height
-            float ButtonWidth = sizeText.X + sizeText.X*0.20f; //Dynamically Allocated Width
+            float ButtonHeight = ImGuiNET.ImGui.GetFrameHeight();
+            float ButtonWidth = sizeText.X + sizeText.X*0.20f;
             Vector2 ButtonSize = new Vector2(p.X + ButtonWidth, p.Y + ButtonHeight);
             uint col_Top;
             uint col_Bottom;
@@ -64,16 +64,16 @@ namespace ImGuiNETAddons
             }
             if (ImGuiNET.ImGui.IsItemHovered())
             {
-                col_Top = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive);
-                col_Bottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered);
+                col_Top = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered, 1.50f);
+                col_Bottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button, 0.50f);
             }
             else
             {
                 col_Top = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered);
-                col_Bottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button);
+                col_Bottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button, 0.20f);
             }
             draw_list.AddRectFilledMultiColor(p, ButtonSize, col_Top, col_Top, col_Bottom, col_Bottom);
-            draw_list.AddRect(p, ButtonSize, ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive));
+            draw_list.AddRect(p, ButtonSize, ImGuiNET.ImGui.GetColorU32(ImGuiCol.Separator));
             draw_list.AddText(new Vector2(p.X + (ButtonWidth / 2) - (sizeText.X / 2), p.Y + (ButtonHeight / 2) - (sizeText.Y / 2)), ImGui.GetColorU32(ImGuiCol.Text), str_idArray[0]);
             return false;
         }
@@ -122,6 +122,37 @@ namespace ImGuiNETAddons
             draw_list.AddRect(p, ButtonSize, ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive));
             draw_list.AddText(new Vector2(p.X + (ButtonWidth / 2) - (sizeText.X / 2), p.Y + (ButtonHeight / 2) - (sizeText.Y/2)), ImGui.GetColorU32(ImGuiCol.Text), str_idArray[0]);
             return false;
+        }
+        public static Vector2 CalcItemSize(Vector2 size, float default_w, float default_h)
+        {
+            Vector2 windowCursorPos = ImGuiNET.ImGui.GetCursorScreenPos();
+
+            Vector2 region_max = new Vector2(0f, 0f);
+            if (size.X < 0.0f || size.Y < 0.0f)
+                region_max = GetContentRegionMaxAbs();
+
+            if (size.X == 0.0f)
+                size.X = default_w;
+            else if (size.X < 0.0f)
+                size.X = Math.Max(4.0f, region_max.X - windowCursorPos.X + size.X);
+
+            if (size.Y == 0.0f)
+                size.Y = default_h;
+            else if (size.Y < 0.0f)
+                size.Y = Math.Max(4.0f, region_max.Y - windowCursorPos.Y + size.Y);
+
+            return size;
+        }
+
+        public static Vector2 GetContentRegionMaxAbs()
+        {
+            ImGui.GetCurrentContext();
+            IntPtr ImGuiContext = ImGui.GetCurrentContext();
+            Vector2 ImGuiWindowContentRegionRectMax = ImGui.GetWindowContentRegionMax();
+            Vector2 mx = ImGuiWindowContentRegionRectMax;
+            if (ImGui.GetColumnIndex() > 1)
+                mx.X = ImGui.GetItemRectMax().X;
+            return mx;
         }
     }
 }

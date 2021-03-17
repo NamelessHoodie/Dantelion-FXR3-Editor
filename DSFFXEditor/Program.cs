@@ -8,6 +8,7 @@ using ImGuiNET;
 using System.Xml;
 using System.Collections;
 using ImGuiNETAddons;
+using System.Xml.Linq;
 
 namespace DSFFXEditor
 {
@@ -25,6 +26,9 @@ namespace DSFFXEditor
         private static string _activeTheme = "DarkRedClay"; //Initialized Default Theme
         private static uint MainViewport;
         private static bool _keyboardInputGuide = false;
+        
+        // Save/Load Path
+        private static String _loadedFilePath = "";
 
         //colorpicka
         private static Vector3 _CPickerColor = new Vector3(0, 0, 0);
@@ -40,6 +44,7 @@ namespace DSFFXEditor
         //XML
         private static XmlDocument xDoc = new XmlDocument();
         private static bool XMLOpen = false;
+        private static bool _axbxDebug = false;
 
         //FFX Workshop Tools
         //<Color Editor>
@@ -146,8 +151,16 @@ namespace DSFFXEditor
                             ofd.Filter = "XML|*.xml";
                             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                             {
+                                _loadedFilePath = ofd.FileName;
                                 xDoc.Load(ofd.FileName);
                                 XMLOpen = true;
+                            }
+                        }
+                        if(_loadedFilePath != "") 
+                        {
+                            if (ImGui.MenuItem("Save Open FFX *XML"))
+                            {
+                                xDoc.Save(_loadedFilePath);
                             }
                         }
                         ImGui.EndMenu();
@@ -181,6 +194,9 @@ namespace DSFFXEditor
                         ImGui.Text("Keyboard Interactions Guide");
                         ImGui.SameLine();
                         ImGuiAddons.ToggleButton("Keyboard InteractionsToggle", ref _keyboardInputGuide);
+                        ImGui.Text("axbx Debugger");
+                        ImGui.SameLine();
+                        ImGuiAddons.ToggleButton("axbxDebugger", ref _axbxDebug);
                         ImGui.EndMenu();
                     }
                     ImGui.EndMainMenuBar();
@@ -229,37 +245,28 @@ namespace DSFFXEditor
                     {
                         ImGui.SetNextWindowDockID(WorkshopDockspace, ImGuiCond.Appearing);
                         ImGui.Begin("FFX Color Picker");
-                        if (ImGui.Button("Close Color Picker"))
+                        if (ImGuiAddons.ButtonGradient("Close Color Picker"))
                             _cPickerIsEnable = false;
                         ImGui.SameLine();
-                        if (ImGui.Button("Commit Color Change"))
+                        if (ImGuiAddons.ButtonGradient("Commit Color Change"))
                         {
-                            _cPickerRed.Attributes[1].Value = _cPicker.X.ToString();
-                            _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString();
-                            _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString();
-                            _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString();
+                                _cPickerRed.Attributes[1].Value = MathF.Round(_cPicker.X, 4, MidpointRounding.ToZero).ToString();
+                                _cPickerGreen.Attributes[1].Value = MathF.Round(_cPicker.Y, 4, MidpointRounding.ToZero).ToString();
+                                _cPickerBlue.Attributes[1].Value = MathF.Round(_cPicker.Z, 4, MidpointRounding.ToZero).ToString();
+                                _cPickerAlpha.Attributes[1].Value = MathF.Round(_cPicker.W, 4, MidpointRounding.ToZero).ToString();
                         }
                         ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar);
                         ImGui.Separator();
                         ImGui.Text("Brightness Multiplier");
                         ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, 1.0f, 10.0f);
                         ImGui.SameLine();
-                        if (ImGui.Button("Commit Multiplier"))
+                        if (ImGuiAddons.ButtonGradient("Apply Change"))
                         {
                             _cPicker.X *= _colorOverload;
                             _cPicker.Y *= _colorOverload;
                             _cPicker.Z *= _colorOverload;
                         }
                         ImGui.Separator();
-                        /*if (ImGuiAddons.ButtonGradient("Hello i'm a big buttonajfhsjabfdjsabfjdsafbsdjb###EDIRE", new Vector2(200f,200f))) 
-                        {
-                            _keyboardInputGuide = true;
-                        }
-                        if (ImGuiAddons.ButtonGradient("Hello i'm a small button###IDONTEVENKNOW"))
-                        {
-                            _keyboardInputGuide = false;
-                        }
-                        */
                         ImGui.End();
                     }
 
@@ -267,7 +274,7 @@ namespace DSFFXEditor
                     {
                         ImGui.SetNextWindowDockID(WorkshopDockspace, ImGuiCond.Appearing);
                         ImGui.Begin("Floating Point Editor");
-                        if (ImGui.Button("Close Floating Point Editor"))
+                        if (ImGuiAddons.ButtonGradient("Close Floating Point Editor"))
                             _floatEditorIsEnable = false;
                         ImGui.End();
                     }
@@ -304,7 +311,7 @@ namespace DSFFXEditor
                                             {
                                                 XmlNodeList NodeListProcessing = node2.SelectNodes("Fields")[0].ChildNodes;
                                                 ImGui.SameLine();
-                                                if (ImGui.Button("Edit Here"))
+                                                if (ImGuiAddons.ButtonGradient("Edit Here"))
                                                 {
                                                     NodeListEditor = NodeListProcessing;
                                                     AXBX = $"A{node2.Attributes[0].Value}B{node2.Attributes[1].Value}";
@@ -351,11 +358,51 @@ namespace DSFFXEditor
                 ImGui.BeginChild("TxtEdit");
                 if (AXBX == "A67B19")
                 {
+
                     int Pos = 0;
                     int StopsCount = Int32.Parse(NodeListEditor.Item(0).Attributes[1].Value);
+
+                    //NodeListEditor.Item(0).ParentNode.RemoveAll();
                     Pos += 9;
                     if (ImGui.TreeNodeEx($"Color Stages: Total number of stages = {StopsCount}", ImGuiTreeNodeFlags.DefaultOpen))
                     {
+                        if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
+                        {
+                            int LocalPos = 8;
+                            for (int i = 0; i != 4; i++) 
+                            {
+                                NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item((LocalPos + StopsCount + 1) + 8 + (4* (StopsCount - 3)) ));
+                            }
+                            NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item(LocalPos + StopsCount));
+                            NodeListEditor.Item(0).Attributes[1].Value = (StopsCount - 1).ToString();
+                            return;
+                        }
+                        ImGui.SameLine();
+                        if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
+                        {
+                            int LocalPos = 8;
+                            XmlNode newElem = xDoc.CreateNode("element", "FFXField", "");
+                            XmlAttribute Att = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
+                            XmlAttribute Att2 = xDoc.CreateAttribute("Value");
+                            Att.Value = "FFXFieldFloat";
+                            Att2.Value = "0";
+                            newElem.Attributes.Append(Att);
+                            newElem.Attributes.Append(Att2);
+                            NodeListEditor.Item(0).ParentNode.InsertAfter(newElem, NodeListEditor.Item(LocalPos + StopsCount));
+                            for (int i = 0; i != 4; i++) //append 4 nodes at the end of the childnodes list
+                            {
+                                XmlNode loopNewElem = xDoc.CreateNode("element", "FFXField", "");
+                                XmlAttribute loopAtt = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
+                                XmlAttribute loopAtt2 = xDoc.CreateAttribute("Value");
+                                loopAtt.Value = "FFXFieldFloat";
+                                loopAtt2.Value = "0";
+                                loopNewElem.Attributes.Append(loopAtt);
+                                loopNewElem.Attributes.Append(loopAtt2);
+                                NodeListEditor.Item(0).ParentNode.AppendChild(loopNewElem);
+                            }
+                            NodeListEditor.Item(0).Attributes[1].Value = (StopsCount + 1).ToString();
+                            return;
+                        }
                         int LocalColorOffset = Pos + 1;
                         for (int i = 0; i != StopsCount; i++)
                         {
@@ -363,13 +410,13 @@ namespace DSFFXEditor
                             ImGui.NewLine();
                             { // Slider Stuff
                                 float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
-                                ImGui.BulletText($"Stage {i}: Position in time");
-                                if (ImGui.SliderFloat($"###Stage{i}Slider", ref localSlider, 0.0f, 2.0f))
+                                ImGui.BulletText($"Stage {i + 1}: Position in time");
+                                if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
                                 {
                                     NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
                                 }
                                 ImGui.SameLine();
-                                ImGui.InputFloat($"###Stage{i}FloatInput", ref localSlider);
+                                ImGui.InputFloat($"###Stage{i + 1}FloatInput", ref localSlider);
                                 if (ImGui.IsItemDeactivatedAfterEdit())
                                 {
                                     NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
@@ -426,6 +473,18 @@ namespace DSFFXEditor
                     }
                 }
                 ImGui.EndChild();
+                //
+                if (_axbxDebug)
+                {
+                    ImGui.Begin("axbxDebug");
+                    int integer = 0;
+                    foreach (XmlNode node in NodeListEditor.Item(0).ParentNode.ChildNodes)
+                    {
+                        ImGui.Text($"TempID = '{integer}' XMLElementName = '{node.LocalName}' AttributesNum = '{node.Attributes.Count}' Attributes({node.Attributes[0].Name} = '{node.Attributes[0].Value}', {node.Attributes[1].Name} = '{float.Parse(node.Attributes[1].Value)}')");
+                        integer++;
+                    }
+                    ImGui.End();
+                }
             }
             if (callFlag == "uninit")
             {
