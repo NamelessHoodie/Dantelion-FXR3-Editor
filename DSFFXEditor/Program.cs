@@ -361,9 +361,8 @@ namespace DSFFXEditor
 
                     int Pos = 0;
                     int StopsCount = Int32.Parse(NodeListEditor.Item(0).Attributes[1].Value);
-
-                    //NodeListEditor.Item(0).ParentNode.RemoveAll();
                     Pos += 9;
+
                     if (ImGui.TreeNodeEx($"Color Stages: Total number of stages = {StopsCount}", ImGuiTreeNodeFlags.DefaultOpen))
                     {
                         if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
@@ -393,7 +392,7 @@ namespace DSFFXEditor
                             newElem.Attributes.Append(Att);
                             newElem.Attributes.Append(Att2);
                             NodeListEditor.Item(0).ParentNode.InsertAfter(newElem, NodeListEditor.Item(LocalPos + StopsCount));
-                            for (int i = 0; i != 4; i++) //append 4 nodes at the end of the childnodes list
+                            for (int i = 0; i != 4; i++) //append 4 fields after last color alpha
                             {
                                 XmlNode loopNewElem = xDoc.CreateNode("element", "FFXField", "");
                                 XmlAttribute loopAtt = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
@@ -456,6 +455,125 @@ namespace DSFFXEditor
                                 LocalColorOffset += 5;
                                 ImGui.Unindent();
                             }
+
+                            { // Slider Stuff for curvature
+                                int LocalPos = 8;
+                                int readpos = (LocalPos + StopsCount + 1) + 8 + 4 + (4 * (StopsCount - 3));
+                                int localproperfieldpos = readpos + (i * 8);
+                                if (ImGui.TreeNodeEx($"Custom Curve Settngs###{i + 1}CurveSettings"))
+                                {
+                                    if (ImGui.TreeNodeEx("Red: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                                    {
+                                        ImGui.Indent();
+                                        {
+                                            int localint = 0;
+                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                            ImGui.Text("Curve Point 0 = ");
+                                            ImGui.SameLine();
+                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                            {
+                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                            }
+                                        }
+                                        {
+                                            int localint = 1;
+                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                            ImGui.Text("Curve Point 1 = ");
+                                            ImGui.SameLine();
+                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                            {
+                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                            }
+                                        }
+                                        ImGui.Unindent();
+                                        ImGui.TreePop();
+                                    }
+
+                                    if (ImGui.TreeNodeEx("Green: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                                    {
+                                        ImGui.Indent();
+                                        {
+                                            int localint = 2;
+                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                            ImGui.Text("Curve Point 0 = ");
+                                            ImGui.SameLine();
+                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                            {
+                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                            }
+                                        }
+                                        {
+                                            int localint = 3;
+                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                            ImGui.Text("Curve Point 1 = ");
+                                            ImGui.SameLine();
+                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                            {
+                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                            }
+                                        }
+                                        ImGui.Unindent();
+                                        ImGui.TreePop();
+                                    }
+
+                                    if (ImGui.TreeNodeEx("Blue: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                                    {
+                                        ImGui.Indent();
+                                        {
+                                            int localint = 4;
+                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                            ImGui.Text("Curve Point 0 = ");
+                                            ImGui.SameLine();
+                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                            {
+                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                            }
+                                        }
+                                        {
+                                            int localint = 5;
+                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                            ImGui.Text("Curve Point 1 = ");
+                                            ImGui.SameLine();
+                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                            {
+                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                            }
+                                        }
+                                        ImGui.Unindent();
+                                        ImGui.TreePop();
+                                    }
+
+                                    if (ImGui.TreeNodeEx("Alpha: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                                    {
+                                        ImGui.Indent();
+                                        {
+                                            int localint = 6;
+                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                            ImGui.Text("Curve Point 0 = ");
+                                            ImGui.SameLine();
+                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                            {
+                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                            }
+                                        }
+
+                                        {
+                                            int localint = 7;
+                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                            ImGui.Text("Curve Point 0 = ");
+                                            ImGui.SameLine();
+                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                            {
+                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                            }
+                                        }
+                                        ImGui.Unindent();
+                                        ImGui.TreePop();
+                                    }
+                                    ImGui.TreePop();
+                                }
+                            }
+
                             ImGui.NewLine();
                         }
                         ImGui.Separator();
@@ -582,6 +700,7 @@ namespace DSFFXEditor
                 //
                 if (_axbxDebug)
                 {
+                    ImGui.SetNextWindowDockID(MainViewport);
                     ImGui.Begin("axbxDebug");
                     int integer = 0;
                     foreach (XmlNode node in NodeListEditor.Item(0).ParentNode.ChildNodes)
