@@ -188,7 +188,6 @@ namespace DSFFXEditor
                         DSFFXThemes.ThemesSelector(_activeTheme);
                         ImGui.EndMenu();
                     }
-                    //ImGui.ShowUserGuide();
                     if (ImGui.BeginMenu("Useful Info"))
                     {
                         ImGui.Text("Keyboard Interactions Guide");
@@ -356,345 +355,31 @@ namespace DSFFXEditor
             else if (callFlag == "runtime")
             {
                 ImGui.BeginChild("TxtEdit");
-                if (AXBX == "A99B27")
+                switch (AXBX)
                 {
-
-                    int Pos = 0;
-                    int StopsCount = Int32.Parse(NodeListEditor.Item(0).Attributes[1].Value);
-                    Pos += 9;
-
-                    if (ImGui.TreeNodeEx($"Color Stages: Total number of stages = {StopsCount}", ImGuiTreeNodeFlags.DefaultOpen))
-                    {
-                        if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
+                    case "A35B11":
+                        ImGui.Text("FFX Property = A35B11");
+                        FFXPropertyA35B11StaticColor(NodeListEditor);
+                        break;
+                    case "A67B19":
+                        ImGui.Text("FFX Property = A67B19");
+                        FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
+                        break;
+                    case "A99B27":
+                        ImGui.Text("FFX Property = A99B27");
+                        FFXPropertyA99B27ColorInterpolationWithCustomCurve(NodeListEditor);
+                        break;
+                    case "A4163B35":
+                        ImGui.Text("FFX Property = A4163B35");
+                        FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
+                        break;
+                    default:
+                        ImGui.Text("ERROR: FFX Property Handler not found, using Default Read Only Handler.");
+                        foreach (XmlNode node in NodeListEditor)
                         {
-                            int LocalPos = 8;
-                            for (int i = 0; i != 4; i++)
-                            {
-                                NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item((LocalPos + StopsCount + 1) + 8 + (4 * (StopsCount - 3))));
-                            }
-                            for (int i = 0; i != 8; i++)
-                            {
-                                NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item(NodeListEditor.Count - 1));
-                            }
-                            NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item(LocalPos + StopsCount));
-                            NodeListEditor.Item(0).Attributes[1].Value = (StopsCount - 1).ToString();
-                            StopsCount--;
+                            ImGui.TextWrapped($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
                         }
-                        ImGui.SameLine();
-                        if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
-                        {
-                            int LocalPos = 8;
-                            XmlNode newElem = xDoc.CreateNode("element", "FFXField", "");
-                            XmlAttribute Att = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
-                            XmlAttribute Att2 = xDoc.CreateAttribute("Value");
-                            Att.Value = "FFXFieldFloat";
-                            Att2.Value = "0";
-                            newElem.Attributes.Append(Att);
-                            newElem.Attributes.Append(Att2);
-                            NodeListEditor.Item(0).ParentNode.InsertAfter(newElem, NodeListEditor.Item(LocalPos + StopsCount));
-                            for (int i = 0; i != 4; i++) //append 4 fields after last color alpha
-                            {
-                                XmlNode loopNewElem = xDoc.CreateNode("element", "FFXField", "");
-                                XmlAttribute loopAtt = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
-                                XmlAttribute loopAtt2 = xDoc.CreateAttribute("Value");
-                                loopAtt.Value = "FFXFieldFloat";
-                                loopAtt2.Value = "0";
-                                loopNewElem.Attributes.Append(loopAtt);
-                                loopNewElem.Attributes.Append(loopAtt2);
-                                NodeListEditor.Item(0).ParentNode.InsertAfter(loopNewElem, NodeListEditor.Item((LocalPos + StopsCount + 1) + 8 + 4 + (4 * (StopsCount - 3))));
-                                for(int i2 = 0; i2 != 2;i2++) 
-                                {
-                                    XmlNode loop1NewElem = xDoc.CreateNode("element", "FFXField", "");
-                                    XmlAttribute loop1Att = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
-                                    XmlAttribute loop1Att2 = xDoc.CreateAttribute("Value");
-                                    loop1Att.Value = "FFXFieldFloat";
-                                    loop1Att2.Value = "0";
-                                    loop1NewElem.Attributes.Append(loop1Att);
-                                    loop1NewElem.Attributes.Append(loop1Att2);
-                                    NodeListEditor.Item(0).ParentNode.AppendChild(loop1NewElem);
-                                }
-                            }
-                            NodeListEditor.Item(0).Attributes[1].Value = (StopsCount + 1).ToString();
-                            StopsCount++;
-                        }
-                        int LocalColorOffset = Pos + 1;
-                        for (int i = 0; i != StopsCount; i++)
-                        {
-                            ImGui.Separator();
-                            ImGui.NewLine();
-                            { // Slider Stuff
-                                float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
-                                ImGui.BulletText($"Stage {i + 1}: Position in time");
-                                if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
-                                {
-                                    NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
-                                }
-                                ImGui.SameLine();
-                                ImGui.InputFloat($"###Stage{i + 1}FloatInput", ref localSlider);
-                                if (ImGui.IsItemDeactivatedAfterEdit())
-                                {
-                                    NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
-                                }
-                            }
-
-                            { // ColorButton
-                                ImGui.Indent();
-                                int PositionOffset = LocalColorOffset + StopsCount - (i + 1);
-                                ImGui.Text($"Stage's Color:");
-                                ImGui.SameLine();
-                                if (ImGui.ColorButton($"Stage Position {i}: Color", new Vector4(float.Parse(NodeListEditor.Item(PositionOffset).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 1).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 2).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 3).Attributes[1].Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
-                                {
-                                    _cPickerRed = NodeListEditor.Item(PositionOffset);
-                                    _cPickerGreen = NodeListEditor.Item(PositionOffset + 1);
-                                    _cPickerBlue = NodeListEditor.Item(PositionOffset + 2);
-                                    _cPickerAlpha = NodeListEditor.Item(PositionOffset + 3);
-                                    _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
-                                    _cPickerIsEnable = true;
-                                    ImGui.SetWindowFocus("FFX Color Picker");
-                                }
-                                LocalColorOffset += 5;
-                                ImGui.Unindent();
-                            }
-
-                            { // Slider Stuff for curvature
-                                int LocalPos = 8;
-                                int readpos = (LocalPos + StopsCount + 1) + 8 + 4 + (4 * (StopsCount - 3));
-                                int localproperfieldpos = readpos + (i * 8);
-                                if (ImGui.TreeNodeEx($"Custom Curve Settngs###{i + 1}CurveSettings"))
-                                {
-                                    if (ImGui.TreeNodeEx("Red: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
-                                    {
-                                        ImGui.Indent();
-                                        {
-                                            int localint = 0;
-                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
-                                            ImGui.Text("Curve Point 0 = ");
-                                            ImGui.SameLine();
-                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                            {
-                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                            }
-                                        }
-                                        {
-                                            int localint = 1;
-                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
-                                            ImGui.Text("Curve Point 1 = ");
-                                            ImGui.SameLine();
-                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                            {
-                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                            }
-                                        }
-                                        ImGui.Unindent();
-                                        ImGui.TreePop();
-                                    }
-
-                                    if (ImGui.TreeNodeEx("Green: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
-                                    {
-                                        ImGui.Indent();
-                                        {
-                                            int localint = 2;
-                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
-                                            ImGui.Text("Curve Point 0 = ");
-                                            ImGui.SameLine();
-                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                            {
-                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                            }
-                                        }
-                                        {
-                                            int localint = 3;
-                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
-                                            ImGui.Text("Curve Point 1 = ");
-                                            ImGui.SameLine();
-                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                            {
-                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                            }
-                                        }
-                                        ImGui.Unindent();
-                                        ImGui.TreePop();
-                                    }
-
-                                    if (ImGui.TreeNodeEx("Blue: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
-                                    {
-                                        ImGui.Indent();
-                                        {
-                                            int localint = 4;
-                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
-                                            ImGui.Text("Curve Point 0 = ");
-                                            ImGui.SameLine();
-                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                            {
-                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                            }
-                                        }
-                                        {
-                                            int localint = 5;
-                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
-                                            ImGui.Text("Curve Point 1 = ");
-                                            ImGui.SameLine();
-                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                            {
-                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                            }
-                                        }
-                                        ImGui.Unindent();
-                                        ImGui.TreePop();
-                                    }
-
-                                    if (ImGui.TreeNodeEx("Alpha: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
-                                    {
-                                        ImGui.Indent();
-                                        {
-                                            int localint = 6;
-                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
-                                            ImGui.Text("Curve Point 0 = ");
-                                            ImGui.SameLine();
-                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                            {
-                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                            }
-                                        }
-
-                                        {
-                                            int localint = 7;
-                                            float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
-                                            ImGui.Text("Curve Point 0 = ");
-                                            ImGui.SameLine();
-                                            if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                            {
-                                                NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                            }
-                                        }
-                                        ImGui.Unindent();
-                                        ImGui.TreePop();
-                                    }
-                                    ImGui.TreePop();
-                                }
-                            }
-
-                            ImGui.NewLine();
-                        }
-                        ImGui.Separator();
-                        ImGui.TreePop();
-                    }
-                }
-                else if (AXBX == "A67B19" || AXBX == "A4163B35")
-                {
-
-                    int Pos = 0;
-                    int StopsCount = Int32.Parse(NodeListEditor.Item(0).Attributes[1].Value);
-
-                    //NodeListEditor.Item(0).ParentNode.RemoveAll();
-                    Pos += 9;
-                    if (ImGui.TreeNodeEx($"Color Stages: Total number of stages = {StopsCount}", ImGuiTreeNodeFlags.DefaultOpen))
-                    {
-                        if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
-                        {
-                            int LocalPos = 8;
-                            for (int i = 0; i != 4; i++) 
-                            {
-                                NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item((LocalPos + StopsCount + 1) + 8 + (4* (StopsCount - 3)) ));
-                            }
-                            NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item(LocalPos + StopsCount));
-                            NodeListEditor.Item(0).Attributes[1].Value = (StopsCount - 1).ToString();
-                            StopsCount--;
-                        }
-                        ImGui.SameLine();
-                        if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
-                        {
-                            int LocalPos = 8;
-                            XmlNode newElem = xDoc.CreateNode("element", "FFXField", "");
-                            XmlAttribute Att = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
-                            XmlAttribute Att2 = xDoc.CreateAttribute("Value");
-                            Att.Value = "FFXFieldFloat";
-                            Att2.Value = "0";
-                            newElem.Attributes.Append(Att);
-                            newElem.Attributes.Append(Att2);
-                            NodeListEditor.Item(0).ParentNode.InsertAfter(newElem, NodeListEditor.Item(LocalPos + StopsCount));
-                            for (int i = 0; i != 4; i++) //append 4 nodes at the end of the childnodes list
-                            {
-                                XmlNode loopNewElem = xDoc.CreateNode("element", "FFXField", "");
-                                XmlAttribute loopAtt = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
-                                XmlAttribute loopAtt2 = xDoc.CreateAttribute("Value");
-                                loopAtt.Value = "FFXFieldFloat";
-                                loopAtt2.Value = "0";
-                                loopNewElem.Attributes.Append(loopAtt);
-                                loopNewElem.Attributes.Append(loopAtt2);
-                                NodeListEditor.Item(0).ParentNode.AppendChild(loopNewElem);
-                            }
-                            NodeListEditor.Item(0).Attributes[1].Value = (StopsCount + 1).ToString();
-                            StopsCount++;
-                        }
-                        int LocalColorOffset = Pos + 1;
-                        for (int i = 0; i != StopsCount; i++)
-                        {
-                            ImGui.Separator();
-                            ImGui.NewLine();
-                            { // Slider Stuff
-                                float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
-                                ImGui.BulletText($"Stage {i + 1}: Position in time");
-                                if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
-                                {
-                                    NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
-                                }
-                                ImGui.SameLine();
-                                ImGui.InputFloat($"###Stage{i + 1}FloatInput", ref localSlider);
-                                if (ImGui.IsItemDeactivatedAfterEdit())
-                                {
-                                    NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
-                                }
-                            }
-
-                            { // ColorButton
-                                ImGui.Indent();
-                                int PositionOffset = LocalColorOffset + StopsCount - (i + 1);
-                                ImGui.Text($"Stage's Color:");
-                                ImGui.SameLine();
-                                if (ImGui.ColorButton($"Stage Position {i}: Color", new Vector4(float.Parse(NodeListEditor.Item(PositionOffset).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 1).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 2).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 3).Attributes[1].Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
-                                {
-                                    _cPickerRed = NodeListEditor.Item(PositionOffset);
-                                    _cPickerGreen = NodeListEditor.Item(PositionOffset + 1);
-                                    _cPickerBlue = NodeListEditor.Item(PositionOffset + 2);
-                                    _cPickerAlpha = NodeListEditor.Item(PositionOffset + 3);
-                                    _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
-                                    _cPickerIsEnable = true;
-                                    ImGui.SetWindowFocus("FFX Color Picker");
-                                }
-                                LocalColorOffset += 5;
-                                ImGui.Unindent();
-                            }
-                            ImGui.NewLine();
-                        }
-                        ImGui.Separator();
-                        ImGui.TreePop();
-                    }
-                }
-                else if (AXBX == "A35B11")
-                {
-                    ImGui.BulletText("Single Static Color:");
-                    ImGui.Indent();
-                    ImGui.Indent();
-                    if (ImGui.ColorButton($"Static Color", new Vector4(float.Parse(NodeListEditor.Item(0).Attributes[1].Value), float.Parse(NodeListEditor.Item(1).Attributes[1].Value), float.Parse(NodeListEditor.Item(2).Attributes[1].Value), float.Parse(NodeListEditor.Item(3).Attributes[1].Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
-                    {
-                        _cPickerRed = NodeListEditor.Item(0);
-                        _cPickerGreen = NodeListEditor.Item(1);
-                        _cPickerBlue = NodeListEditor.Item(2);
-                        _cPickerAlpha = NodeListEditor.Item(3);
-                        _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
-                        _cPickerIsEnable = true;
-                        ImGui.SetWindowFocus("FFX Color Picker");
-                    }
-                    ImGui.Unindent();
-                    ImGui.Unindent();
-                }
-                else
-                {
-                    foreach (XmlNode node in NodeListEditor)
-                    {
-                        ImGui.TextWrapped($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
-                    }
+                        break;
                 }
                 ImGui.EndChild();
                 //
@@ -718,5 +403,326 @@ namespace DSFFXEditor
             }
         }
 
+        //FFXPropertyHandler Functions Below here
+        public static void FFXPropertyA35B11StaticColor(XmlNodeList NodeListEditor)
+        {
+            ImGui.BulletText("Single Static Color:");
+            ImGui.Indent();
+            ImGui.Indent();
+            if (ImGui.ColorButton($"Static Color", new Vector4(float.Parse(NodeListEditor.Item(0).Attributes[1].Value), float.Parse(NodeListEditor.Item(1).Attributes[1].Value), float.Parse(NodeListEditor.Item(2).Attributes[1].Value), float.Parse(NodeListEditor.Item(3).Attributes[1].Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
+            {
+                _cPickerRed = NodeListEditor.Item(0);
+                _cPickerGreen = NodeListEditor.Item(1);
+                _cPickerBlue = NodeListEditor.Item(2);
+                _cPickerAlpha = NodeListEditor.Item(3);
+                _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
+                _cPickerIsEnable = true;
+                ImGui.SetWindowFocus("FFX Color Picker");
+            }
+            ImGui.Unindent();
+            ImGui.Unindent();
+        }
+        public static void FFXPropertyA67B19ColorInterpolationLinear(XmlNodeList NodeListEditor)
+        {
+
+            int Pos = 0;
+            int StopsCount = Int32.Parse(NodeListEditor.Item(0).Attributes[1].Value);
+
+            //NodeListEditor.Item(0).ParentNode.RemoveAll();
+            Pos += 9;
+            if (ImGui.TreeNodeEx($"Color Stages: Total number of stages = {StopsCount}", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
+                {
+                    int LocalPos = 8;
+                    for (int i = 0; i != 4; i++)
+                    {
+                        NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item((LocalPos + StopsCount + 1) + 8 + (4 * (StopsCount - 3))));
+                    }
+                    NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item(LocalPos + StopsCount));
+                    NodeListEditor.Item(0).Attributes[1].Value = (StopsCount - 1).ToString();
+                    StopsCount--;
+                }
+                ImGui.SameLine();
+                if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
+                {
+                    int LocalPos = 8;
+                    XmlNode newElem = xDoc.CreateNode("element", "FFXField", "");
+                    XmlAttribute Att = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
+                    XmlAttribute Att2 = xDoc.CreateAttribute("Value");
+                    Att.Value = "FFXFieldFloat";
+                    Att2.Value = "0";
+                    newElem.Attributes.Append(Att);
+                    newElem.Attributes.Append(Att2);
+                    NodeListEditor.Item(0).ParentNode.InsertAfter(newElem, NodeListEditor.Item(LocalPos + StopsCount));
+                    for (int i = 0; i != 4; i++) //append 4 nodes at the end of the childnodes list
+                    {
+                        XmlNode loopNewElem = xDoc.CreateNode("element", "FFXField", "");
+                        XmlAttribute loopAtt = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
+                        XmlAttribute loopAtt2 = xDoc.CreateAttribute("Value");
+                        loopAtt.Value = "FFXFieldFloat";
+                        loopAtt2.Value = "0";
+                        loopNewElem.Attributes.Append(loopAtt);
+                        loopNewElem.Attributes.Append(loopAtt2);
+                        NodeListEditor.Item(0).ParentNode.AppendChild(loopNewElem);
+                    }
+                    NodeListEditor.Item(0).Attributes[1].Value = (StopsCount + 1).ToString();
+                    StopsCount++;
+                }
+                int LocalColorOffset = Pos + 1;
+                for (int i = 0; i != StopsCount; i++)
+                {
+                    ImGui.Separator();
+                    ImGui.NewLine();
+                    { // Slider Stuff
+                        float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
+                        ImGui.BulletText($"Stage {i + 1}: Position in time");
+                        if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
+                        {
+                            NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
+                        }
+                    }
+
+                    { // ColorButton
+                        ImGui.Indent();
+                        int PositionOffset = LocalColorOffset + StopsCount - (i + 1);
+                        ImGui.Text($"Stage's Color:");
+                        ImGui.SameLine();
+                        if (ImGui.ColorButton($"Stage Position {i}: Color", new Vector4(float.Parse(NodeListEditor.Item(PositionOffset).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 1).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 2).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 3).Attributes[1].Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
+                        {
+                            _cPickerRed = NodeListEditor.Item(PositionOffset);
+                            _cPickerGreen = NodeListEditor.Item(PositionOffset + 1);
+                            _cPickerBlue = NodeListEditor.Item(PositionOffset + 2);
+                            _cPickerAlpha = NodeListEditor.Item(PositionOffset + 3);
+                            _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
+                            _cPickerIsEnable = true;
+                            ImGui.SetWindowFocus("FFX Color Picker");
+                        }
+                        LocalColorOffset += 5;
+                        ImGui.Unindent();
+                    }
+                    ImGui.NewLine();
+                }
+                ImGui.Separator();
+                ImGui.TreePop();
+            }
+        }
+        public static void FFXPropertyA99B27ColorInterpolationWithCustomCurve(XmlNodeList NodeListEditor)
+        {
+            int Pos = 0;
+            int StopsCount = Int32.Parse(NodeListEditor.Item(0).Attributes[1].Value);
+            Pos += 9;
+
+            if (ImGui.TreeNodeEx($"Color Stages: Total number of stages = {StopsCount}", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
+                {
+                    int LocalPos = 8;
+                    for (int i = 0; i != 4; i++)
+                    {
+                        NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item((LocalPos + StopsCount + 1) + 8 + (4 * (StopsCount - 3))));
+                    }
+                    for (int i = 0; i != 8; i++)
+                    {
+                        NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item(NodeListEditor.Count - 1));
+                    }
+                    NodeListEditor.Item(0).ParentNode.RemoveChild(NodeListEditor.Item(LocalPos + StopsCount));
+                    NodeListEditor.Item(0).Attributes[1].Value = (StopsCount - 1).ToString();
+                    StopsCount--;
+                }
+                ImGui.SameLine();
+                if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
+                {
+                    int LocalPos = 8;
+                    XmlNode newElem = xDoc.CreateNode("element", "FFXField", "");
+                    XmlAttribute Att = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
+                    XmlAttribute Att2 = xDoc.CreateAttribute("Value");
+                    Att.Value = "FFXFieldFloat";
+                    Att2.Value = "0";
+                    newElem.Attributes.Append(Att);
+                    newElem.Attributes.Append(Att2);
+                    NodeListEditor.Item(0).ParentNode.InsertAfter(newElem, NodeListEditor.Item(LocalPos + StopsCount));
+                    for (int i = 0; i != 4; i++) //append 4 fields after last color alpha
+                    {
+                        XmlNode loopNewElem = xDoc.CreateNode("element", "FFXField", "");
+                        XmlAttribute loopAtt = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
+                        XmlAttribute loopAtt2 = xDoc.CreateAttribute("Value");
+                        loopAtt.Value = "FFXFieldFloat";
+                        loopAtt2.Value = "0";
+                        loopNewElem.Attributes.Append(loopAtt);
+                        loopNewElem.Attributes.Append(loopAtt2);
+                        NodeListEditor.Item(0).ParentNode.InsertAfter(loopNewElem, NodeListEditor.Item((LocalPos + StopsCount + 1) + 8 + 4 + (4 * (StopsCount - 3))));
+                        for (int i2 = 0; i2 != 2; i2++)
+                        {
+                            XmlNode loop1NewElem = xDoc.CreateNode("element", "FFXField", "");
+                            XmlAttribute loop1Att = xDoc.CreateAttribute("xsi:type", "http://www.w3.org/2001/XMLSchema-instance");
+                            XmlAttribute loop1Att2 = xDoc.CreateAttribute("Value");
+                            loop1Att.Value = "FFXFieldFloat";
+                            loop1Att2.Value = "0";
+                            loop1NewElem.Attributes.Append(loop1Att);
+                            loop1NewElem.Attributes.Append(loop1Att2);
+                            NodeListEditor.Item(0).ParentNode.AppendChild(loop1NewElem);
+                        }
+                    }
+                    NodeListEditor.Item(0).Attributes[1].Value = (StopsCount + 1).ToString();
+                    StopsCount++;
+                }
+                int LocalColorOffset = Pos + 1;
+                for (int i = 0; i != StopsCount; i++)
+                {
+                    ImGui.Separator();
+                    ImGui.NewLine();
+                    { // Slider Stuff
+                        float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
+                        ImGui.BulletText($"Stage {i + 1}: Position in time");
+                        if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
+                        {
+                            NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
+                        }
+                    }
+
+                    { // ColorButton
+                        ImGui.Indent();
+                        int PositionOffset = LocalColorOffset + StopsCount - (i + 1);
+                        ImGui.Text($"Stage's Color:");
+                        ImGui.SameLine();
+                        if (ImGui.ColorButton($"Stage Position {i}: Color", new Vector4(float.Parse(NodeListEditor.Item(PositionOffset).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 1).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 2).Attributes[1].Value), float.Parse(NodeListEditor.Item(PositionOffset + 3).Attributes[1].Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
+                        {
+                            _cPickerRed = NodeListEditor.Item(PositionOffset);
+                            _cPickerGreen = NodeListEditor.Item(PositionOffset + 1);
+                            _cPickerBlue = NodeListEditor.Item(PositionOffset + 2);
+                            _cPickerAlpha = NodeListEditor.Item(PositionOffset + 3);
+                            _cPicker = new Vector4(float.Parse(_cPickerRed.Attributes[1].Value), float.Parse(_cPickerGreen.Attributes[1].Value), float.Parse(_cPickerBlue.Attributes[1].Value), float.Parse(_cPickerAlpha.Attributes[1].Value));
+                            _cPickerIsEnable = true;
+                            ImGui.SetWindowFocus("FFX Color Picker");
+                        }
+                        LocalColorOffset += 5;
+                        ImGui.Unindent();
+                    }
+
+                    { // Slider Stuff for curvature
+                        int LocalPos = 8;
+                        int readpos = (LocalPos + StopsCount + 1) + 8 + 4 + (4 * (StopsCount - 3));
+                        int localproperfieldpos = readpos + (i * 8);
+                        if (ImGui.TreeNodeEx($"Custom Curve Settngs###{i + 1}CurveSettings"))
+                        {
+                            if (ImGui.TreeNodeEx("Red: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                            {
+                                ImGui.Indent();
+                                {
+                                    int localint = 0;
+                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                    ImGui.Text("Curve Point 0 = ");
+                                    ImGui.SameLine();
+                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                    {
+                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                    }
+                                }
+                                {
+                                    int localint = 1;
+                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                    ImGui.Text("Curve Point 1 = ");
+                                    ImGui.SameLine();
+                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                    {
+                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                    }
+                                }
+                                ImGui.Unindent();
+                                ImGui.TreePop();
+                            }
+
+                            if (ImGui.TreeNodeEx("Green: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                            {
+                                ImGui.Indent();
+                                {
+                                    int localint = 2;
+                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                    ImGui.Text("Curve Point 0 = ");
+                                    ImGui.SameLine();
+                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                    {
+                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                    }
+                                }
+                                {
+                                    int localint = 3;
+                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                    ImGui.Text("Curve Point 1 = ");
+                                    ImGui.SameLine();
+                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                    {
+                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                    }
+                                }
+                                ImGui.Unindent();
+                                ImGui.TreePop();
+                            }
+
+                            if (ImGui.TreeNodeEx("Blue: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                            {
+                                ImGui.Indent();
+                                {
+                                    int localint = 4;
+                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                    ImGui.Text("Curve Point 0 = ");
+                                    ImGui.SameLine();
+                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                    {
+                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                    }
+                                }
+                                {
+                                    int localint = 5;
+                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                    ImGui.Text("Curve Point 1 = ");
+                                    ImGui.SameLine();
+                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                    {
+                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                    }
+                                }
+                                ImGui.Unindent();
+                                ImGui.TreePop();
+                            }
+
+                            if (ImGui.TreeNodeEx("Alpha: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                            {
+                                ImGui.Indent();
+                                {
+                                    int localint = 6;
+                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                    ImGui.Text("Curve Point 0 = ");
+                                    ImGui.SameLine();
+                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                    {
+                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                    }
+                                }
+
+                                {
+                                    int localint = 7;
+                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
+                                    ImGui.Text("Curve Point 0 = ");
+                                    ImGui.SameLine();
+                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
+                                    {
+                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                    }
+                                }
+                                ImGui.Unindent();
+                                ImGui.TreePop();
+                            }
+                            ImGui.TreePop();
+                        }
+                    }
+
+                    ImGui.NewLine();
+                }
+                ImGui.Separator();
+                ImGui.TreePop();
+            }
+        }
     }
 }
