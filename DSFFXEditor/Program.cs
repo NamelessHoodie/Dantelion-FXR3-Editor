@@ -5,6 +5,9 @@ using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using ImGuiNET;
+using ImPlotNET;
+using ImNodesNET;
+using ImGuizmoNET;
 using System.Xml;
 using System.Collections;
 using ImGuiNETAddons;
@@ -221,6 +224,13 @@ namespace DSFFXEditor
                 ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
                 ImGui.Columns(3);
                 ImGui.BeginChild("FFXTreeView");
+                ImPlot.BeginPlot("I am an ffx plot");
+                ImPlot.EndPlot();
+                ImNodes.BeginNodeEditor();
+                ImNodes.BeginNode(11);
+                ImGui.Text("I am a node meme");
+                ImNodes.EndNode();
+                ImNodes.EndNodeEditor();
                 if (XMLOpen == true)
                 {
                     PopulateTree(xDoc.SelectSingleNode("descendant::RootEffectCall"));
