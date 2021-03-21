@@ -21,20 +21,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="tempclass.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="tempclass.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ImGui.NET" Version="1.78.0" />
-    <PackageReference Include="ImGui.NET.Docking" Version="1.75.0" />
-    <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
     <PackageReference Include="Veldrid.SDL2" Version="4.8.0" />
     <PackageReference Include="Veldrid.SPIRV" Version="1.0.14" />
     <PackageReference Include="Veldrid.StartupUtilities" Version="4.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ImGui.NET\ImGui.NET.csproj" />
+    <ProjectReference Include="..\ImGuizmo.NET\ImGuizmo.NET.csproj" />
+    <ProjectReference Include="..\ImNodes.NET\ImNodes.NET.csproj" />
+    <ProjectReference Include="..\ImPlot.NET\ImPlot.NET.csproj" />
+    <ProjectReference Include="..\Veldrid.ImGui\Veldrid.ImGui.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,16 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DSFFXEditor", "DSFFXEditor\DSFFXEditor.csproj", "{6512D717-50AC-4317-9597-24BAC6B1A933}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImGui.NET", "ImGui.NET\ImGui.NET.csproj", "{18A5FD24-EDA5-4F24-9838-28A050A2A2F8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImPlot.NET", "ImPlot.NET\ImPlot.NET.csproj", "{9C05F602-B1D1-4AED-9F69-145DE1A0E3FD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImGuizmo.NET", "ImGuizmo.NET\ImGuizmo.NET.csproj", "{51AFFDB9-C43C-4DE0-ADE3-5703E23EE91E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImNodes.NET", "ImNodes.NET\ImNodes.NET.csproj", "{82AD1E27-52DD-4318-B700-3E402F93ECC0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veldrid.ImGui", "Veldrid.ImGui\Veldrid.ImGui.csproj", "{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +25,26 @@ Global
 		{6512D717-50AC-4317-9597-24BAC6B1A933}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6512D717-50AC-4317-9597-24BAC6B1A933}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6512D717-50AC-4317-9597-24BAC6B1A933}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18A5FD24-EDA5-4F24-9838-28A050A2A2F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18A5FD24-EDA5-4F24-9838-28A050A2A2F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18A5FD24-EDA5-4F24-9838-28A050A2A2F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18A5FD24-EDA5-4F24-9838-28A050A2A2F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C05F602-B1D1-4AED-9F69-145DE1A0E3FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C05F602-B1D1-4AED-9F69-145DE1A0E3FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C05F602-B1D1-4AED-9F69-145DE1A0E3FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C05F602-B1D1-4AED-9F69-145DE1A0E3FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51AFFDB9-C43C-4DE0-ADE3-5703E23EE91E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51AFFDB9-C43C-4DE0-ADE3-5703E23EE91E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51AFFDB9-C43C-4DE0-ADE3-5703E23EE91E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51AFFDB9-C43C-4DE0-ADE3-5703E23EE91E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82AD1E27-52DD-4318-B700-3E402F93ECC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82AD1E27-52DD-4318-B700-3E402F93ECC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82AD1E27-52DD-4318-B700-3E402F93ECC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82AD1E27-52DD-4318-B700-3E402F93ECC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
