@@ -230,7 +230,7 @@ namespace DSFFXEditor
 
                 }
                 ImGui.EndChild();
-                if (_showFFXEditor)
+                if (_showFFXEditorProperties || _showFFXEditorFields)
                 {
                     ImGui.NextColumn();
                     FFXEditor();
@@ -288,37 +288,10 @@ namespace DSFFXEditor
                     {
                         if (ImGui.TreeNodeEx($"ActionID = {root.Attributes[0].Value}", ImGuiTreeNodeFlags.None))
                         {
-                            foreach (XmlNode Node in root.SelectNodes("descendant::FFXProperty"))
-                            {
-                                ImGui.PushID($"ItemForLoopNode = {Node.Name} ChildIndex = {GetNodeIndexinParent(Node)}");
-                                if ((Node.Attributes[0].Value == "67" & Node.Attributes[1].Value == "19") || (Node.Attributes[0].Value == "35" & Node.Attributes[1].Value == "11") || (Node.Attributes[0].Value == "99" & Node.Attributes[1].Value == "27") || (Node.Attributes[0].Value == "4163" & Node.Attributes[1].Value == "35"))
-                                {
-                                    if (ImGui.TreeNodeEx($"{GetNodeIndexinParent(Node)}: A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf))
-                                    {
-                                        XmlNodeList NodeListProcessing = Node.SelectNodes("Fields")[0].ChildNodes;
-                                        ImGui.SameLine();
-                                        if (ImGuiAddons.ButtonGradient($"Edit Here"))
-                                        {
-                                            NodeListEditor = NodeListProcessing;
-                                            AXBX = $"A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}";
-                                            _showFFXEditor = true;
-                                        }
-                                        ImGui.TreePop();
-                                    }
-                                }
-                                else
-                                {
-                                    if (ImGui.TreeNodeEx($"{GetNodeIndexinParent(Node)}: A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf))
-                                    {
-                                        ImGui.SameLine();
-                                        if (ImGui.Button($"Error: No Handler"))
-                                        {
-                                        }
-                                        ImGui.TreePop();
-                                    }
-                                }
-                                ImGui.PopID();
-                            }
+                            GetFFXProperties(root, "Properties1");
+                            GetFFXProperties(root, "Properties2");
+                            GetFFXFields(root, "F1");
+                            GetFFXFields(root, "F2");
                             ImGui.TreePop();
                         }
                     }
@@ -381,7 +354,7 @@ namespace DSFFXEditor
             { }
         }
 
-        private static int GetNodeIndexinParent(XmlNode Node) 
+        private static int GetNodeIndexinParent(XmlNode Node)
         {
             int ChildIndex = 0;
             if (Node.PreviousSibling != null)
@@ -397,40 +370,83 @@ namespace DSFFXEditor
             return ChildIndex;
         }
 
-        public static bool _showFFXEditor = false;
+        public static bool _showFFXEditorFields = false;
+        public static bool _showFFXEditorProperties = false;
         public static int currentitem = 0;
         public static XmlNodeList NodeListEditor;
+        public static string Fields;
         public static string AXBX;
         public static bool pselected = false;
 
         public static void FFXEditor()
         {
             ImGui.BeginChild("TxtEdit");
-            switch (AXBX)
+            if (_showFFXEditorProperties)
             {
-                case "A35B11":
-                    ImGui.Text("FFX Property = A35B11");
-                    FFXPropertyA35B11StaticColor(NodeListEditor);
-                    break;
-                case "A67B19":
-                    ImGui.Text("FFX Property = A67B19");
-                    FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
-                    break;
-                case "A99B27":
-                    ImGui.Text("FFX Property = A99B27");
-                    FFXPropertyA99B27ColorInterpolationWithCustomCurve(NodeListEditor);
-                    break;
-                case "A4163B35":
-                    ImGui.Text("FFX Property = A4163B35");
-                    FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
-                    break;
-                default:
-                    ImGui.Text("ERROR: FFX Property Handler not found, using Default Read Only Handler.");
-                    foreach (XmlNode node in NodeListEditor)
+                switch (AXBX)
+                {
+                    case "A35B11":
+                        ImGui.Text("FFX Property = A35B11");
+                        FFXPropertyA35B11StaticColor(NodeListEditor);
+                        break;
+                    case "A67B19":
+                        ImGui.Text("FFX Property = A67B19");
+                        FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
+                        break;
+                    case "A99B27":
+                        ImGui.Text("FFX Property = A99B27");
+                        FFXPropertyA99B27ColorInterpolationWithCustomCurve(NodeListEditor);
+                        break;
+                    case "A4163B35":
+                        ImGui.Text("FFX Property = A4163B35");
+                        FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
+                        break;
+                    default:
+                        ImGui.Text("ERROR: FFX Property Handler not found, using Default Read Only Handler.");
+                        foreach (XmlNode node in NodeListEditor)
+                        {
+                            ImGui.TextWrapped($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
+                        }
+                        break;
+                }
+            }
+            else if (_showFFXEditorFields)
+            {
+                if (Fields.Contains("F1"))
+                {
+                    switch (Fields)
                     {
-                        ImGui.TextWrapped($"{node.Attributes[0].Value} = {node.Attributes[1].Value}");
+                        case "F1MEME":
+                            ImGui.Text("FFX Property = A35B11");
+                            FFXPropertyA35B11StaticColor(NodeListEditor);
+                            break;
+                        default:
+                            ImGui.Text("ERROR: FFX Fields1 Handler not found, using Default Read Only Handler.");
+                            foreach (XmlNode node in NodeListEditor)
+                            {
+                                ImGui.TextWrapped($"FFXField({node.Attributes[0].Value}) = {node.Attributes[1].Value}");
+                            }
+                            break;
                     }
-                    break;
+                }
+                else if (Fields.Contains("F2"))
+                {
+                    switch (Fields)
+                    {
+                        case "F2MEME":
+                            ImGui.Text("FFX Property = A35B11");
+                            FFXPropertyA35B11StaticColor(NodeListEditor);
+                            break;
+                        default:
+                            ImGui.Text("ERROR: FFX Fields2 Handler not found, using Default Read Only Handler.");
+                            foreach (XmlNode node in NodeListEditor)
+                            {
+                                ImGui.TextWrapped($"FFXField({node.Attributes[0].Value}) = {node.Attributes[1].Value}");
+                            }
+                            break;
+                    }
+                }
+
             }
             ImGui.EndChild();
             //
@@ -445,6 +461,70 @@ namespace DSFFXEditor
                     integer++;
                 }
                 ImGui.End();
+            }
+        }
+
+        private static void GetFFXFields(XmlNode root, string fieldType)
+        {
+            string localFieldTypeString = "Fields1";
+            string fieldNodeLabel = "Fields 1";
+            if (fieldType == "F2")
+            {
+                localFieldTypeString = "Fields2";
+                fieldNodeLabel = "Fields 2";
+            }
+            if (ImGui.TreeNodeEx($"{fieldNodeLabel}", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.Bullet))
+            {
+                XmlNodeList NodeListProcessing = root.SelectNodes($"descendant::{localFieldTypeString}")[0].ChildNodes;
+                ImGui.SameLine();
+                if (ImGuiAddons.ButtonGradient($"Edit Here"))
+                {
+                    NodeListEditor = NodeListProcessing;
+                    Fields = $"{fieldType}{root.Attributes[0]}";
+                    _showFFXEditorProperties = false;
+                    _showFFXEditorFields = true;
+                }
+                ImGui.TreePop();
+            }
+        }
+
+        private static void GetFFXProperties(XmlNode root, string PropertyType)
+        {
+            if (ImGui.TreeNodeEx($"{PropertyType}"))
+            {
+                foreach (XmlNode Node in root.SelectNodes($"descendant::{PropertyType}/FFXProperty"))
+                {
+                    ImGui.PushID($"ItemForLoopNode = {Node.Name} ChildIndex = {GetNodeIndexinParent(Node)}");
+                    if ((Node.Attributes[0].Value == "67" & Node.Attributes[1].Value == "19") || (Node.Attributes[0].Value == "35" & Node.Attributes[1].Value == "11") || (Node.Attributes[0].Value == "99" & Node.Attributes[1].Value == "27") || (Node.Attributes[0].Value == "4163" & Node.Attributes[1].Value == "35"))
+                    {
+                        if (ImGui.TreeNodeEx($"{GetNodeIndexinParent(Node)}: A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf))
+                        {
+                            XmlNodeList NodeListProcessing = Node.SelectNodes("Fields")[0].ChildNodes;
+                            ImGui.SameLine();
+                            if (ImGuiAddons.ButtonGradient($"Edit Here"))
+                            {
+                                NodeListEditor = NodeListProcessing;
+                                AXBX = $"A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}";
+                                _showFFXEditorProperties = true;
+                                _showFFXEditorFields = false;
+                            }
+                            ImGui.TreePop();
+                        }
+                    }
+                    else
+                    {
+                        if (ImGui.TreeNodeEx($"{GetNodeIndexinParent(Node)}: A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf))
+                        {
+                            ImGui.SameLine();
+                            if (ImGui.Button($"Error: No Handler"))
+                            {
+                            }
+                            ImGui.TreePop();
+                        }
+                    }
+                    ImGui.PopID();
+                }
+                ImGui.TreePop();
             }
         }
 
