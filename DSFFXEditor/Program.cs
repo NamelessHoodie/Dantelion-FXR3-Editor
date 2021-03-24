@@ -118,7 +118,9 @@ namespace DSFFXEditor
             _gd.Dispose();
         }
 
-
+        private static bool _axbyEditorIsPopup = false;
+        private static int _axbyEditorSelectedItem;
+        private static XmlNode _axbyeditoractionidnode;
         private static unsafe void SubmitUI()
         {
             // Demo code adapted from the official Dear ImGui demo program:
@@ -216,6 +218,43 @@ namespace DSFFXEditor
                     ImGui.EndMenuBar();
                     ImGui.ShowUserGuide();
                     ImGui.End();
+                }
+                if (_axbyEditorIsPopup) //Currently Unused FFXProperty Changer
+                {
+                    if (!ImGui.IsPopupOpen("AxByTypeEditor"))
+                    {
+                        ImGui.OpenPopup("AxByTypeEditor");
+                    }
+                    float popupWidth = 400;
+                    float popupHeight = 250;
+                    ImGui.SetNextWindowSize(new Vector2(popupWidth, popupHeight));
+                    ImGui.SetNextWindowPos(new Vector2(viewport->Pos.X + (viewport->Size.X / 2) - (popupWidth / 2), viewport->Pos.Y + (viewport->Size.Y / 2) - (popupHeight / 2)));
+                    ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8.0f);
+                    if (ImGui.BeginPopupModal("AxByTypeEditor", ref _axbyEditorIsPopup, ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize))
+                    {
+                        //ImGui.PushStyleColor(ImGuiCol.ModalWindowDimBg, ImGui.GetColorU32(ImGuiCol.ButtonHovered));
+                        ArrayList localaxbylist = new ArrayList();
+                        string actionid = _axbyeditoractionidnode.ParentNode.ParentNode.Attributes[0].Value;
+                        int indexinparent = GetNodeIndexinParent(_axbyeditoractionidnode);
+                        localaxbylist.Add($"{indexinparent}: A{_axbyeditoractionidnode.Attributes[0].Value}B{_axbyeditoractionidnode.Attributes[1].Value}");
+                        string[] meme = new string[localaxbylist.Count];
+
+                        localaxbylist.CopyTo(meme);
+                        ImGui.Text("FFXProperty Type Editor");
+                        ImGui.Text(actionid);
+                        ImGui.Combo("i am a combo", ref _axbyEditorSelectedItem, meme, meme.Length);
+
+                        if (ImGui.Button("OK")) { ImGui.CloseCurrentPopup(); }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Cancel")) { ImGui.CloseCurrentPopup(); }
+                        if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape))) { ImGui.CloseCurrentPopup(); }
+                        ImGui.EndPopup();
+                    }
+                    ImGui.PopStyleVar();
+                    if (!ImGui.IsPopupOpen("AxByTypeEditor"))
+                    {
+                        _axbyEditorIsPopup = false;
+                    }
                 }
             }
 
@@ -473,61 +512,343 @@ namespace DSFFXEditor
                 localFieldTypeString = "Fields2";
                 fieldNodeLabel = "Fields 2";
             }
-            if (ImGui.TreeNodeEx($"{fieldNodeLabel}", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.Bullet))
+            uint IDStorage = ImGui.GetID(fieldNodeLabel);
+            ImGuiStoragePtr storage = ImGui.GetStateStorage();
+            bool selected = storage.GetBool(IDStorage);
+            if (selected & IDStorage != treeViewCurrentHighlighted)
             {
+                storage.SetBool(IDStorage, false);
+                selected = false;
+            }
+            ImGuiTreeNodeFlags localTreeNodeFlags = ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.SpanAvailWidth;
+            if (selected)
+                localTreeNodeFlags |= ImGuiTreeNodeFlags.Selected;
+            ImGui.TreeNodeEx($"{fieldNodeLabel}", localTreeNodeFlags);
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
+            {
+                treeViewCurrentHighlighted = IDStorage;
+                storage.SetBool(IDStorage, true);
                 XmlNodeList NodeListProcessing = root.SelectNodes($"descendant::{localFieldTypeString}")[0].ChildNodes;
-                ImGui.SameLine();
-                if (ImGuiAddons.ButtonGradient($"Edit Here"))
-                {
-                    NodeListEditor = NodeListProcessing;
-                    Fields = $"{fieldType}{root.Attributes[0]}";
-                    _showFFXEditorProperties = false;
-                    _showFFXEditorFields = true;
-                }
-                ImGui.TreePop();
+                NodeListEditor = NodeListProcessing;
+                Fields = $"{fieldType}{root.Attributes[0]}";
+                _showFFXEditorProperties = false;
+                _showFFXEditorFields = true;
             }
         }
-
+        private static uint treeViewCurrentHighlighted = 0;
         private static void GetFFXProperties(XmlNode root, string PropertyType)
         {
             if (ImGui.TreeNodeEx($"{PropertyType}"))
             {
                 foreach (XmlNode Node in root.SelectNodes($"descendant::{PropertyType}/FFXProperty"))
                 {
-                    ImGui.PushID($"ItemForLoopNode = {Node.Name} ChildIndex = {GetNodeIndexinParent(Node)}");
-                    if ((Node.Attributes[0].Value == "67" & Node.Attributes[1].Value == "19") || (Node.Attributes[0].Value == "35" & Node.Attributes[1].Value == "11") || (Node.Attributes[0].Value == "99" & Node.Attributes[1].Value == "27") || (Node.Attributes[0].Value == "4163" & Node.Attributes[1].Value == "35"))
+                    string localAxBy = $"A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}";
+                    string localLabel = $"{GetNodeIndexinParent(Node)}: {ActionIDtoIndextoName(Node)} <- {AxByToName(Node)}";
+                    ImGui.PushID($"ItemForLoopNode = {localLabel}");
+                    if (localAxBy == "A67B19" || localAxBy == "A35B11" || localAxBy == "A99B27" || (Node.Attributes[0].Value == "A4163B35"))
                     {
-                        if (ImGui.TreeNodeEx($"{GetNodeIndexinParent(Node)}: A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf))
+                        XmlNodeList NodeListProcessing = Node.SelectNodes("Fields")[0].ChildNodes;
+                        uint IDStorage = ImGui.GetID(localLabel);
+                        ImGuiStoragePtr storage = ImGui.GetStateStorage();
+                        bool selected = storage.GetBool(IDStorage);
+                        if (selected & IDStorage != treeViewCurrentHighlighted)
                         {
-                            XmlNodeList NodeListProcessing = Node.SelectNodes("Fields")[0].ChildNodes;
-                            ImGui.SameLine();
-                            if (ImGuiAddons.ButtonGradient($"Edit Here"))
-                            {
-                                NodeListEditor = NodeListProcessing;
-                                AXBX = $"A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}";
-                                _showFFXEditorProperties = true;
-                                _showFFXEditorFields = false;
-                            }
-                            ImGui.TreePop();
+                            storage.SetBool(IDStorage, false);
+                            selected = false;
                         }
+                        ImGuiTreeNodeFlags localTreeNodeFlags = ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.SpanAvailWidth;
+                        if (selected)
+                            localTreeNodeFlags |= ImGuiTreeNodeFlags.Selected;
+                        ImGui.TreeNodeEx($"{localLabel}", localTreeNodeFlags);
+                        if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
+                        {
+                            treeViewCurrentHighlighted = IDStorage;
+                            storage.SetBool(IDStorage, true);
+                            NodeListEditor = NodeListProcessing;
+                            AXBX = localAxBy;
+                            _showFFXEditorProperties = true;
+                            _showFFXEditorFields = false;
+                        }
+                        /*if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+                        {
+                            _axbyeditoractionidnode = Node;
+                            _axbyEditorIsPopup = true;
+                        }*/
                     }
                     else
                     {
-                        if (ImGui.TreeNodeEx($"{GetNodeIndexinParent(Node)}: A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf))
-                        {
-                            ImGui.SameLine();
-                            if (ImGui.Button($"Error: No Handler"))
-                            {
-                            }
-                            ImGui.TreePop();
-                        }
+                        ImGui.Indent();
+                        ImGui.Text($"{localLabel}");
+                        ImGui.Unindent();
                     }
                     ImGui.PopID();
                 }
                 ImGui.TreePop();
             }
         }
-
+        private static string ActionIDtoIndextoName(XmlNode Node)
+        {
+            string localActionID = Node.ParentNode.ParentNode.Attributes[0].Value;
+            int localPropertyIndex = GetNodeIndexinParent(Node);
+            string localOutputString = "NoMeme";
+            if (Node.ParentNode.Name == "Properties1") //Properties1 Here
+            {
+                switch (localActionID)
+                {
+                    case "600":
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                localOutputString = "[S]*: Particle Age";
+                                break;
+                            case 1:
+                                localOutputString = "[C]*: Particle Age";
+                                break;
+                            case 2:
+                                localOutputString = "[C]*: Time of Particle Spawn";
+                                break;
+                            case 3:
+                                localOutputString = "[C]*: Effect Age";
+                                break;
+                        }
+                        break;
+                    case "601":
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                localOutputString = "[S]*: Lenght";
+                                break;
+                            case 1:
+                                localOutputString = "[C]*: Particle Age";
+                                break;
+                            case 2:
+                                localOutputString = "[C]*: Particle Age";
+                                break;
+                            case 3:
+                                localOutputString = "[C]: Start Effect Age";
+                                break;
+                            case 4:
+                                localOutputString = "[C]: End Effect Age";
+                                break;
+                            case 5:
+                                localOutputString = "[S]*: Lenght, Particle Age";
+                                break;
+                            case 6:
+                                localOutputString = "[C]*: Effect Age";
+                                break;
+                        }
+                        break;
+                    case "602":
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                localOutputString = "[S]*: X, Particle Spawn";
+                                break;
+                            case 1:
+                                localOutputString = "[S]*: Y, Particle Spawn";
+                                break;
+                            case 2:
+                                localOutputString = "[C]*: Particle Age";
+                                break;
+                            case 3:
+                                localOutputString = "[C]*: Particle Age";
+                                break;
+                            case 4:
+                                localOutputString = "[C]: Top, Effect Age";
+                                break;
+                            case 5:
+                                localOutputString = "[C]: Bottom, Effect Age";
+                                break;
+                            case 6:
+                                localOutputString = "[S]*: X, Particle Age";
+                                break;
+                            case 7:
+                                localOutputString = "[S]*: Y, Particle Age";
+                                break;
+                            case 8:
+                                localOutputString = "[C]*: Effect Age";
+                                break;
+                        }
+                        break;
+                    case "609":
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                localOutputString = "[C] Light";
+                                break;
+                            case 1:
+                                localOutputString = "[C] Specular";
+                                break;
+                            case 2:
+                                localOutputString = "[S] Light Radius";
+                                break;
+                            case 3:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 4:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 5:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 6:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 7:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 8:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 9:
+                                localOutputString = "[S] Unk";
+                                break;
+                        }
+                        break;
+                }
+            }
+            else //Properties2 Here
+            {
+                switch (localActionID)
+                {
+                    case "600":
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 1:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 2:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 3:
+                                localOutputString = "[C] Unk";
+                                break;
+                            case 4:
+                                localOutputString = "[C] Unk";
+                                break;
+                            case 5:
+                                localOutputString = "[C] Unk";
+                                break;
+                            case 6:
+                                localOutputString = "[S] Unk";
+                                break;
+                        }
+                        break;
+                    case "601":
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                localOutputString = "[S]*: Brightness 1";
+                                break;
+                            case 1:
+                                localOutputString = "[S]*: Brightness 2";
+                                break;
+                            case 2:
+                                localOutputString = "[S]: Unk";
+                                break;
+                            case 3:
+                                localOutputString = "[C]: Unk";
+                                break;
+                            case 4:
+                                localOutputString = "[C]: Unk";
+                                break;
+                            case 5:
+                                localOutputString = "[C]: Unk";
+                                break;
+                            case 6:
+                                localOutputString = "[S]: Unk";
+                                break;
+                        }
+                        break;
+                    case "602":
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                localOutputString = "[S]*: Brightness 1";
+                                break;
+                            case 1:
+                                localOutputString = "[S]*: Brightness 2";
+                                break;
+                            case 2:
+                                localOutputString = "[S]*: Unk";
+                                break;
+                            case 3:
+                                localOutputString = "[C]*: Unk";
+                                break;
+                            case 4:
+                                localOutputString = "[C]*: Unk";
+                                break;
+                            case 5:
+                                localOutputString = "[C]*: Unk";
+                                break;
+                            case 6:
+                                localOutputString = "[S]*: Unk";
+                                break;
+                        }
+                        break;
+                    case "609":
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                localOutputString = "[S] Unk";
+                                break;
+                            case 1:
+                                localOutputString = "[S] Unk";
+                                break;
+                        }
+                        break;
+                }
+            }
+            return localOutputString;
+        }
+        private static string AxByToName(XmlNode FFXProperty)
+        {
+            string localAxBy = $"A{FFXProperty.Attributes[0].Value}B{FFXProperty.Attributes[1].Value}";
+            string outputName;
+            switch (localAxBy)
+            {
+                case "A0B0":
+                    outputName = "Static 0";
+                    break;
+                case "A16B4":
+                    outputName = "Static 1";
+                    break;
+                case "A19B7":
+                    outputName = "Static Opaque White";
+                    break;
+                case "A32B8":
+                    outputName = "Static Input";
+                    break;
+                case "A35B11":
+                    outputName = "Static Input";
+                    break;
+                case "A64B16":
+                    outputName = "Linear Interpolation";
+                    break;
+                case "A67B19":
+                    outputName = "Linear Interpolation";
+                    break;
+                case "A96B24":
+                    outputName = "Curve interpolation";
+                    break;
+                case "A99B27":
+                    outputName = "Curve interpolation";
+                    break;
+                case "A4160B32":
+                    outputName = "Loop Linear Interpolation";
+                    break;
+                case "A4163B35":
+                    outputName = "Loop Linear Interpolation";
+                    break;
+                default:
+                    outputName = "NoNameHandler";
+                    break;
+            }
+            return outputName;
+        }
         //FFXPropertyHandler Functions Below here
         public static void FFXPropertyA35B11StaticColor(XmlNodeList NodeListEditor)
         {
