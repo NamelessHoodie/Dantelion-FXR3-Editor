@@ -414,7 +414,7 @@ namespace DSFFXEditor
         public static int currentitem = 0;
         public static XmlNodeList NodeListEditor;
         public static string Fields;
-        public static string AXBX;
+        public static string AxBy;
         public static bool pselected = false;
 
         public static void FFXEditor()
@@ -422,7 +422,7 @@ namespace DSFFXEditor
             ImGui.BeginChild("TxtEdit");
             if (_showFFXEditorProperties)
             {
-                switch (AXBX)
+                switch (AxBy)
                 {
                     case "A35B11":
                         ImGui.Text("FFX Property = A35B11");
@@ -502,7 +502,6 @@ namespace DSFFXEditor
                 ImGui.End();
             }
         }
-
         private static void GetFFXFields(XmlNode root, string fieldType)
         {
             string localFieldTypeString = "Fields1";
@@ -512,197 +511,565 @@ namespace DSFFXEditor
                 localFieldTypeString = "Fields2";
                 fieldNodeLabel = "Fields 2";
             }
-            uint IDStorage = ImGui.GetID(fieldNodeLabel);
-            ImGuiStoragePtr storage = ImGui.GetStateStorage();
-            bool selected = storage.GetBool(IDStorage);
-            if (selected & IDStorage != treeViewCurrentHighlighted)
+            XmlNodeList NodeListProcessing = root.SelectNodes($"descendant::{localFieldTypeString}")[0].ChildNodes;
+            if (NodeListProcessing.Count > 0)
             {
-                storage.SetBool(IDStorage, false);
-                selected = false;
-            }
-            ImGuiTreeNodeFlags localTreeNodeFlags = ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.SpanAvailWidth;
-            if (selected)
-                localTreeNodeFlags |= ImGuiTreeNodeFlags.Selected;
-            ImGui.TreeNodeEx($"{fieldNodeLabel}", localTreeNodeFlags);
-            if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
-            {
-                treeViewCurrentHighlighted = IDStorage;
-                storage.SetBool(IDStorage, true);
-                XmlNodeList NodeListProcessing = root.SelectNodes($"descendant::{localFieldTypeString}")[0].ChildNodes;
-                NodeListEditor = NodeListProcessing;
-                Fields = $"{fieldType}{root.Attributes[0]}";
-                _showFFXEditorProperties = false;
-                _showFFXEditorFields = true;
+                uint IDStorage = ImGui.GetID(fieldNodeLabel);
+                ImGuiStoragePtr storage = ImGui.GetStateStorage();
+                bool selected = storage.GetBool(IDStorage);
+                if (selected & IDStorage != treeViewCurrentHighlighted)
+                {
+                    storage.SetBool(IDStorage, false);
+                    selected = false;
+                }
+                ImGuiTreeNodeFlags localTreeNodeFlags = ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.SpanAvailWidth;
+                if (selected)
+                    localTreeNodeFlags |= ImGuiTreeNodeFlags.Selected;
+                ImGui.TreeNodeEx($"{fieldNodeLabel}", localTreeNodeFlags);
+                if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
+                {
+                    treeViewCurrentHighlighted = IDStorage;
+                    storage.SetBool(IDStorage, true);
+                    NodeListEditor = NodeListProcessing;
+                    Fields = $"{fieldType}{root.Attributes[0]}";
+                    _showFFXEditorProperties = false;
+                    _showFFXEditorFields = true;
+                }
             }
         }
         private static uint treeViewCurrentHighlighted = 0;
         private static void GetFFXProperties(XmlNode root, string PropertyType)
         {
-            if (ImGui.TreeNodeEx($"{PropertyType}"))
+            XmlNodeList localNodeList = root.SelectNodes($"descendant::{PropertyType}/FFXProperty");
+            if (localNodeList.Count > 0)
             {
-                foreach (XmlNode Node in root.SelectNodes($"descendant::{PropertyType}/FFXProperty"))
+                if (ImGui.TreeNodeEx($"{PropertyType}"))
                 {
-                    string localAxBy = $"A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}";
-                    string localLabel = $"{GetNodeIndexinParent(Node)}: {ActionIDtoIndextoName(Node)} <- {AxByToName(Node)}";
-                    ImGui.PushID($"ItemForLoopNode = {localLabel}");
-                    if (localAxBy == "A67B19" || localAxBy == "A35B11" || localAxBy == "A99B27" || (Node.Attributes[0].Value == "A4163B35"))
+                    ImGui.Unindent();
+                    if (ImGui.BeginTable("##table2", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
                     {
-                        XmlNodeList NodeListProcessing = Node.SelectNodes("Fields")[0].ChildNodes;
-                        uint IDStorage = ImGui.GetID(localLabel);
-                        ImGuiStoragePtr storage = ImGui.GetStateStorage();
-                        bool selected = storage.GetBool(IDStorage);
-                        if (selected & IDStorage != treeViewCurrentHighlighted)
+                        ImGui.TableSetupColumn("Type");
+                        ImGui.TableSetupColumn("Arg");
+                        ImGui.TableSetupColumn("Field");
+                        ImGui.TableSetupColumn("Input Type");
+                        ImGui.TableHeadersRow();
+                        foreach (XmlNode Node in localNodeList)
                         {
-                            storage.SetBool(IDStorage, false);
-                            selected = false;
+                            ImGui.TableNextRow();
+                            ImGui.TableNextColumn();
+                            string localAxBy = $"A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}";
+                            string localIndex = $"{GetNodeIndexinParent(Node)}:";
+                            string[] localSlot = ActionIDtoIndextoName(Node);
+                            string localInput = AxByToName(Node);
+                            string localLabel = $"{localIndex} {localSlot[0]}: {localSlot[1]} {localInput}";
+                            ImGui.PushID($"ItemForLoopNode = {localLabel}");
+                            if (localAxBy == "A67B19" || localAxBy == "A35B11" || localAxBy == "A99B27" || (Node.Attributes[0].Value == "A4163B35"))
+                            {
+                                XmlNodeList NodeListProcessing = Node.SelectNodes("Fields")[0].ChildNodes;
+                                uint IDStorage = ImGui.GetID(localLabel);
+                                ImGuiStoragePtr storage = ImGui.GetStateStorage();
+                                bool selected = storage.GetBool(IDStorage);
+                                if (selected & IDStorage != treeViewCurrentHighlighted)
+                                {
+                                    storage.SetBool(IDStorage, false);
+                                    selected = false;
+                                }
+                                Vector2 cursorPos = ImGui.GetCursorPos();
+                                ImGui.BulletText($"{localSlot[0]}");
+                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
+                                    ShowToolTip(localSlot[0], "Type");
+                                ImGui.SetCursorPos(cursorPos);
+                                ImGui.Selectable($"###{localLabel}", selected, ImGuiSelectableFlags.SpanAllColumns);
+                                if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
+                                {
+                                    treeViewCurrentHighlighted = IDStorage;
+                                    storage.SetBool(IDStorage, true);
+                                    NodeListEditor = NodeListProcessing;
+                                    AxBy = localAxBy;
+                                    _showFFXEditorProperties = true;
+                                    _showFFXEditorFields = false;
+                                }
+                                ImGui.TableNextColumn();
+                                ImGui.Text(localSlot[1]);
+                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
+                                    ShowToolTip(localSlot[1], "Arg");
+                                ImGui.TableNextColumn();
+                                ImGui.Text(localSlot[2]);
+                                ImGui.TableNextColumn();
+                                ImGui.Text(localInput);
+                                /*if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+                                {
+                                    _axbyeditoractionidnode = Node;
+                                    _axbyEditorIsPopup = true;
+                                }*/
+                            }
+                            else
+                            {
+                                ImGui.Indent();
+                                ImGui.Text(localSlot[0]);
+                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
+                                    ShowToolTip(localSlot[0], "Type");
+                                ImGui.Unindent();
+                                ImGui.TableNextColumn();
+                                ImGui.Text(localSlot[1]);
+                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
+                                    ShowToolTip(localSlot[1], "Arg");
+                                ImGui.TableNextColumn();
+                                ImGui.Text(localSlot[2]);
+                                ImGui.TableNextColumn();
+                                ImGui.Text(localInput);
+                            }
+                            ImGui.PopID();
                         }
-                        ImGuiTreeNodeFlags localTreeNodeFlags = ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.SpanAvailWidth;
-                        if (selected)
-                            localTreeNodeFlags |= ImGuiTreeNodeFlags.Selected;
-                        ImGui.TreeNodeEx($"{localLabel}", localTreeNodeFlags);
-                        if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
-                        {
-                            treeViewCurrentHighlighted = IDStorage;
-                            storage.SetBool(IDStorage, true);
-                            NodeListEditor = NodeListProcessing;
-                            AXBX = localAxBy;
-                            _showFFXEditorProperties = true;
-                            _showFFXEditorFields = false;
-                        }
-                        /*if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-                        {
-                            _axbyeditoractionidnode = Node;
-                            _axbyEditorIsPopup = true;
-                        }*/
+                        ImGui.EndTable();
                     }
-                    else
-                    {
-                        ImGui.Indent();
-                        ImGui.Text($"{localLabel}");
-                        ImGui.Unindent();
-                    }
-                    ImGui.PopID();
+                    ImGui.Indent();
+                    ImGui.TreePop();
                 }
-                ImGui.TreePop();
             }
         }
-        private static string ActionIDtoIndextoName(XmlNode Node)
+        private static void ShowToolTip(string input, string toolTipType)
         {
-            string localActionID = Node.ParentNode.ParentNode.Attributes[0].Value;
+            ImGuiWindowFlags localtoolTipFlags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.Tooltip;
+            if (toolTipType == "Arg" || toolTipType == "Type")
+            {
+                string localOutput;
+                switch (input)
+                {
+                    case "[C]":
+                        localOutput = $"{input} = Color Archetype";
+                        break;
+                    case "[S]":
+                        localOutput = $"{input} = Scalar Archetype";
+                        break;
+                    case "[P]":
+                        localOutput = $"{input} = Particle Argument";
+                        break;
+                    case "[PG]":
+                        localOutput = $"{input} = Particle On Generation Argument";
+                        break;
+                    case "[TG]":
+                        localOutput = $"{input} = Trail On Generation Argument";
+                        break;
+                    case "[E]":
+                        localOutput = $"{input} = Effect Argument";
+                        break;
+                    case "[u]":
+                        localOutput = $"{input} = Unknown";
+                        break;
+                    default:
+                        localOutput = $"{input} = No Tooltip was found for the symbol";
+                        break;
+                }
+                ImGui.SetNextWindowPos(ImGui.GetCursorPos());
+                if (ImGui.Begin("StandardToolTip", localtoolTipFlags))
+                {
+                    ImGui.Text($"{toolTipType} Tooltip:");
+                    ImGui.Text(localOutput);
+                    ImGui.End();
+                }
+            }
+            else
+            {
+                ImGui.SetNextWindowPos(ImGui.GetCursorPos());
+                if (ImGui.Begin("StandardToolTip", localtoolTipFlags))
+                {
+                    ImGui.Text($"{toolTipType} Tooltip:");
+                    ImGui.Text("ERROR: No Tooltip was found");
+                    ImGui.End();
+                }
+            }
+        }
+        private static string[] ActionIDtoIndextoName(XmlNode Node)
+        {
+            int localActionID = Int32.Parse(Node.ParentNode.ParentNode.Attributes[0].Value);
             int localPropertyIndex = GetNodeIndexinParent(Node);
-            string localOutputString = "NoMeme";
+            string scalar = "[S]";
+            string color = "[C]";
+            string particleArg = "[P]";
+            string effectArg = "[E]";
+            string particleGenArg = "[PG]";
+            string unknown = "[u]";
+            string trailArg = "[T]";
+            string trailGenArg = "[TG]";
             if (Node.ParentNode.Name == "Properties1") //Properties1 Here
             {
                 switch (localActionID)
                 {
-                    case "600":
+                    case 600:
                         switch (localPropertyIndex)
                         {
                             case 0:
-                                localOutputString = "[S]*: Particle Age";
-                                break;
+                                return new string[] { scalar, particleArg, "Scale*" };
                             case 1:
-                                localOutputString = "[C]*: Particle Age";
-                                break;
+                                return new string[] { color, particleArg, "Color*" };
                             case 2:
-                                localOutputString = "[C]*: Time of Particle Spawn";
-                                break;
+                                return new string[] { color, particleGenArg, "Color*" };
                             case 3:
-                                localOutputString = "[C]*: Effect Age";
-                                break;
+                                return new string[] { color, effectArg, "Color*" };
                         }
                         break;
-                    case "601":
+                    case 601:
                         switch (localPropertyIndex)
                         {
                             case 0:
-                                localOutputString = "[S]*: Lenght";
-                                break;
+                                return new string[] { scalar, particleGenArg, "Lenght*" };
                             case 1:
-                                localOutputString = "[C]*: Particle Age";
-                                break;
+                                return new string[] { color, particleArg, "Color*" };
                             case 2:
-                                localOutputString = "[C]*: Particle Age";
-                                break;
+                                return new string[] { color, particleArg, "Color*" };
                             case 3:
-                                localOutputString = "[C]: Start Effect Age";
-                                break;
+                                return new string[] { color, effectArg, "Start Color" };
                             case 4:
-                                localOutputString = "[C]: End Effect Age";
-                                break;
+                                return new string[] { color, effectArg, "End Color" };
                             case 5:
-                                localOutputString = "[S]*: Lenght, Particle Age";
-                                break;
+                                return new string[] { scalar, particleArg, "Lenght*" };
                             case 6:
-                                localOutputString = "[C]*: Effect Age";
-                                break;
+                                return new string[] { color, effectArg, "Color*" };
                         }
                         break;
-                    case "602":
+                    case 602:
                         switch (localPropertyIndex)
                         {
                             case 0:
-                                localOutputString = "[S]*: X, Particle Spawn";
-                                break;
+                                return new string[] { scalar, particleGenArg, "X Scale*" };
                             case 1:
-                                localOutputString = "[S]*: Y, Particle Spawn";
-                                break;
+                                return new string[] { scalar, particleGenArg, "Y Scale*" };
                             case 2:
-                                localOutputString = "[C]*: Particle Age";
-                                break;
+                                return new string[] { color, particleArg, "Color*" };
                             case 3:
-                                localOutputString = "[C]*: Particle Age";
-                                break;
+                                return new string[] { color, particleArg, "Color*" };
                             case 4:
-                                localOutputString = "[C]: Top, Effect Age";
-                                break;
+                                return new string[] { color, effectArg, "Top Color" };
                             case 5:
-                                localOutputString = "[C]: Bottom, Effect Age";
-                                break;
+                                return new string[] { color, effectArg, "Bottom Color" };
                             case 6:
-                                localOutputString = "[S]*: X, Particle Age";
-                                break;
+                                return new string[] { scalar, particleArg, "Z Scale*" };
                             case 7:
-                                localOutputString = "[S]*: Y, Particle Age";
-                                break;
+                                return new string[] { scalar, particleArg, "Y Scale*" };
                             case 8:
-                                localOutputString = "[C]*: Effect Age";
-                                break;
+                                return new string[] { color, effectArg, "Color*" };
                         }
                         break;
-                    case "609":
+                    case 603:
                         switch (localPropertyIndex)
                         {
                             case 0:
-                                localOutputString = "[C] Light";
-                                break;
+                                return new string[] { scalar, particleArg, "X Offset" };
                             case 1:
-                                localOutputString = "[C] Specular";
-                                break;
+                                return new string[] { scalar, particleArg, "Y Offset" };
                             case 2:
-                                localOutputString = "[S] Light Radius";
-                                break;
+                                return new string[] { scalar, particleArg, "Z Offset" };
                             case 3:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, particleArg, "Scale*" };
                             case 4:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                             case 5:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { color, particleArg, "Color*" };
                             case 6:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { color, particleGenArg, "Color*" };
                             case 7:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { color, effectArg, "Color*" };
                             case 8:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, particleArg, "Opacity Threshold" };
                             case 9:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, particleArg, "X Rotation" };
+                            case 10:
+                                return new string[] { scalar, particleArg, "Y Rotation" };
+                            case 11:
+                                return new string[] { scalar, particleArg, "Z Rotation" };
+                            case 12:
+                                return new string[] { scalar, particleArg, "X Rotation° Speed" };
+                            case 13:
+                                return new string[] { scalar, particleArg, "X Rotation° Speed*" };
+                            case 14:
+                                return new string[] { scalar, particleArg, "Y Rotation° Speed" };
+                            case 15:
+                                return new string[] { scalar, particleArg, "Y Rotation° Speed*" };
+                            case 16:
+                                return new string[] { scalar, particleArg, "Z Rotation° Speed" };
+                            case 17:
+                                return new string[] { scalar, particleArg, "Z Rotation° Speed*" };
+                            case 18:
+                                return new string[] { scalar, unknown, "-Z Position" };
+                            case 19:
+                                return new string[] { scalar, unknown, "Texture Frame Offset" };
+                            case 20:
+                                return new string[] { scalar, unknown, "Texture Frame Index" };
+                            case 21:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 22:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 604:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, particleArg, "X Offset" };
+                            case 1:
+                                return new string[] { scalar, particleArg, "Y Offset" };
+                            case 2:
+                                return new string[] { scalar, particleArg, "Z Offset" };
+                            case 3:
+                                return new string[] { scalar, particleArg, "Scale*" };
+                            case 4:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 5:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 6:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 7:
+                                return new string[] { scalar, particleArg, "Z Rotation" };
+                            case 8:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 9:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 10:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 11:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 12:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 13:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 14:
+                                return new string[] { color, particleArg, "Color multiplier" };
+                            case 15:
+                                return new string[] { color, unknown, "Unk" };
+                            case 16:
+                                return new string[] { color, unknown, "Unk" };
+                            case 17:
+                                return new string[] { color, unknown, "Unk" };
+                            case 18:
+                                return new string[] { color, particleArg, "Color multiplier" };
+                            case 19:
+                                return new string[] { color, unknown, "Unk" };
+                            case 20:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 21:
+                                return new string[] { scalar, unknown, "1st Texture Frame Offset" };
+                            case 22:
+                                return new string[] { scalar, unknown, "1st Texture Frame Index 1" };
+                            case 23:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 24:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 25:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 26:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 27:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 28:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 29:
+                                return new string[] { scalar, unknown, "2nd Texture X Scroll Speed" };
+                            case 30:
+                                return new string[] { scalar, unknown, "2nd Texture Y Scroll Speed" };
+                            case 31:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 32:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 33:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 34:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 35:
+                                return new string[] { scalar, unknown, "3rd Texture X Scroll Speed" };
+                            case 36:
+                                return new string[] { scalar, unknown, "3rd Texture Y Scroll Speed" };
+                            case 37:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 38:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 39:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 40:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 605:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, particleArg, "X Scale*" };
+                            case 1:
+                                return new string[] { scalar, particleArg, "Y Scale*" };
+                            case 2:
+                                return new string[] { scalar, particleArg, "Z Scale*" };
+                            case 3:
+                                return new string[] { scalar, particleArg, "X Rotation" };
+                            case 4:
+                                return new string[] { scalar, particleArg, "Y Rotation" };
+                            case 5:
+                                return new string[] { scalar, particleArg, "Z Rotation" };
+                            case 6:
+                                return new string[] { scalar, particleArg, "X Rotation° Speed" };
+                            case 7:
+                                return new string[] { scalar, particleArg, "X Rotation° Speed*" };
+                            case 8:
+                                return new string[] { scalar, particleArg, "Y Rotation° Speed" };
+                            case 9:
+                                return new string[] { scalar, particleArg, "Y Rotation° Speed*" };
+                            case 10:
+                                return new string[] { scalar, particleArg, "Z Rotation° Speed" };
+                            case 11:
+                                return new string[] { scalar, particleArg, "Z Rotation° Speed*" };
+                            case 12:
+                                return new string[] { color, particleArg, "Color*" };
+                            case 13:
+                                return new string[] { color, particleGenArg, "Color*" };
+                            case 14:
+                                return new string[] { color, effectArg, "Color*" };
+                            case 15:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 16:
+                                return new string[] { scalar, unknown, "Texture Frame Index" };
+                            case 17:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 18:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 19:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 20:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 21:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 22:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 23:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 24:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 606:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Scale*" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 4:
+                                return new string[] { color, trailArg, "Color*" };
+                            case 5:
+                                return new string[] { color, trailGenArg, "Color*" };
+                            case 6:
+                                return new string[] { color, effectArg, "Color*" };
+                            case 7:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 8:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 9:
+                                return new string[] { scalar, trailArg, "Texture Frame Index" };
+                            case 10:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 11:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 12:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 13:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 607:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 4:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 5:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 6:
+                                return new string[] { color, particleArg, "Color*" };
+                            case 7:
+                                return new string[] { color, unknown, "Color*" };
+                            case 8:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 9:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 10:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 11:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 12:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 13:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 14:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 15:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 609:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { color, unknown, "Light Color" };
+                            case 1:
+                                return new string[] { color, unknown, "Specual Color" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Light Radius" };
+                            case 3:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 4:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 5:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 6:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 7:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 8:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 9:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 10012:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Trail Size" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Scale*" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 4:
+                                return new string[] { color, trailArg, "Color*" };
+                            case 5:
+                                return new string[] { color, trailGenArg, "Color*" };
+                            case 6:
+                                return new string[] { color, effectArg, "Color*" };
+                            case 7:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 8:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 9:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 10:
+                                return new string[] { scalar, unknown, "Segment Tex Width" };
+                            case 11:
+                                return new string[] { scalar, unknown, "Horizontal Tex Scroll speed" };
+                            case 12:
+                                return new string[] { scalar, unknown, "Vertical Tex Offset Range" };
+                            case 13:
+                                return new string[] { scalar, unknown, "Unk" };
                         }
                         break;
                 }
@@ -711,98 +1078,194 @@ namespace DSFFXEditor
             {
                 switch (localActionID)
                 {
-                    case "600":
+                    case 600:
                         switch (localPropertyIndex)
                         {
                             case 0:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                             case 1:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                             case 2:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                             case 3:
-                                localOutputString = "[C] Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 4:
-                                localOutputString = "[C] Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 5:
-                                localOutputString = "[C] Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 6:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                         }
                         break;
-                    case "601":
+
+                    case 601:
                         switch (localPropertyIndex)
                         {
                             case 0:
-                                localOutputString = "[S]*: Brightness 1";
-                                break;
+                                return new string[] { scalar, unknown, "Brightness*" };
                             case 1:
-                                localOutputString = "[S]*: Brightness 2";
-                                break;
+                                return new string[] { scalar, unknown, "Brightness*" };
                             case 2:
-                                localOutputString = "[S]: Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                             case 3:
-                                localOutputString = "[C]: Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 4:
-                                localOutputString = "[C]: Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 5:
-                                localOutputString = "[C]: Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 6:
-                                localOutputString = "[S]: Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                         }
                         break;
-                    case "602":
+
+                    case 602:
                         switch (localPropertyIndex)
                         {
                             case 0:
-                                localOutputString = "[S]*: Brightness 1";
-                                break;
+                                return new string[] { scalar, unknown, "Brightness*" };
                             case 1:
-                                localOutputString = "[S]*: Brightness 2";
-                                break;
+                                return new string[] { scalar, unknown, "Brightness*" };
                             case 2:
-                                localOutputString = "[S]*: Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                             case 3:
-                                localOutputString = "[C]*: Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 4:
-                                localOutputString = "[C]*: Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 5:
-                                localOutputString = "[C]*: Unk";
-                                break;
+                                return new string[] { color, unknown, "Unk" };
                             case 6:
-                                localOutputString = "[S]*: Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Unk" };
                         }
                         break;
-                    case "609":
+
+                    case 603:
                         switch (localPropertyIndex)
                         {
                             case 0:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Brightness*" };
                             case 1:
-                                localOutputString = "[S] Unk";
-                                break;
+                                return new string[] { scalar, unknown, "Brightness*" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { color, unknown, "Unk" };
+                            case 4:
+                                return new string[] { color, unknown, "Unk" };
+                            case 5:
+                                return new string[] { color, unknown, "Unk" };
+                            case 6:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 604:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Brightness*" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Brightness*" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { color, unknown, "Unk" };
+                            case 4:
+                                return new string[] { color, unknown, "Unk" };
+                            case 5:
+                                return new string[] { color, unknown, "Unk" };
+                            case 6:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 605:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Brightness*" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Brightness*" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { color, unknown, "Unk" };
+                            case 4:
+                                return new string[] { color, unknown, "Unk" };
+                            case 5:
+                                return new string[] { color, unknown, "Unk" };
+                            case 6:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 7:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 606:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Unk*" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Unk*" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { color, unknown, "Unk" };
+                            case 4:
+                                return new string[] { color, unknown, "Unk" };
+                            case 5:
+                                return new string[] { color, unknown, "Unk" };
+                            case 6:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 607:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Unk*" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Unk*" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { color, unknown, "Unk" };
+                            case 4:
+                                return new string[] { color, unknown, "Unk" };
+                            case 5:
+                                return new string[] { color, unknown, "Unk" };
+                            case 6:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 609:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Unk" };
+                        }
+                        break;
+                    case 10012:
+                        switch (localPropertyIndex)
+                        {
+                            case 0:
+                                return new string[] { scalar, unknown, "Brightness*" };
+                            case 1:
+                                return new string[] { scalar, unknown, "Brightness*" };
+                            case 2:
+                                return new string[] { scalar, unknown, "Unk" };
+                            case 3:
+                                return new string[] { color, unknown, "Unk" };
+                            case 4:
+                                return new string[] { color, unknown, "Unk" };
+                            case 5:
+                                return new string[] { color, unknown, "Unk" };
+                            case 6:
+                                return new string[] { scalar, unknown, "Unk" };
                         }
                         break;
                 }
             }
-            return localOutputString;
+            return new string[] { "[u]", "[u]", "Unk" };
         }
         private static string AxByToName(XmlNode FFXProperty)
         {
