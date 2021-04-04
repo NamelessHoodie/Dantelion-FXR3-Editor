@@ -266,7 +266,6 @@ namespace DSFFXEditor
                 if (XMLOpen == true)
                 {
                     PopulateTree(xDoc.SelectSingleNode("descendant::RootEffectCall"));
-
                 }
                 ImGui.EndChild();
                 if (_showFFXEditorProperties || _showFFXEditorFields)
@@ -291,10 +290,17 @@ namespace DSFFXEditor
                         ImGui.SameLine();
                         if (ImGuiAddons.ButtonGradient("Commit Color Change"))
                         {
-                            _cPickerRed.Attributes[1].Value = MathF.Round(_cPicker.X, 4, MidpointRounding.ToZero).ToString();
-                            _cPickerGreen.Attributes[1].Value = MathF.Round(_cPicker.Y, 4, MidpointRounding.ToZero).ToString();
-                            _cPickerBlue.Attributes[1].Value = MathF.Round(_cPicker.Z, 4, MidpointRounding.ToZero).ToString();
-                            _cPickerAlpha.Attributes[1].Value = MathF.Round(_cPicker.W, 4, MidpointRounding.ToZero).ToString();
+                            if (_cPickerRed.Attributes[0].Value == "FFXFieldInt" || _cPickerGreen.Attributes[0].Value == "FFXFieldInt" || _cPickerBlue.Attributes[0].Value == "FFXFieldInt" || _cPickerAlpha.Attributes[0].Value == "FFXFieldInt")
+                            {
+                                _cPickerRed.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerGreen.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerBlue.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerAlpha.Attributes[0].Value = "FFXFieldFloat";
+                            }
+                            _cPickerRed.Attributes[1].Value = _cPicker.X.ToString("#.0000");
+                            _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString("#.0000");
+                            _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString("#.0000");
+                            _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString("#.0000");
                         }
                         ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar);
                         ImGui.Separator();
@@ -320,9 +326,9 @@ namespace DSFFXEditor
             if (root is XmlElement)
             {
                 ImGui.PushID($"TreeFunctionlayer = {root.Name} ChildIndex = {GetNodeIndexinParent(root)}");
+                string[] _actionIDsFilter = { "600", "601", "602", "603", "604", "605", "606", "607", "609", "10012" };
                 if (root.Attributes["ActionID"] != null)
                 {
-                    string[] _actionIDsFilter = { "600", "601", "602", "603", "604", "605", "606", "607", "609", "10012" };
                     if (_actionIDsFilter.Contains(root.Attributes[0].Value) || _filtertoggle)
                     {
                         if (ImGui.TreeNodeEx($"ActionID = {root.Attributes[0].Value}", ImGuiTreeNodeFlags.None))
@@ -345,9 +351,18 @@ namespace DSFFXEditor
                         }
                     }
                 }
-                else if (root.Name == "FFXEffectCallA")
+                else if (root.Name == "FFXEffectCallA" || root.Name == "FFXEffectCallB")
                 {
-                    if (root.HasChildNodes)
+                    bool localLoopPass = false;
+                    foreach (XmlNode node in root.SelectNodes("descendant::FFXActionCall[@ActionID]"))
+                    {
+                        if (_actionIDsFilter.Contains(node.Attributes[0].Value) || _filtertoggle)
+                        {
+                            localLoopPass = true;
+                            break;
+                        }
+                    }
+                    if (root.Name == "FFXEffectCallA" & root.HasChildNodes & localLoopPass)
                     {
                         if (ImGui.TreeNodeEx($"FFX Container = {root.Attributes[0].Value}"))
                         {
@@ -358,10 +373,7 @@ namespace DSFFXEditor
                             ImGui.TreePop();
                         }
                     }
-                }
-                else if (root.Name == "FFXEffectCallB")
-                {
-                    if (root.HasChildNodes)
+                    else if (root.Name == "FFXEffectCallB" & root.HasChildNodes & localLoopPass)
                     {
                         if (ImGui.TreeNodeEx($"FFX Call"))
                         {
@@ -370,6 +382,13 @@ namespace DSFFXEditor
                                 PopulateTree(node);
                             }
                             ImGui.TreePop();
+                        }
+                    }
+                    else
+                    {
+                        foreach (XmlNode node in root.ChildNodes)
+                        {
+                            PopulateTree(node);
                         }
                     }
                 }
@@ -451,13 +470,14 @@ namespace DSFFXEditor
             }
             else if (_showFFXEditorFields)
             {
+                ImGui.PushItemWidth(ImGui.GetColumnWidth() * 0.4f);
                 if (Fields.Contains("F1"))
                 {
                     switch (Fields)
                     {
-                        case "F1MEME":
-                            ImGui.Text("FFX Property = A35B11");
-                            FFXPropertyA35B11StaticColor(NodeListEditor);
+                        case "F1600":
+                            ImGui.Text("ActionID 600 Fields 1");
+                            ActionID600Fields1Handler(NodeListEditor);
                             break;
                         default:
                             ImGui.Text("ERROR: FFX Fields1 Handler not found, using Default Read Only Handler.");
@@ -472,9 +492,9 @@ namespace DSFFXEditor
                 {
                     switch (Fields)
                     {
-                        case "F2MEME":
-                            ImGui.Text("FFX Property = A35B11");
-                            FFXPropertyA35B11StaticColor(NodeListEditor);
+                        case "F2600":
+                            ImGui.Text("ActionID 600 Fields 2");
+                            ActionID600Fields2Handler(NodeListEditor);
                             break;
                         default:
                             ImGui.Text("ERROR: FFX Fields2 Handler not found, using Default Read Only Handler.");
@@ -485,7 +505,7 @@ namespace DSFFXEditor
                             break;
                     }
                 }
-
+                ImGui.PopItemWidth();
             }
             ImGui.EndChild();
             //
@@ -531,7 +551,7 @@ namespace DSFFXEditor
                     treeViewCurrentHighlighted = IDStorage;
                     storage.SetBool(IDStorage, true);
                     NodeListEditor = NodeListProcessing;
-                    Fields = $"{fieldType}{root.Attributes[0]}";
+                    Fields = $"{fieldType}{root.Attributes[0].Value}";
                     _showFFXEditorProperties = false;
                     _showFFXEditorFields = true;
                 }
@@ -1388,7 +1408,10 @@ namespace DSFFXEditor
                         ImGui.BulletText($"Stage {i + 1}: Position in time");
                         if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
                         {
-                            NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
+                            XmlNode localEditNode = NodeListEditor.Item(i + 9);
+                            if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                            localEditNode.Attributes[1].Value = localSlider.ToString();
                         }
                     }
 
@@ -1486,7 +1509,10 @@ namespace DSFFXEditor
                         ImGui.BulletText($"Stage {i + 1}: Position in time");
                         if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
                         {
-                            NodeListEditor.Item(i + 9).Attributes[1].Value = localSlider.ToString();
+                            XmlNode localEditNode = NodeListEditor.Item(i + 9);
+                            if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                            localEditNode.Attributes[1].Value = localSlider.ToString();
                         }
                     }
 
@@ -1525,7 +1551,10 @@ namespace DSFFXEditor
                                     ImGui.SameLine();
                                     if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
                                     {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
+                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                                        localEditNode.Attributes[1].Value = localSlider.ToString();
                                     }
                                 }
                                 {
@@ -1552,7 +1581,10 @@ namespace DSFFXEditor
                                     ImGui.SameLine();
                                     if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
                                     {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
+                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                                        localEditNode.Attributes[1].Value = localSlider.ToString();
                                     }
                                 }
                                 {
@@ -1562,7 +1594,10 @@ namespace DSFFXEditor
                                     ImGui.SameLine();
                                     if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
                                     {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
+                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                                        localEditNode.Attributes[1].Value = localSlider.ToString();
                                     }
                                 }
                                 ImGui.Unindent();
@@ -1579,7 +1614,10 @@ namespace DSFFXEditor
                                     ImGui.SameLine();
                                     if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
                                     {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
+                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                                        localEditNode.Attributes[1].Value = localSlider.ToString();
                                     }
                                 }
                                 {
@@ -1589,7 +1627,10 @@ namespace DSFFXEditor
                                     ImGui.SameLine();
                                     if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
                                     {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
+                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                                        localEditNode.Attributes[1].Value = localSlider.ToString();
                                     }
                                 }
                                 ImGui.Unindent();
@@ -1606,7 +1647,10 @@ namespace DSFFXEditor
                                     ImGui.SameLine();
                                     if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
                                     {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
+                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                                        localEditNode.Attributes[1].Value = localSlider.ToString();
                                     }
                                 }
 
@@ -1617,7 +1661,10 @@ namespace DSFFXEditor
                                     ImGui.SameLine();
                                     if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
                                     {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
+                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
+                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
+                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
+                                        localEditNode.Attributes[1].Value = localSlider.ToString();
                                     }
                                 }
                                 ImGui.Unindent();
@@ -1631,6 +1678,1196 @@ namespace DSFFXEditor
                 }
                 ImGui.Separator();
                 ImGui.TreePop();
+            }
+        }
+        public static void ActionID600Fields1Handler(XmlNodeList NodeListEditor)
+        {
+            // Texture ID
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(0), "Texture ID, Integer");
+
+            // Texture Blend Modes
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(1), "Texture Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
+            
+            // unk1
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 1, Integer");
+            
+            // unk2
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 2, Integer");
+            
+            // unk3
+            if (NodeListEditor.Item(4) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 3, Unknown");
+        }
+        public static void ActionID600Fields2Handler(XmlNodeList NodeListEditor)
+        {
+            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
+            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
+            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
+            string localToolTipTitle = "Description Tooltip:";
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
+
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
+
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
+
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
+
+            if (NodeListEditor.Item(4) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Bool");
+
+            if (NodeListEditor.Item(5) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R?, float");
+
+            if (NodeListEditor.Item(6) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G?, float");
+
+            if (NodeListEditor.Item(7) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B?, float");
+
+            if (NodeListEditor.Item(8) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness?, float");
+
+            if (NodeListEditor.Item(9) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Unknown");
+
+            if (NodeListEditor.Item(10) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
+
+            if (NodeListEditor.Item(11) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
+
+            if (NodeListEditor.Item(12) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
+
+            if (NodeListEditor.Item(13) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
+
+            if (NodeListEditor.Item(14) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Float");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(15) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Float");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(16) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Float");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(17) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Float");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(18) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(19) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(20) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
+
+            if (NodeListEditor.Item(21) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
+
+            if (NodeListEditor.Item(22) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
+
+            if (NodeListEditor.Item(23) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
+
+            if (NodeListEditor.Item(24) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
+
+            if (NodeListEditor.Item(25) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
+
+            if (NodeListEditor.Item(26) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
+
+            if (NodeListEditor.Item(27) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
+
+            if (NodeListEditor.Item(28) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
+
+            if (NodeListEditor.Item(29) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
+        }
+        public static void ActionID601Fields1Handler(XmlNodeList NodeListEditor)
+        {
+            // Texture Blend Modes
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(0), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
+            // unk0
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 0, Integer");
+        }
+        public static void ActionID601Fields2Handler(XmlNodeList NodeListEditor)
+        {
+            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
+            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
+            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
+            string localToolTipTitle = "Description Tooltip:";
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
+
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
+
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
+
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
+
+            if (NodeListEditor.Item(4) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Integer");
+
+            if (NodeListEditor.Item(5) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R?, float");
+
+            if (NodeListEditor.Item(6) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G?, float");
+
+            if (NodeListEditor.Item(7) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B?, float");
+
+            if (NodeListEditor.Item(8) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness?, float");
+
+            if (NodeListEditor.Item(9) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Float");
+
+            if (NodeListEditor.Item(10) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
+
+            if (NodeListEditor.Item(11) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
+
+            if (NodeListEditor.Item(12) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
+
+            if (NodeListEditor.Item(13) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
+
+            if (NodeListEditor.Item(14) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(15) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(16) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(17) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(18) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(19) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(20) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
+
+            if (NodeListEditor.Item(21) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
+
+            if (NodeListEditor.Item(22) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
+
+            if (NodeListEditor.Item(23) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
+
+            if (NodeListEditor.Item(24) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
+
+            if (NodeListEditor.Item(25) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
+
+            if (NodeListEditor.Item(26) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
+
+            if (NodeListEditor.Item(27) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
+
+            if (NodeListEditor.Item(28) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
+
+            if (NodeListEditor.Item(29) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
+        }
+        public static void ActionID602Fields1Handler(XmlNodeList NodeListEditor)
+        {
+            // Texture Blend Modes
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(0), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
+            // unk0
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 0, Integer");
+        }
+        public static void ActionID602Fields2Handler(XmlNodeList NodeListEditor)
+        {
+            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
+            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
+            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
+            string localToolTipTitle = "Description Tooltip:";
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
+
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
+
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
+
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
+
+            if (NodeListEditor.Item(4) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Integer");
+
+            if (NodeListEditor.Item(5) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R?, float");
+
+            if (NodeListEditor.Item(6) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G?, float");
+
+            if (NodeListEditor.Item(7) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B?, float");
+
+            if (NodeListEditor.Item(8) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness?, float");
+
+            if (NodeListEditor.Item(9) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Float");
+
+            if (NodeListEditor.Item(10) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
+
+            if (NodeListEditor.Item(11) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
+
+            if (NodeListEditor.Item(12) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
+
+            if (NodeListEditor.Item(13) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
+
+            if (NodeListEditor.Item(14) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(15) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(16) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(17) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(18) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(19) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(20) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
+
+            if (NodeListEditor.Item(21) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
+
+            if (NodeListEditor.Item(22) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
+
+            if (NodeListEditor.Item(23) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
+
+            if (NodeListEditor.Item(24) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
+
+            if (NodeListEditor.Item(25) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
+
+            if (NodeListEditor.Item(26) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
+
+            if (NodeListEditor.Item(27) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
+
+            if (NodeListEditor.Item(28) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
+
+            if (NodeListEditor.Item(29) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
+        }
+        public static void ActionID603Fields1Handler(XmlNodeList NodeListEditor)
+        {
+            // Orientation Mode
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(0), "Orientation Mode, Integer", new string[] { "0: Unknown", "1: Always facing the camera", "2: Aligned with Global Z Axis", "3: Aligned with Global Y Axis", "4: Always facing the camera, no tilting", "5: Aligned with Global X Axis", "6: Unknown", "7: Unknown" });
+            
+            // Texture ID
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Texture ID, Integer");
+
+            // Texture ID 2?
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Texture ID 2?, Integer");
+
+            // Texture Blend Modes
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(3), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
+
+            // Particle Size
+            if (NodeListEditor.Item(4) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(4), "Particle Size, Float");
+
+            // Unknown 0
+            if (NodeListEditor.Item(5) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(5), "Unknown 0, Float");
+
+            // Unknown 1
+            if (NodeListEditor.Item(6) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(6), "Unknown 1, Bool");
+
+            // Unknown 2
+            if (NodeListEditor.Item(7) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(7), "Unknown 2, Bool");
+
+            // Horizontal stacked frames
+            if (NodeListEditor.Item(8) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(8), "Horizontal stacked frames, Integer");
+            ShowToolTipSimple("Horizontal stacked frames", "How many frames are stacked horizontally in the texture sheet. Same as <texture width> / <frame width>.");
+
+            // Texture Frames Lenght
+            if (NodeListEditor.Item(9) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(9), "Texture Frames Lenght, Integer");
+            ShowToolTipSimple("Texture Frames Lenght", "How many frames are in the texture sheet in total.");
+
+            //Unknown 3
+            if (NodeListEditor.Item(10) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(10), "Unknown 3, Bool");
+
+            // Unknown 4
+            if (NodeListEditor.Item(11) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 4, Integer");
+
+            // Unknown 5
+            if (NodeListEditor.Item(12) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 5, Integer");
+
+            // Unknown 5
+            if (NodeListEditor.Item(13) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(13), "Unknown 5, Float");
+
+            //Unknown 6
+            if (NodeListEditor.Item(14) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(14), "Unknown 6, Bool");
+
+            //Unknown 7
+            if (NodeListEditor.Item(15) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(15), "Unknown 7, Bool");
+
+            //Unknown 8
+            if (NodeListEditor.Item(16) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(16), "Unknown 8, Bool");
+        }
+        public static void ActionID603Fields2Handler(XmlNodeList NodeListEditor)
+        {
+            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
+            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
+            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
+            string localToolTipTitle = "Description Tooltip:";
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
+
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
+
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
+
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
+
+            if (NodeListEditor.Item(4) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Integer");
+
+            if (NodeListEditor.Item(5) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R, float");
+
+            if (NodeListEditor.Item(6) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G, float");
+
+            if (NodeListEditor.Item(7) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B, float");
+
+            if (NodeListEditor.Item(8) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness, float");
+
+            if (NodeListEditor.Item(9) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Float");
+
+            if (NodeListEditor.Item(10) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
+
+            if (NodeListEditor.Item(11) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
+
+            if (NodeListEditor.Item(12) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
+
+            if (NodeListEditor.Item(13) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
+
+            if (NodeListEditor.Item(14) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(15) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(16) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(17) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(18) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(19) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(20) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
+
+            if (NodeListEditor.Item(21) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
+
+            if (NodeListEditor.Item(22) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
+
+            if (NodeListEditor.Item(23) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
+
+            if (NodeListEditor.Item(24) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
+
+            if (NodeListEditor.Item(25) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
+
+            if (NodeListEditor.Item(26) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
+
+            if (NodeListEditor.Item(27) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
+
+            if (NodeListEditor.Item(28) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
+
+            if (NodeListEditor.Item(29) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
+        }
+        public static void ActionID604Fields1Handler(XmlNodeList NodeListEditor)
+        {
+            // Orientation Mode
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(0), "Orientation Mode, Integer", new string[] { "0: Unknown", "1: Always facing the camera", "2: Aligned with Global Z Axis", "3: Aligned with Global Y Axis", "4: Always facing the camera, no tilting", "5: Aligned with Global X Axis", "6: Unknown", "7: Unknown" });
+
+            // Texture ID
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Texture ID, Integer");
+
+            // Texture ID 2
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Texture ID 2, Integer");
+
+            // Texture ID 3
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(3), "Texture ID 3, Integer");
+
+            // Texture Blend Modes
+            if (NodeListEditor.Item(4) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(4), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
+
+            //Unknown 0
+            if (NodeListEditor.Item(5) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(5), "Unknown 0, Bool");
+
+            // Unknown 1
+            if (NodeListEditor.Item(6) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(6), "Unknown 1, Integer");
+
+            // Horizontal stacked frames
+            if (NodeListEditor.Item(7) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(7), "Horizontal stacked frames, Integer");
+            ShowToolTipSimple("Horizontal stacked frames", "How many frames are stacked horizontally in the texture sheet. Same as <texture width> / <frame width>.");
+
+            // Texture Frames Lenght
+            if (NodeListEditor.Item(8) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(8), "Texture Frames Lenght, Integer");
+            ShowToolTipSimple("Texture Frames Lenght", "How many frames are in the texture sheet in total.");
+
+            // Unknown 2
+            if (NodeListEditor.Item(9) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(9), "Unknown 2, Bool");
+
+            // Unknown 3
+            if (NodeListEditor.Item(10) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 3, Integer");
+
+            // Unknown 4
+            if (NodeListEditor.Item(11) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 4, Integer");
+
+            //Unknown 5
+            if (NodeListEditor.Item(12) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(12), "Unknown 5, Bool");
+
+            //Unknown 6
+            if (NodeListEditor.Item(13) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(13), "Unknown 6, Bool");
+
+            //Unknown 7
+            if (NodeListEditor.Item(14) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(14), "Unknown 7, Integer");
+        }
+        public static void ActionID604Fields2Handler(XmlNodeList NodeListEditor)
+        {
+            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
+            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
+            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
+            string localToolTipTitle = "Description Tooltip:";
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
+
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
+
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
+
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
+
+            if (NodeListEditor.Item(4) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Bool");
+
+            if (NodeListEditor.Item(5) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R, float");
+
+            if (NodeListEditor.Item(6) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G, float");
+
+            if (NodeListEditor.Item(7) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B, float");
+
+            if (NodeListEditor.Item(8) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness, float");
+
+            if (NodeListEditor.Item(9) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Float");
+
+            if (NodeListEditor.Item(10) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
+
+            if (NodeListEditor.Item(11) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
+
+            if (NodeListEditor.Item(12) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
+
+            if (NodeListEditor.Item(13) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
+
+            if (NodeListEditor.Item(14) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(15) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(16) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(17) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(18) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(19) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(20) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
+
+            if (NodeListEditor.Item(21) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
+
+            if (NodeListEditor.Item(22) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
+
+            if (NodeListEditor.Item(23) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
+
+            if (NodeListEditor.Item(24) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
+
+            if (NodeListEditor.Item(25) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
+
+            if (NodeListEditor.Item(26) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
+
+            if (NodeListEditor.Item(27) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
+
+            if (NodeListEditor.Item(28) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
+
+            if (NodeListEditor.Item(29) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
+        }
+        public static void ActionID605Fields1Handler(XmlNodeList NodeListEditor)
+        {
+            // Orientation Mode
+            if (NodeListEditor.Item(0) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(0), "Orientation Mode, Integer", new string[] { "0: Unknown", "1: Always facing the camera", "2: Aligned with Global Z Axis", "3: Aligned with Global Y Axis", "4: Always facing the camera, no tilting", "5: Aligned with Global X Axis", "6: Unknown", "7: Unknown" });
+
+            // Model ID
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Model ID, Integer");
+
+            // Unknown 0
+            if (NodeListEditor.Item(2) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(2), "Unknown 0, Float");
+
+            // Unknown 1
+            if (NodeListEditor.Item(3) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(3), "Unknown 1, Float");
+
+            // Unknown 2
+            if (NodeListEditor.Item(4) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(4), "Unknown 2, Float");
+
+            // Unknown 3
+            if (NodeListEditor.Item(5) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(5), "Unknown 3, Integer");
+
+            // Texture Blend Modes
+            if (NodeListEditor.Item(6) == null)
+                return;
+            IntComboDefaultNode(NodeListEditor.Item(6), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
+
+            // Horizontal stacked frames
+            if (NodeListEditor.Item(7) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(7), "Horizontal stacked frames, Integer");
+            ShowToolTipSimple("Horizontal stacked frames", "How many frames are stacked horizontally in the texture sheet. Same as <texture width> / <frame width>.");
+
+            // Texture Frames Lenght
+            if (NodeListEditor.Item(8) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(8), "Texture Frames Lenght, Integer");
+            ShowToolTipSimple("Texture Frames Lenght", "How many frames are in the texture sheet in total.");
+
+            // Unknown 4
+            if (NodeListEditor.Item(9) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(9), "Unknown 4, Integer");
+
+            // Unknown 5
+            if (NodeListEditor.Item(10) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 5, Integer");
+
+            //Unknown 6
+            if (NodeListEditor.Item(11) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(11), "Unknown 6, Bool");
+
+            //Unknown 7
+            if (NodeListEditor.Item(12) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(12), "Unknown 7, Bool");
+
+            //Unknown 8
+            if (NodeListEditor.Item(13) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(13), "Unknown 8, Bool");
+
+            //Unknown 9
+            if (NodeListEditor.Item(14) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(14), "Unknown 9, Integer");
+
+            //Unknown 10
+            if (NodeListEditor.Item(15) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(15), "Unknown 10, Unknown");
+
+            //Unknown 11
+            if (NodeListEditor.Item(16) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(16), "Unknown 11, Bool");
+
+            //Unknown 12
+            if (NodeListEditor.Item(17) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(17), "Unknown 12, Float");
+
+            //Unknown 13
+            if (NodeListEditor.Item(18) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(18), "Unknown 13, Unknown");
+        }
+        public static void ActionID605Fields2Handler(XmlNodeList NodeListEditor)
+        {
+            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
+            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
+            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
+            string localToolTipTitle = "Description Tooltip:";
+            if (NodeListEditor.Item(0) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Bool");
+
+            if (NodeListEditor.Item(1) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
+
+            if (NodeListEditor.Item(2) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
+
+            if (NodeListEditor.Item(3) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
+
+            if (NodeListEditor.Item(4) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Unknown");
+
+            if (NodeListEditor.Item(5) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R, float");
+
+            if (NodeListEditor.Item(6) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G, float");
+
+            if (NodeListEditor.Item(7) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B, float");
+
+            if (NodeListEditor.Item(8) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness, float");
+
+            if (NodeListEditor.Item(9) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 5, Float");
+
+            if (NodeListEditor.Item(10) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 6, Unknown");
+
+            if (NodeListEditor.Item(11) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 7, Unknown");
+
+            if (NodeListEditor.Item(12) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 8, Unknown");
+
+            if (NodeListEditor.Item(13) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 9, Unknown");
+
+            if (NodeListEditor.Item(14) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(15) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
+
+            if (NodeListEditor.Item(16) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(17) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
+            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
+
+            if (NodeListEditor.Item(18) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(19) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
+            ShowToolTipSimple(localToolTipTitle, localViewDistance);
+
+            if (NodeListEditor.Item(20) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(20), "Unknown 10, Float");
+
+            if (NodeListEditor.Item(21) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 11, Unknown");
+
+            if (NodeListEditor.Item(22) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 12, Unknown");
+
+            if (NodeListEditor.Item(23) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 13, Unknown");
+
+            if (NodeListEditor.Item(24) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(24), "Scale Something?, Float");
+
+            if (NodeListEditor.Item(25) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(25), "Unknown 14, Unknown");
+
+            if (NodeListEditor.Item(26) == null)
+                return;
+            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 15, Integer");
+
+            if (NodeListEditor.Item(27) == null)
+                return;
+            BooleanIntInputDefaultNode(NodeListEditor.Item(27), "Unknown 16, Bool");
+
+            if (NodeListEditor.Item(28) == null)
+                return;
+            FloatInputDefaultNode(NodeListEditor.Item(28), "Unknown 17, Float");
+        }
+
+        public static void IntInputDefaultNode(XmlNode node, string dataString)
+        {
+            string nodeValue = node.Attributes[1].Value;
+            if (ImGui.InputText(dataString, ref nodeValue, 10, ImGuiInputTextFlags.CharsDecimal))
+            {
+                int intNodeValue;
+                if (Int32.TryParse(nodeValue, out intNodeValue))
+                {
+                    if (node.Attributes[0].Value == "FFXFieldFloat")
+                        node.Attributes[0].Value = "FFXFieldInt";
+                    node.Attributes[1].Value = intNodeValue.ToString();
+                }
+            }
+        }
+        public static void FloatInputDefaultNode(XmlNode node, string dataString)
+        {
+            string nodeValue = node.Attributes[1].Value;
+            if (ImGui.InputText(dataString, ref nodeValue, 16, ImGuiInputTextFlags.CharsDecimal))
+            {
+                float floatNodeValue;
+                if (float.TryParse(nodeValue, out floatNodeValue))
+                {
+                    if (node.Attributes[0].Value == "FFXFieldFloat")
+                        node.Attributes[0].Value = "FFXFieldInt";
+                    node.Attributes[1].Value = floatNodeValue.ToString("#.0000");
+                }
+            }
+        }
+        public static void BooleanIntInputDefaultNode(XmlNode node, string dataString)
+        {
+            int nodeValue = Int32.Parse(node.Attributes[1].Value);
+            bool nodeValueBool = false;
+            if (nodeValue == 1)
+                nodeValueBool = true;
+            else if (nodeValue == 0)
+                nodeValueBool = false;
+            else
+            {
+                ImGui.Text("Error: Bool Invalid, current value is: " + nodeValue.ToString());
+                if (ImGui.Button("Set Bool to False"))
+                {
+                    if (node.Attributes[0].Value == "FFXFieldFloat")
+                        node.Attributes[0].Value = "FFXFieldInt";
+                    node.Attributes[1].Value = 0.ToString();
+                }
+                return;
+            }
+            if (ImGui.Checkbox(dataString, ref nodeValueBool))
+            {
+                if (node.Attributes[0].Value == "FFXFieldFloat")
+                    node.Attributes[0].Value = "FFXFieldInt";
+                node.Attributes[1].Value = (nodeValueBool ? 1 : 0).ToString();
+            }
+        }
+        public static void IntComboDefaultNode(XmlNode node, string comboTitle, string[] entriesArray)
+        {
+            int blendModeCurrent = Int32.Parse(node.Attributes[1].Value);
+            if (ImGui.Combo(comboTitle, ref blendModeCurrent, entriesArray, entriesArray.Length))
+            {
+                if (node.Attributes[0].Value == "FFXFieldFloat")
+                    node.Attributes[0].Value = "FFXFieldInt";
+                node.Attributes[1].Value = blendModeCurrent.ToString();
+            }
+        }
+        public static void ShowToolTipSimple(string toolTipTitle, string toolTipText)
+        {
+            if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
+            {
+                Vector2 localMousePos = ImGui.GetMousePos();
+                Vector2 localTextSize = ImGui.CalcTextSize(toolTipText);
+                float maxToolTipWidth = (float)_window.Width * 0.4f;
+                if (localTextSize.X > maxToolTipWidth)
+                    ImGui.SetNextWindowSize(new Vector2(maxToolTipWidth, localTextSize.Y), ImGuiCond.Appearing);
+                else
+                    ImGui.SetNextWindowSize(new Vector2(localTextSize.X, localTextSize.Y), ImGuiCond.Appearing);
+                ImGui.SetNextWindowPos(new Vector2(localMousePos.X, localMousePos.Y + 20f), ImGuiCond.Appearing);
+                if (ImGui.Begin(toolTipTitle, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.Tooltip))
+                {
+                    ImGui.Text(toolTipTitle);
+                    ImGui.NewLine();
+                    ImGui.TextWrapped(toolTipText);
+                    ImGui.End();
+                }
             }
         }
     }
