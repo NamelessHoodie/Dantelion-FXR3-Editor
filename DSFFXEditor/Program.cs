@@ -65,9 +65,6 @@ namespace DSFFXEditor
 
         public static float _colorOverload = 1.0f;
         //</Color Editor>
-        //<Floating Point Editor>
-        public static bool _floatEditorIsEnable = false;
-        //</Floating Point Editor>
 
         [STAThread]
         static void Main()
@@ -93,6 +90,7 @@ namespace DSFFXEditor
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
             DSFFXThemes.ThemesSelector(_activeTheme); //Default Theme
+            DefParser.Initialize();
             // Main application loop
             while (_window.Exists)
             {
@@ -210,6 +208,51 @@ namespace DSFFXEditor
             }
 
             { //Declare Standalone Windows here
+                // Color Picker
+                if (_cPickerIsEnable)
+                {
+                    float popupWidth = _window.Width * 0.7f;
+                    float popupHeight = _window.Height * 0.7f;
+                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Once);
+                    if (ImGui.Begin("FFX Color Picker"))
+                    {
+                        if (ImGuiAddons.ButtonGradient("Close Color Picker"))
+                            _cPickerIsEnable = false;
+                        ImGui.SameLine();
+                        if (ImGuiAddons.ButtonGradient("Commit Color Change"))
+                        {
+                            if (_cPickerRed.Attributes[0].Value == "FFXFieldInt" || _cPickerGreen.Attributes[0].Value == "FFXFieldInt" || _cPickerBlue.Attributes[0].Value == "FFXFieldInt" || _cPickerAlpha.Attributes[0].Value == "FFXFieldInt")
+                            {
+                                _cPickerRed.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerGreen.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerBlue.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerAlpha.Attributes[0].Value = "FFXFieldFloat";
+                            }
+                            _cPickerRed.Attributes[1].Value = _cPicker.X.ToString("#.0000");
+                            _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString("#.0000");
+                            _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString("#.0000");
+                            _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString("#.0000");
+                        }
+                        Vector2 mEME = ImGui.GetWindowSize();
+                        if (mEME.X > mEME.Y)
+                        {
+                            ImGui.SetNextItemWidth(mEME.Y * 0.80f);
+                        }
+                        ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.NoTooltip);
+                        ImGui.Separator();
+                        ImGui.Text("Brightness Multiplier");
+                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, 1.0f, 10.0f);
+                        ImGui.SameLine();
+                        if (ImGuiAddons.ButtonGradient("Apply Change"))
+                        {
+                            _cPicker.X *= _colorOverload;
+                            _cPicker.Y *= _colorOverload;
+                            _cPicker.Z *= _colorOverload;
+                        }
+                        ImGui.End();
+                    }
+                }
+                // Keyboard Guide
                 if (_keyboardInputGuide)
                 {
                     ImGui.SetNextWindowDockID(MainViewport);
@@ -219,7 +262,8 @@ namespace DSFFXEditor
                     ImGui.ShowUserGuide();
                     ImGui.End();
                 }
-                if (_axbyEditorIsPopup) //Currently Unused FFXProperty Changer
+                //Currently Unused FFXProperty Changer
+                if (_axbyEditorIsPopup)
                 {
                     if (!ImGui.IsPopupOpen("AxByTypeEditor"))
                     {
@@ -261,7 +305,7 @@ namespace DSFFXEditor
             { //Main Window Here
                 ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
                 ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
-                ImGui.Columns(3);
+                ImGui.Columns(2);
                 ImGui.BeginChild("FFXTreeView");
                 if (XMLOpen == true)
                 {
@@ -272,50 +316,6 @@ namespace DSFFXEditor
                 {
                     ImGui.NextColumn();
                     FFXEditor();
-                }
-                //Tools DockSpace Declaration
-                uint WorkshopDockspace = ImGui.GetID("FFX Workshop");
-                ImGui.NextColumn();
-                ImGui.BeginChild("FFX Workshop");
-                ImGui.DockSpace(WorkshopDockspace);
-                ImGui.EndChild();
-                //Declare Workshop Tools below here
-                {
-                    if (_cPickerIsEnable)
-                    {
-                        ImGui.SetNextWindowDockID(WorkshopDockspace, ImGuiCond.Appearing);
-                        ImGui.Begin("FFX Color Picker");
-                        if (ImGuiAddons.ButtonGradient("Close Color Picker"))
-                            _cPickerIsEnable = false;
-                        ImGui.SameLine();
-                        if (ImGuiAddons.ButtonGradient("Commit Color Change"))
-                        {
-                            if (_cPickerRed.Attributes[0].Value == "FFXFieldInt" || _cPickerGreen.Attributes[0].Value == "FFXFieldInt" || _cPickerBlue.Attributes[0].Value == "FFXFieldInt" || _cPickerAlpha.Attributes[0].Value == "FFXFieldInt")
-                            {
-                                _cPickerRed.Attributes[0].Value = "FFXFieldFloat";
-                                _cPickerGreen.Attributes[0].Value = "FFXFieldFloat";
-                                _cPickerBlue.Attributes[0].Value = "FFXFieldFloat";
-                                _cPickerAlpha.Attributes[0].Value = "FFXFieldFloat";
-                            }
-                            _cPickerRed.Attributes[1].Value = _cPicker.X.ToString("#.0000");
-                            _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString("#.0000");
-                            _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString("#.0000");
-                            _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString("#.0000");
-                        }
-                        ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar);
-                        ImGui.Separator();
-                        ImGui.Text("Brightness Multiplier");
-                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, 1.0f, 10.0f);
-                        ImGui.SameLine();
-                        if (ImGuiAddons.ButtonGradient("Apply Change"))
-                        {
-                            _cPicker.X *= _colorOverload;
-                            _cPicker.Y *= _colorOverload;
-                            _cPicker.Z *= _colorOverload;
-                        }
-                        ImGui.Separator();
-                        ImGui.End();
-                    }
                 }
             }
         }
@@ -335,8 +335,8 @@ namespace DSFFXEditor
                         {
                             GetFFXProperties(root, "Properties1");
                             GetFFXProperties(root, "Properties2");
-                            GetFFXFields(root, "F1");
-                            GetFFXFields(root, "F2");
+                            GetFFXFields(root, "Fields1");
+                            GetFFXFields(root, "Fields2");
                             ImGui.TreePop();
                         }
                     }
@@ -412,7 +412,7 @@ namespace DSFFXEditor
             { }
         }
 
-        private static int GetNodeIndexinParent(XmlNode Node)
+        public static int GetNodeIndexinParent(XmlNode Node)
         {
             int ChildIndex = 0;
             if (Node.PreviousSibling != null)
@@ -432,7 +432,7 @@ namespace DSFFXEditor
         public static bool _showFFXEditorProperties = false;
         public static int currentitem = 0;
         public static XmlNodeList NodeListEditor;
-        public static string Fields;
+        public static string[] Fields;
         public static string AxBy;
         public static bool pselected = false;
 
@@ -470,42 +470,9 @@ namespace DSFFXEditor
             }
             else if (_showFFXEditorFields)
             {
-                ImGui.PushItemWidth(ImGui.GetColumnWidth() * 0.4f);
-                if (Fields.Contains("F1"))
-                {
-                    switch (Fields)
-                    {
-                        case "F1600":
-                            ImGui.Text("ActionID 600 Fields 1");
-                            ActionID600Fields1Handler(NodeListEditor);
-                            break;
-                        default:
-                            ImGui.Text("ERROR: FFX Fields1 Handler not found, using Default Read Only Handler.");
-                            foreach (XmlNode node in NodeListEditor)
-                            {
-                                ImGui.TextWrapped($"FFXField({node.Attributes[0].Value}) = {node.Attributes[1].Value}");
-                            }
-                            break;
-                    }
-                }
-                else if (Fields.Contains("F2"))
-                {
-                    switch (Fields)
-                    {
-                        case "F2600":
-                            ImGui.Text("ActionID 600 Fields 2");
-                            ActionID600Fields2Handler(NodeListEditor);
-                            break;
-                        default:
-                            ImGui.Text("ERROR: FFX Fields2 Handler not found, using Default Read Only Handler.");
-                            foreach (XmlNode node in NodeListEditor)
-                            {
-                                ImGui.TextWrapped($"FFXField({node.Attributes[0].Value}) = {node.Attributes[1].Value}");
-                            }
-                            break;
-                    }
-                }
-                ImGui.PopItemWidth();
+                //ImGui.PushItemWidth(ImGui.GetColumnWidth() * 0.4f);
+                DefParser.DefXMLParser(NodeListEditor, Fields[1], Fields[0]);
+                //ImGui.PopItemWidth();
             }
             ImGui.EndChild();
             //
@@ -524,17 +491,10 @@ namespace DSFFXEditor
         }
         private static void GetFFXFields(XmlNode root, string fieldType)
         {
-            string localFieldTypeString = "Fields1";
-            string fieldNodeLabel = "Fields 1";
-            if (fieldType == "F2")
-            {
-                localFieldTypeString = "Fields2";
-                fieldNodeLabel = "Fields 2";
-            }
-            XmlNodeList NodeListProcessing = root.SelectNodes($"descendant::{localFieldTypeString}")[0].ChildNodes;
+            XmlNodeList NodeListProcessing = root.SelectNodes($"descendant::{fieldType}")[0].ChildNodes;
             if (NodeListProcessing.Count > 0)
             {
-                uint IDStorage = ImGui.GetID(fieldNodeLabel);
+                uint IDStorage = ImGui.GetID(fieldType);
                 ImGuiStoragePtr storage = ImGui.GetStateStorage();
                 bool selected = storage.GetBool(IDStorage);
                 if (selected & IDStorage != treeViewCurrentHighlighted)
@@ -545,19 +505,35 @@ namespace DSFFXEditor
                 ImGuiTreeNodeFlags localTreeNodeFlags = ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.SpanAvailWidth;
                 if (selected)
                     localTreeNodeFlags |= ImGuiTreeNodeFlags.Selected;
-                ImGui.TreeNodeEx($"{fieldNodeLabel}", localTreeNodeFlags);
+                ImGui.TreeNodeEx($"{fieldType}", localTreeNodeFlags);
                 if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
                 {
                     treeViewCurrentHighlighted = IDStorage;
                     storage.SetBool(IDStorage, true);
                     NodeListEditor = NodeListProcessing;
-                    Fields = $"{fieldType}{root.Attributes[0].Value}";
+                    Fields = new string[] { fieldType, root.Attributes[0].Value };
                     _showFFXEditorProperties = false;
                     _showFFXEditorFields = true;
                 }
             }
         }
         private static uint treeViewCurrentHighlighted = 0;
+        public static void ShowToolTipWiki(string toolTipTitle, string[] localSlot)
+        {
+            string fullToolTip = "";
+            string archetypeWiki = DefParser.DefXMLSymbolParser(localSlot[0]);
+            string argumentsWiki = DefParser.DefXMLSymbolParser(localSlot[1]);
+            if (localSlot.Length >= 4)
+            {
+                if (localSlot[3] != null)
+                {
+                    fullToolTip += $"FFX Property Slot ToolTip:\n{localSlot[3]}\n\n";
+                }
+            }
+            fullToolTip += $"Type = {localSlot[0]}: {archetypeWiki}.\n\n";
+            fullToolTip += $"Arg = {localSlot[1]}: {argumentsWiki}.";
+            ShowToolTipSimple("",toolTipTitle,fullToolTip, false, ImGuiPopupFlags.MouseButtonRight);
+        }
         private static void GetFFXProperties(XmlNode root, string PropertyType)
         {
             XmlNodeList localNodeList = root.SelectNodes($"descendant::{PropertyType}/FFXProperty");
@@ -579,7 +555,7 @@ namespace DSFFXEditor
                             ImGui.TableNextColumn();
                             string localAxBy = $"A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}";
                             string localIndex = $"{GetNodeIndexinParent(Node)}:";
-                            string[] localSlot = ActionIDtoIndextoName(Node);
+                            string[] localSlot = DefParser.GetDefPropertiesArray(Node, PropertyType);
                             string localInput = AxByToName(Node);
                             string localLabel = $"{localIndex} {localSlot[0]}: {localSlot[1]} {localInput}";
                             ImGui.PushID($"ItemForLoopNode = {localLabel}");
@@ -596,8 +572,6 @@ namespace DSFFXEditor
                                 }
                                 Vector2 cursorPos = ImGui.GetCursorPos();
                                 ImGui.BulletText($"{localSlot[0]}");
-                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
-                                    ShowToolTip(localSlot[0], "Type");
                                 ImGui.SetCursorPos(cursorPos);
                                 ImGui.Selectable($"###{localLabel}", selected, ImGuiSelectableFlags.SpanAllColumns);
                                 if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
@@ -609,10 +583,9 @@ namespace DSFFXEditor
                                     _showFFXEditorProperties = true;
                                     _showFFXEditorFields = false;
                                 }
+                                ShowToolTipWiki("Wiki", localSlot);
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localSlot[1]);
-                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
-                                    ShowToolTip(localSlot[1], "Arg");
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localSlot[2]);
                                 ImGui.TableNextColumn();
@@ -625,15 +598,15 @@ namespace DSFFXEditor
                             }
                             else
                             {
+                                Vector2 cursorPos = ImGui.GetCursorPos();
                                 ImGui.Indent();
                                 ImGui.Text(localSlot[0]);
-                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
-                                    ShowToolTip(localSlot[0], "Type");
                                 ImGui.Unindent();
+                                ImGui.SetCursorPos(cursorPos);
+                                ImGui.Selectable($"###{localLabel}", false, ImGuiSelectableFlags.SpanAllColumns);
+                                ShowToolTipWiki("Wiki", localSlot);
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localSlot[1]);
-                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
-                                    ShowToolTip(localSlot[1], "Arg");
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localSlot[2]);
                                 ImGui.TableNextColumn();
@@ -647,645 +620,6 @@ namespace DSFFXEditor
                     ImGui.TreePop();
                 }
             }
-        }
-        private static void ShowToolTip(string input, string toolTipType)
-        {
-            ImGuiWindowFlags localtoolTipFlags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.Tooltip;
-            if (toolTipType == "Arg" || toolTipType == "Type")
-            {
-                string localOutput;
-                switch (input)
-                {
-                    case "[C]":
-                        localOutput = $"{input} = Color Archetype";
-                        break;
-                    case "[S]":
-                        localOutput = $"{input} = Scalar Archetype";
-                        break;
-                    case "[P]":
-                        localOutput = $"{input} = Particle Argument";
-                        break;
-                    case "[PG]":
-                        localOutput = $"{input} = Particle On Generation Argument";
-                        break;
-                    case "[TG]":
-                        localOutput = $"{input} = Trail On Generation Argument";
-                        break;
-                    case "[E]":
-                        localOutput = $"{input} = Effect Argument";
-                        break;
-                    case "[u]":
-                        localOutput = $"{input} = Unknown";
-                        break;
-                    default:
-                        localOutput = $"{input} = No Tooltip was found for the symbol";
-                        break;
-                }
-                ImGui.SetNextWindowPos(ImGui.GetCursorPos());
-                if (ImGui.Begin("StandardToolTip", localtoolTipFlags))
-                {
-                    ImGui.Text($"{toolTipType} Tooltip:");
-                    ImGui.Text(localOutput);
-                    ImGui.End();
-                }
-            }
-            else
-            {
-                ImGui.SetNextWindowPos(ImGui.GetCursorPos());
-                if (ImGui.Begin("StandardToolTip", localtoolTipFlags))
-                {
-                    ImGui.Text($"{toolTipType} Tooltip:");
-                    ImGui.Text("ERROR: No Tooltip was found");
-                    ImGui.End();
-                }
-            }
-        }
-        private static string[] ActionIDtoIndextoName(XmlNode Node)
-        {
-            int localActionID = Int32.Parse(Node.ParentNode.ParentNode.Attributes[0].Value);
-            int localPropertyIndex = GetNodeIndexinParent(Node);
-            string scalar = "[S]";
-            string color = "[C]";
-            string particleArg = "[P]";
-            string effectArg = "[E]";
-            string particleGenArg = "[PG]";
-            string unknown = "[u]";
-            string trailArg = "[T]";
-            string trailGenArg = "[TG]";
-            if (Node.ParentNode.Name == "Properties1") //Properties1 Here
-            {
-                switch (localActionID)
-                {
-                    case 600:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleArg, "Scale*" };
-                            case 1:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 2:
-                                return new string[] { color, particleGenArg, "Color*" };
-                            case 3:
-                                return new string[] { color, effectArg, "Color*" };
-                        }
-                        break;
-                    case 601:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleGenArg, "Lenght*" };
-                            case 1:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 2:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 3:
-                                return new string[] { color, effectArg, "Start Color" };
-                            case 4:
-                                return new string[] { color, effectArg, "End Color" };
-                            case 5:
-                                return new string[] { scalar, particleArg, "Lenght*" };
-                            case 6:
-                                return new string[] { color, effectArg, "Color*" };
-                        }
-                        break;
-                    case 602:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleGenArg, "X Scale*" };
-                            case 1:
-                                return new string[] { scalar, particleGenArg, "Y Scale*" };
-                            case 2:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 3:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 4:
-                                return new string[] { color, effectArg, "Top Color" };
-                            case 5:
-                                return new string[] { color, effectArg, "Bottom Color" };
-                            case 6:
-                                return new string[] { scalar, particleArg, "Z Scale*" };
-                            case 7:
-                                return new string[] { scalar, particleArg, "Y Scale*" };
-                            case 8:
-                                return new string[] { color, effectArg, "Color*" };
-                        }
-                        break;
-                    case 603:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleArg, "X Offset" };
-                            case 1:
-                                return new string[] { scalar, particleArg, "Y Offset" };
-                            case 2:
-                                return new string[] { scalar, particleArg, "Z Offset" };
-                            case 3:
-                                return new string[] { scalar, particleArg, "Scale*" };
-                            case 4:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 6:
-                                return new string[] { color, particleGenArg, "Color*" };
-                            case 7:
-                                return new string[] { color, effectArg, "Color*" };
-                            case 8:
-                                return new string[] { scalar, particleArg, "Opacity Threshold" };
-                            case 9:
-                                return new string[] { scalar, particleArg, "X Rotation" };
-                            case 10:
-                                return new string[] { scalar, particleArg, "Y Rotation" };
-                            case 11:
-                                return new string[] { scalar, particleArg, "Z Rotation" };
-                            case 12:
-                                return new string[] { scalar, particleArg, "X Rotation° Speed" };
-                            case 13:
-                                return new string[] { scalar, particleArg, "X Rotation° Speed*" };
-                            case 14:
-                                return new string[] { scalar, particleArg, "Y Rotation° Speed" };
-                            case 15:
-                                return new string[] { scalar, particleArg, "Y Rotation° Speed*" };
-                            case 16:
-                                return new string[] { scalar, particleArg, "Z Rotation° Speed" };
-                            case 17:
-                                return new string[] { scalar, particleArg, "Z Rotation° Speed*" };
-                            case 18:
-                                return new string[] { scalar, unknown, "-Z Position" };
-                            case 19:
-                                return new string[] { scalar, unknown, "Texture Frame Offset" };
-                            case 20:
-                                return new string[] { scalar, unknown, "Texture Frame Index" };
-                            case 21:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 22:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 604:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleArg, "X Offset" };
-                            case 1:
-                                return new string[] { scalar, particleArg, "Y Offset" };
-                            case 2:
-                                return new string[] { scalar, particleArg, "Z Offset" };
-                            case 3:
-                                return new string[] { scalar, particleArg, "Scale*" };
-                            case 4:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 5:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 7:
-                                return new string[] { scalar, particleArg, "Z Rotation" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 10:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 11:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 12:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 13:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 14:
-                                return new string[] { color, particleArg, "Color multiplier" };
-                            case 15:
-                                return new string[] { color, unknown, "Unk" };
-                            case 16:
-                                return new string[] { color, unknown, "Unk" };
-                            case 17:
-                                return new string[] { color, unknown, "Unk" };
-                            case 18:
-                                return new string[] { color, particleArg, "Color multiplier" };
-                            case 19:
-                                return new string[] { color, unknown, "Unk" };
-                            case 20:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 21:
-                                return new string[] { scalar, unknown, "1st Texture Frame Offset" };
-                            case 22:
-                                return new string[] { scalar, unknown, "1st Texture Frame Index 1" };
-                            case 23:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 24:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 25:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 26:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 27:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 28:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 29:
-                                return new string[] { scalar, unknown, "2nd Texture X Scroll Speed" };
-                            case 30:
-                                return new string[] { scalar, unknown, "2nd Texture Y Scroll Speed" };
-                            case 31:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 32:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 33:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 34:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 35:
-                                return new string[] { scalar, unknown, "3rd Texture X Scroll Speed" };
-                            case 36:
-                                return new string[] { scalar, unknown, "3rd Texture Y Scroll Speed" };
-                            case 37:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 38:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 39:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 40:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 605:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleArg, "X Scale*" };
-                            case 1:
-                                return new string[] { scalar, particleArg, "Y Scale*" };
-                            case 2:
-                                return new string[] { scalar, particleArg, "Z Scale*" };
-                            case 3:
-                                return new string[] { scalar, particleArg, "X Rotation" };
-                            case 4:
-                                return new string[] { scalar, particleArg, "Y Rotation" };
-                            case 5:
-                                return new string[] { scalar, particleArg, "Z Rotation" };
-                            case 6:
-                                return new string[] { scalar, particleArg, "X Rotation° Speed" };
-                            case 7:
-                                return new string[] { scalar, particleArg, "X Rotation° Speed*" };
-                            case 8:
-                                return new string[] { scalar, particleArg, "Y Rotation° Speed" };
-                            case 9:
-                                return new string[] { scalar, particleArg, "Y Rotation° Speed*" };
-                            case 10:
-                                return new string[] { scalar, particleArg, "Z Rotation° Speed" };
-                            case 11:
-                                return new string[] { scalar, particleArg, "Z Rotation° Speed*" };
-                            case 12:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 13:
-                                return new string[] { color, particleGenArg, "Color*" };
-                            case 14:
-                                return new string[] { color, effectArg, "Color*" };
-                            case 15:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 16:
-                                return new string[] { scalar, unknown, "Texture Frame Index" };
-                            case 17:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 18:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 19:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 20:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 21:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 22:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 23:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 24:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 606:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Scale*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, trailArg, "Color*" };
-                            case 5:
-                                return new string[] { color, trailGenArg, "Color*" };
-                            case 6:
-                                return new string[] { color, effectArg, "Color*" };
-                            case 7:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, trailArg, "Texture Frame Index" };
-                            case 10:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 11:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 12:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 13:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 607:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 4:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 5:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 6:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 7:
-                                return new string[] { color, unknown, "Color*" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 10:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 11:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 12:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 13:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 14:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 15:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 609:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { color, unknown, "Light Color" };
-                            case 1:
-                                return new string[] { color, unknown, "Specual Color" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Light Radius" };
-                            case 3:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 4:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 5:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 7:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 10012:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Trail Size" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Scale*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, trailArg, "Color*" };
-                            case 5:
-                                return new string[] { color, trailGenArg, "Color*" };
-                            case 6:
-                                return new string[] { color, effectArg, "Color*" };
-                            case 7:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 10:
-                                return new string[] { scalar, unknown, "Segment Tex Width" };
-                            case 11:
-                                return new string[] { scalar, unknown, "Horizontal Tex Scroll speed" };
-                            case 12:
-                                return new string[] { scalar, unknown, "Vertical Tex Offset Range" };
-                            case 13:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                }
-            }
-            else //Properties2 Here
-            {
-                switch (localActionID)
-                {
-                    case 600:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-
-                    case 601:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-
-                    case 602:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-
-                    case 603:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 604:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 605:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 7:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 606:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 607:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 609:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 10012:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                }
-            }
-            return new string[] { "[u]", "[u]", "Unk" };
         }
         private static string AxByToName(XmlNode FFXProperty)
         {
@@ -1404,15 +738,8 @@ namespace DSFFXEditor
                     ImGui.Separator();
                     ImGui.NewLine();
                     { // Slider Stuff
-                        float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
                         ImGui.BulletText($"Stage {i + 1}: Position in time");
-                        if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
-                        {
-                            XmlNode localEditNode = NodeListEditor.Item(i + 9);
-                            if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                            localEditNode.Attributes[1].Value = localSlider.ToString();
-                        }
+                        FloatSliderDefaultNode(NodeListEditor.Item(i + 9), $"###Stage{i + 1}Slider", 0.0f, 2.0f);
                     }
 
                     { // ColorButton
@@ -1505,15 +832,8 @@ namespace DSFFXEditor
                     ImGui.Separator();
                     ImGui.NewLine();
                     { // Slider Stuff
-                        float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
                         ImGui.BulletText($"Stage {i + 1}: Position in time");
-                        if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
-                        {
-                            XmlNode localEditNode = NodeListEditor.Item(i + 9);
-                            if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                            localEditNode.Attributes[1].Value = localSlider.ToString();
-                        }
+                        FloatSliderDefaultNode(NodeListEditor.Item(i + 9), $"###Stage{i + 1}Slider", 0.0f, 2.0f);
                     }
 
                     { // ColorButton
@@ -1546,26 +866,15 @@ namespace DSFFXEditor
                                 ImGui.Indent();
                                 {
                                     int localint = 0;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
                                     int localint = 1;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 1 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 ImGui.Unindent();
                                 ImGui.TreePop();
@@ -1576,29 +885,15 @@ namespace DSFFXEditor
                                 ImGui.Indent();
                                 {
                                     int localint = 2;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
                                     int localint = 3;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 1 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 ImGui.Unindent();
                                 ImGui.TreePop();
@@ -1609,29 +904,15 @@ namespace DSFFXEditor
                                 ImGui.Indent();
                                 {
                                     int localint = 4;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
                                     int localint = 5;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 1 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 ImGui.Unindent();
                                 ImGui.TreePop();
@@ -1642,30 +923,16 @@ namespace DSFFXEditor
                                 ImGui.Indent();
                                 {
                                     int localint = 6;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
 
                                 {
                                     int localint = 7;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 ImGui.Unindent();
                                 ImGui.TreePop();
@@ -1680,1110 +947,6 @@ namespace DSFFXEditor
                 ImGui.TreePop();
             }
         }
-        public static void ActionID600Fields1Handler(XmlNodeList NodeListEditor)
-        {
-            // Texture ID
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(0), "Texture ID, Integer");
-
-            // Texture Blend Modes
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(1), "Texture Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
-            
-            // unk1
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 1, Integer");
-            
-            // unk2
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 2, Integer");
-            
-            // unk3
-            if (NodeListEditor.Item(4) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 3, Unknown");
-        }
-        public static void ActionID600Fields2Handler(XmlNodeList NodeListEditor)
-        {
-            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
-            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
-            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
-            string localToolTipTitle = "Description Tooltip:";
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
-
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
-
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
-
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
-
-            if (NodeListEditor.Item(4) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Bool");
-
-            if (NodeListEditor.Item(5) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R?, float");
-
-            if (NodeListEditor.Item(6) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G?, float");
-
-            if (NodeListEditor.Item(7) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B?, float");
-
-            if (NodeListEditor.Item(8) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness?, float");
-
-            if (NodeListEditor.Item(9) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Unknown");
-
-            if (NodeListEditor.Item(10) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
-
-            if (NodeListEditor.Item(11) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
-
-            if (NodeListEditor.Item(12) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
-
-            if (NodeListEditor.Item(13) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
-
-            if (NodeListEditor.Item(14) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Float");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(15) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Float");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(16) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Float");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(17) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Float");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(18) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(19) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(20) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
-
-            if (NodeListEditor.Item(21) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
-
-            if (NodeListEditor.Item(22) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
-
-            if (NodeListEditor.Item(23) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
-
-            if (NodeListEditor.Item(24) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
-
-            if (NodeListEditor.Item(25) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
-
-            if (NodeListEditor.Item(26) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
-
-            if (NodeListEditor.Item(27) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
-
-            if (NodeListEditor.Item(28) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
-
-            if (NodeListEditor.Item(29) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
-        }
-        public static void ActionID601Fields1Handler(XmlNodeList NodeListEditor)
-        {
-            // Texture Blend Modes
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(0), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
-            // unk0
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 0, Integer");
-        }
-        public static void ActionID601Fields2Handler(XmlNodeList NodeListEditor)
-        {
-            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
-            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
-            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
-            string localToolTipTitle = "Description Tooltip:";
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
-
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
-
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
-
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
-
-            if (NodeListEditor.Item(4) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Integer");
-
-            if (NodeListEditor.Item(5) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R?, float");
-
-            if (NodeListEditor.Item(6) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G?, float");
-
-            if (NodeListEditor.Item(7) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B?, float");
-
-            if (NodeListEditor.Item(8) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness?, float");
-
-            if (NodeListEditor.Item(9) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Float");
-
-            if (NodeListEditor.Item(10) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
-
-            if (NodeListEditor.Item(11) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
-
-            if (NodeListEditor.Item(12) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
-
-            if (NodeListEditor.Item(13) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
-
-            if (NodeListEditor.Item(14) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(15) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(16) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(17) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(18) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(19) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(20) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
-
-            if (NodeListEditor.Item(21) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
-
-            if (NodeListEditor.Item(22) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
-
-            if (NodeListEditor.Item(23) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
-
-            if (NodeListEditor.Item(24) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
-
-            if (NodeListEditor.Item(25) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
-
-            if (NodeListEditor.Item(26) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
-
-            if (NodeListEditor.Item(27) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
-
-            if (NodeListEditor.Item(28) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
-
-            if (NodeListEditor.Item(29) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
-        }
-        public static void ActionID602Fields1Handler(XmlNodeList NodeListEditor)
-        {
-            // Texture Blend Modes
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(0), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
-            // unk0
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 0, Integer");
-        }
-        public static void ActionID602Fields2Handler(XmlNodeList NodeListEditor)
-        {
-            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
-            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
-            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
-            string localToolTipTitle = "Description Tooltip:";
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
-
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
-
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
-
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
-
-            if (NodeListEditor.Item(4) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Integer");
-
-            if (NodeListEditor.Item(5) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R?, float");
-
-            if (NodeListEditor.Item(6) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G?, float");
-
-            if (NodeListEditor.Item(7) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B?, float");
-
-            if (NodeListEditor.Item(8) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness?, float");
-
-            if (NodeListEditor.Item(9) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Float");
-
-            if (NodeListEditor.Item(10) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
-
-            if (NodeListEditor.Item(11) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
-
-            if (NodeListEditor.Item(12) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
-
-            if (NodeListEditor.Item(13) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
-
-            if (NodeListEditor.Item(14) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(15) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(16) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(17) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(18) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(19) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(20) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
-
-            if (NodeListEditor.Item(21) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
-
-            if (NodeListEditor.Item(22) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
-
-            if (NodeListEditor.Item(23) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
-
-            if (NodeListEditor.Item(24) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
-
-            if (NodeListEditor.Item(25) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
-
-            if (NodeListEditor.Item(26) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
-
-            if (NodeListEditor.Item(27) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
-
-            if (NodeListEditor.Item(28) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
-
-            if (NodeListEditor.Item(29) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
-        }
-        public static void ActionID603Fields1Handler(XmlNodeList NodeListEditor)
-        {
-            // Orientation Mode
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(0), "Orientation Mode, Integer", new string[] { "0: Unknown", "1: Always facing the camera", "2: Aligned with Global Z Axis", "3: Aligned with Global Y Axis", "4: Always facing the camera, no tilting", "5: Aligned with Global X Axis", "6: Unknown", "7: Unknown" });
-            
-            // Texture ID
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Texture ID, Integer");
-
-            // Texture ID 2?
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Texture ID 2?, Integer");
-
-            // Texture Blend Modes
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(3), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
-
-            // Particle Size
-            if (NodeListEditor.Item(4) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(4), "Particle Size, Float");
-
-            // Unknown 0
-            if (NodeListEditor.Item(5) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(5), "Unknown 0, Float");
-
-            // Unknown 1
-            if (NodeListEditor.Item(6) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(6), "Unknown 1, Bool");
-
-            // Unknown 2
-            if (NodeListEditor.Item(7) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(7), "Unknown 2, Bool");
-
-            // Horizontal stacked frames
-            if (NodeListEditor.Item(8) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(8), "Horizontal stacked frames, Integer");
-            ShowToolTipSimple("Horizontal stacked frames", "How many frames are stacked horizontally in the texture sheet. Same as <texture width> / <frame width>.");
-
-            // Texture Frames Lenght
-            if (NodeListEditor.Item(9) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(9), "Texture Frames Lenght, Integer");
-            ShowToolTipSimple("Texture Frames Lenght", "How many frames are in the texture sheet in total.");
-
-            //Unknown 3
-            if (NodeListEditor.Item(10) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(10), "Unknown 3, Bool");
-
-            // Unknown 4
-            if (NodeListEditor.Item(11) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 4, Integer");
-
-            // Unknown 5
-            if (NodeListEditor.Item(12) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 5, Integer");
-
-            // Unknown 5
-            if (NodeListEditor.Item(13) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(13), "Unknown 5, Float");
-
-            //Unknown 6
-            if (NodeListEditor.Item(14) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(14), "Unknown 6, Bool");
-
-            //Unknown 7
-            if (NodeListEditor.Item(15) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(15), "Unknown 7, Bool");
-
-            //Unknown 8
-            if (NodeListEditor.Item(16) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(16), "Unknown 8, Bool");
-        }
-        public static void ActionID603Fields2Handler(XmlNodeList NodeListEditor)
-        {
-            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
-            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
-            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
-            string localToolTipTitle = "Description Tooltip:";
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
-
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
-
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
-
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
-
-            if (NodeListEditor.Item(4) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Integer");
-
-            if (NodeListEditor.Item(5) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R, float");
-
-            if (NodeListEditor.Item(6) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G, float");
-
-            if (NodeListEditor.Item(7) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B, float");
-
-            if (NodeListEditor.Item(8) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness, float");
-
-            if (NodeListEditor.Item(9) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Float");
-
-            if (NodeListEditor.Item(10) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
-
-            if (NodeListEditor.Item(11) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
-
-            if (NodeListEditor.Item(12) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
-
-            if (NodeListEditor.Item(13) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
-
-            if (NodeListEditor.Item(14) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(15) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(16) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(17) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(18) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(19) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(20) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
-
-            if (NodeListEditor.Item(21) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
-
-            if (NodeListEditor.Item(22) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
-
-            if (NodeListEditor.Item(23) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
-
-            if (NodeListEditor.Item(24) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
-
-            if (NodeListEditor.Item(25) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
-
-            if (NodeListEditor.Item(26) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
-
-            if (NodeListEditor.Item(27) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
-
-            if (NodeListEditor.Item(28) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
-
-            if (NodeListEditor.Item(29) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
-        }
-        public static void ActionID604Fields1Handler(XmlNodeList NodeListEditor)
-        {
-            // Orientation Mode
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(0), "Orientation Mode, Integer", new string[] { "0: Unknown", "1: Always facing the camera", "2: Aligned with Global Z Axis", "3: Aligned with Global Y Axis", "4: Always facing the camera, no tilting", "5: Aligned with Global X Axis", "6: Unknown", "7: Unknown" });
-
-            // Texture ID
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Texture ID, Integer");
-
-            // Texture ID 2
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Texture ID 2, Integer");
-
-            // Texture ID 3
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(3), "Texture ID 3, Integer");
-
-            // Texture Blend Modes
-            if (NodeListEditor.Item(4) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(4), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
-
-            //Unknown 0
-            if (NodeListEditor.Item(5) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(5), "Unknown 0, Bool");
-
-            // Unknown 1
-            if (NodeListEditor.Item(6) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(6), "Unknown 1, Integer");
-
-            // Horizontal stacked frames
-            if (NodeListEditor.Item(7) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(7), "Horizontal stacked frames, Integer");
-            ShowToolTipSimple("Horizontal stacked frames", "How many frames are stacked horizontally in the texture sheet. Same as <texture width> / <frame width>.");
-
-            // Texture Frames Lenght
-            if (NodeListEditor.Item(8) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(8), "Texture Frames Lenght, Integer");
-            ShowToolTipSimple("Texture Frames Lenght", "How many frames are in the texture sheet in total.");
-
-            // Unknown 2
-            if (NodeListEditor.Item(9) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(9), "Unknown 2, Bool");
-
-            // Unknown 3
-            if (NodeListEditor.Item(10) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 3, Integer");
-
-            // Unknown 4
-            if (NodeListEditor.Item(11) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 4, Integer");
-
-            //Unknown 5
-            if (NodeListEditor.Item(12) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(12), "Unknown 5, Bool");
-
-            //Unknown 6
-            if (NodeListEditor.Item(13) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(13), "Unknown 6, Bool");
-
-            //Unknown 7
-            if (NodeListEditor.Item(14) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(14), "Unknown 7, Integer");
-        }
-        public static void ActionID604Fields2Handler(XmlNodeList NodeListEditor)
-        {
-            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
-            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
-            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
-            string localToolTipTitle = "Description Tooltip:";
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Unknown");
-
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
-
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
-
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
-
-            if (NodeListEditor.Item(4) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Bool");
-
-            if (NodeListEditor.Item(5) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R, float");
-
-            if (NodeListEditor.Item(6) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G, float");
-
-            if (NodeListEditor.Item(7) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B, float");
-
-            if (NodeListEditor.Item(8) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness, float");
-
-            if (NodeListEditor.Item(9) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 9, Float");
-
-            if (NodeListEditor.Item(10) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 10, Unknown");
-
-            if (NodeListEditor.Item(11) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 11, Unknown");
-
-            if (NodeListEditor.Item(12) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 12, Unknown");
-
-            if (NodeListEditor.Item(13) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 13, Unknown");
-
-            if (NodeListEditor.Item(14) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(15) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(16) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(17) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(18) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(19) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(20) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(20), "Unknown 14, Unknown");
-
-            if (NodeListEditor.Item(21) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 15, Unknown");
-
-            if (NodeListEditor.Item(22) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 16, Unknown");
-
-            if (NodeListEditor.Item(23) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 17, Unknown");
-
-            if (NodeListEditor.Item(24) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(24), "Unknown 18, Unknown");
-
-            if (NodeListEditor.Item(25) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(25), "Unknown 19, Float");
-
-            if (NodeListEditor.Item(26) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 20, Unknown");
-
-            if (NodeListEditor.Item(27) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(27), "Unknown 21, Integer");
-
-            if (NodeListEditor.Item(28) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(28), "Unknown 22, Unknown");
-
-            if (NodeListEditor.Item(29) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(29), "Unknown 23, Float");
-        }
-        public static void ActionID605Fields1Handler(XmlNodeList NodeListEditor)
-        {
-            // Orientation Mode
-            if (NodeListEditor.Item(0) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(0), "Orientation Mode, Integer", new string[] { "0: Unknown", "1: Always facing the camera", "2: Aligned with Global Z Axis", "3: Aligned with Global Y Axis", "4: Always facing the camera, no tilting", "5: Aligned with Global X Axis", "6: Unknown", "7: Unknown" });
-
-            // Model ID
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Model ID, Integer");
-
-            // Unknown 0
-            if (NodeListEditor.Item(2) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(2), "Unknown 0, Float");
-
-            // Unknown 1
-            if (NodeListEditor.Item(3) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(3), "Unknown 1, Float");
-
-            // Unknown 2
-            if (NodeListEditor.Item(4) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(4), "Unknown 2, Float");
-
-            // Unknown 3
-            if (NodeListEditor.Item(5) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(5), "Unknown 3, Integer");
-
-            // Texture Blend Modes
-            if (NodeListEditor.Item(6) == null)
-                return;
-            IntComboDefaultNode(NodeListEditor.Item(6), "Color Blend Mode, Integer", new string[] { "0: Unknown", "1: Unknown", "2: Normal(SourceOver)", "3: Multiply(Ignores Texture Alpha)", "4: Add", "5: Subtract", "6: Unknown", "7: Screen" });
-
-            // Horizontal stacked frames
-            if (NodeListEditor.Item(7) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(7), "Horizontal stacked frames, Integer");
-            ShowToolTipSimple("Horizontal stacked frames", "How many frames are stacked horizontally in the texture sheet. Same as <texture width> / <frame width>.");
-
-            // Texture Frames Lenght
-            if (NodeListEditor.Item(8) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(8), "Texture Frames Lenght, Integer");
-            ShowToolTipSimple("Texture Frames Lenght", "How many frames are in the texture sheet in total.");
-
-            // Unknown 4
-            if (NodeListEditor.Item(9) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(9), "Unknown 4, Integer");
-
-            // Unknown 5
-            if (NodeListEditor.Item(10) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 5, Integer");
-
-            //Unknown 6
-            if (NodeListEditor.Item(11) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(11), "Unknown 6, Bool");
-
-            //Unknown 7
-            if (NodeListEditor.Item(12) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(12), "Unknown 7, Bool");
-
-            //Unknown 8
-            if (NodeListEditor.Item(13) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(13), "Unknown 8, Bool");
-
-            //Unknown 9
-            if (NodeListEditor.Item(14) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(14), "Unknown 9, Integer");
-
-            //Unknown 10
-            if (NodeListEditor.Item(15) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(15), "Unknown 10, Unknown");
-
-            //Unknown 11
-            if (NodeListEditor.Item(16) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(16), "Unknown 11, Bool");
-
-            //Unknown 12
-            if (NodeListEditor.Item(17) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(17), "Unknown 12, Float");
-
-            //Unknown 13
-            if (NodeListEditor.Item(18) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(18), "Unknown 13, Unknown");
-        }
-        public static void ActionID605Fields2Handler(XmlNodeList NodeListEditor)
-        {
-            string localFadeModifierFar = "These two control something about how the particles fade away as the distance to the camera increases, but I'm not sure exactly how they work yet.";
-            string localFadeModifierClose = "These two control something about how the particles fade away as the distance to the camera decreases, but I'm not sure exactly how they work yet.";
-            string localViewDistance = "When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range.";
-            string localToolTipTitle = "Description Tooltip:";
-            if (NodeListEditor.Item(0) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(0), "Unknown 0, Bool");
-
-            if (NodeListEditor.Item(1) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(1), "Unknown 1, Unknown");
-
-            if (NodeListEditor.Item(2) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(2), "Unknown 2, Integer");
-
-            if (NodeListEditor.Item(3) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(3), "Unknown 3, Unknown");
-
-            if (NodeListEditor.Item(4) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(4), "Unknown 4, Unknown");
-
-            if (NodeListEditor.Item(5) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(5), "Color Multiplier R, float");
-
-            if (NodeListEditor.Item(6) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(6), "Color Multiplier G, float");
-
-            if (NodeListEditor.Item(7) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(7), "Color Multiplier B, float");
-
-            if (NodeListEditor.Item(8) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(8), "Color Multiplier Effectiveness, float");
-
-            if (NodeListEditor.Item(9) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(9), "Unknown 5, Float");
-
-            if (NodeListEditor.Item(10) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(10), "Unknown 6, Unknown");
-
-            if (NodeListEditor.Item(11) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(11), "Unknown 7, Unknown");
-
-            if (NodeListEditor.Item(12) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(12), "Unknown 8, Unknown");
-
-            if (NodeListEditor.Item(13) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(13), "Unknown 9, Unknown");
-
-            if (NodeListEditor.Item(14) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(14), "Particle Fade Modifier: Closer 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(15) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(15), "Particle Fade Modifier: Closer 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierClose);
-
-            if (NodeListEditor.Item(16) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(16), "Particle Fade Modifier: Further Away 0, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(17) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(17), "Particle Fade Modifier: Further Away 1, Unknown");
-            ShowToolTipSimple(localToolTipTitle, localFadeModifierFar);
-
-            if (NodeListEditor.Item(18) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(18), "Minimum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(19) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(19), "Maximum View Distance, Float");
-            ShowToolTipSimple(localToolTipTitle, localViewDistance);
-
-            if (NodeListEditor.Item(20) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(20), "Unknown 10, Float");
-
-            if (NodeListEditor.Item(21) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(21), "Unknown 11, Unknown");
-
-            if (NodeListEditor.Item(22) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(22), "Unknown 12, Unknown");
-
-            if (NodeListEditor.Item(23) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(23), "Unknown 13, Unknown");
-
-            if (NodeListEditor.Item(24) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(24), "Scale Something?, Float");
-
-            if (NodeListEditor.Item(25) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(25), "Unknown 14, Unknown");
-
-            if (NodeListEditor.Item(26) == null)
-                return;
-            IntInputDefaultNode(NodeListEditor.Item(26), "Unknown 15, Integer");
-
-            if (NodeListEditor.Item(27) == null)
-                return;
-            BooleanIntInputDefaultNode(NodeListEditor.Item(27), "Unknown 16, Bool");
-
-            if (NodeListEditor.Item(28) == null)
-                return;
-            FloatInputDefaultNode(NodeListEditor.Item(28), "Unknown 17, Float");
-        }
 
         public static void IntInputDefaultNode(XmlNode node, string dataString)
         {
@@ -2797,6 +960,16 @@ namespace DSFFXEditor
                         node.Attributes[0].Value = "FFXFieldInt";
                     node.Attributes[1].Value = intNodeValue.ToString();
                 }
+            }
+        }
+        public static void FloatSliderDefaultNode(XmlNode node, string dataString, float minimumValue, float maximumValue)
+        {
+            float nodeValue = float.Parse(node.Attributes[1].Value);
+            if (ImGui.SliderFloat(dataString, ref nodeValue, minimumValue, maximumValue))
+            {
+                if (node.Attributes[0].Value == "FFXFieldInt")
+                    node.Attributes[0].Value = "FFXFieldFloat";
+                node.Attributes[1].Value = nodeValue.ToString("#.0000");
             }
         }
         public static void FloatInputDefaultNode(XmlNode node, string dataString)
@@ -2839,34 +1012,82 @@ namespace DSFFXEditor
                 node.Attributes[1].Value = (nodeValueBool ? 1 : 0).ToString();
             }
         }
-        public static void IntComboDefaultNode(XmlNode node, string comboTitle, string[] entriesArray)
+        public static void IntComboDefaultNode(XmlNode node, string comboTitle, string[] entriesArrayValues, string[] entriesArrayNames)
         {
             int blendModeCurrent = Int32.Parse(node.Attributes[1].Value);
-            if (ImGui.Combo(comboTitle, ref blendModeCurrent, entriesArray, entriesArray.Length))
+            if (ImGui.Combo(comboTitle, ref blendModeCurrent, entriesArrayNames, entriesArrayNames.Length))
             {
                 if (node.Attributes[0].Value == "FFXFieldFloat")
                     node.Attributes[0].Value = "FFXFieldInt";
-                node.Attributes[1].Value = blendModeCurrent.ToString();
+                string tempstring = entriesArrayValues[blendModeCurrent];
+                int tempint;
+                if (Int32.TryParse(tempstring, out tempint))
+                {
+                    node.Attributes[1].Value = tempint.ToString();
+                }
             }
         }
-        public static void ShowToolTipSimple(string toolTipTitle, string toolTipText)
+        public static void IntComboNotLinearDefaultNode(XmlNode node, string comboTitle, XmlNode EnumEntries)
         {
-            if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
+            string localSelectedItem;
+            XmlNode CurrentNode = EnumEntries.SelectSingleNode($"descendant::*[@value={node.Attributes[1].Value}]");
+            if (CurrentNode != null)
+                localSelectedItem = $"{CurrentNode.Attributes["value"].Value}: {CurrentNode.Attributes["name"].Value}";
+            else
+                localSelectedItem = $"{node.Attributes[1].Value}: Not Enumerated";
+
+            ArrayList localTempArray = new ArrayList();
+            foreach (XmlNode node1 in EnumEntries.ChildNodes)
             {
-                Vector2 localMousePos = ImGui.GetMousePos();
+                localTempArray.Add($"{node1.Attributes["value"].Value}: {node1.Attributes["name"].Value}");
+            }
+            string[] localArray = new string[localTempArray.Count];
+            localTempArray.CopyTo(localArray);
+
+            if (ImGui.BeginCombo(comboTitle, localSelectedItem))
+            {
+                for (int i = 0; i < localArray.Length; i++)
+                {
+                    if (ImGui.Selectable(localArray[i]))
+                    {
+                        if (node.Attributes[0].Value == "FFXFieldFloat")
+                            node.Attributes[0].Value = "FFXFieldInt";
+                        int safetyNetInt;
+                        if (Int32.TryParse(EnumEntries.ChildNodes[i].Attributes["value"].Value, out safetyNetInt))
+                        {
+                            node.Attributes[1].Value = safetyNetInt.ToString();
+                        }
+                    }
+                }
+                ImGui.EndCombo();
+            }
+        }
+        public static void ShowToolTipSimple(string toolTipUID, string toolTipTitle, string toolTipText, bool isToolTipObjectSpawned, ImGuiPopupFlags popupTriggerCond)
+        {
+            string localUID = toolTipUID + toolTipTitle;
+            if (isToolTipObjectSpawned)
+                ImGui.TextColored(new Vector4(1f, 0f, 0f, 1f), "(?)");
+            ImGui.OpenPopupOnItemClick(localUID, popupTriggerCond);
+            if (ImGui.IsPopupOpen(localUID))
+            {
+                Vector2 mousePos = ImGui.GetMousePos();
                 Vector2 localTextSize = ImGui.CalcTextSize(toolTipText);
                 float maxToolTipWidth = (float)_window.Width * 0.4f;
-                if (localTextSize.X > maxToolTipWidth)
-                    ImGui.SetNextWindowSize(new Vector2(maxToolTipWidth, localTextSize.Y), ImGuiCond.Appearing);
+                float windowWidth;
+                float windowHeight;
+                Vector2 windowSize = new Vector2(maxToolTipWidth, localTextSize.Y);
+                if (mousePos.X > (float)(_window.Width / 2))
+                    windowWidth = mousePos.X - maxToolTipWidth;
                 else
-                    ImGui.SetNextWindowSize(new Vector2(localTextSize.X, localTextSize.Y), ImGuiCond.Appearing);
-                ImGui.SetNextWindowPos(new Vector2(localMousePos.X, localMousePos.Y + 20f), ImGuiCond.Appearing);
-                if (ImGui.Begin(toolTipTitle, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.Tooltip))
+                    windowWidth = mousePos.X;
+                ImGui.SetNextWindowPos(new Vector2(windowWidth, mousePos.Y), ImGuiCond.Appearing);
+                ImGui.SetNextWindowSize(windowSize, ImGuiCond.Appearing);
+                if (ImGui.BeginPopupContextItem(localUID))
                 {
                     ImGui.Text(toolTipTitle);
                     ImGui.NewLine();
                     ImGui.TextWrapped(toolTipText);
-                    ImGui.End();
+                    ImGui.EndPopup();
                 }
             }
         }
