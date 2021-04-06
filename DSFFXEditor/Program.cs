@@ -65,9 +65,6 @@ namespace DSFFXEditor
 
         public static float _colorOverload = 1.0f;
         //</Color Editor>
-        //<Floating Point Editor>
-        public static bool _floatEditorIsEnable = false;
-        //</Floating Point Editor>
 
         [STAThread]
         static void Main()
@@ -93,7 +90,7 @@ namespace DSFFXEditor
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
             DSFFXThemes.ThemesSelector(_activeTheme); //Default Theme
-            DefParser.LoadXml();
+            DefParser.Initialize();
             // Main application loop
             while (_window.Exists)
             {
@@ -211,6 +208,51 @@ namespace DSFFXEditor
             }
 
             { //Declare Standalone Windows here
+                // Color Picker
+                if (_cPickerIsEnable)
+                {
+                    float popupWidth = _window.Width * 0.7f;
+                    float popupHeight = _window.Height * 0.7f;
+                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Once);
+                    if (ImGui.Begin("FFX Color Picker"))
+                    {
+                        if (ImGuiAddons.ButtonGradient("Close Color Picker"))
+                            _cPickerIsEnable = false;
+                        ImGui.SameLine();
+                        if (ImGuiAddons.ButtonGradient("Commit Color Change"))
+                        {
+                            if (_cPickerRed.Attributes[0].Value == "FFXFieldInt" || _cPickerGreen.Attributes[0].Value == "FFXFieldInt" || _cPickerBlue.Attributes[0].Value == "FFXFieldInt" || _cPickerAlpha.Attributes[0].Value == "FFXFieldInt")
+                            {
+                                _cPickerRed.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerGreen.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerBlue.Attributes[0].Value = "FFXFieldFloat";
+                                _cPickerAlpha.Attributes[0].Value = "FFXFieldFloat";
+                            }
+                            _cPickerRed.Attributes[1].Value = _cPicker.X.ToString("#.0000");
+                            _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString("#.0000");
+                            _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString("#.0000");
+                            _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString("#.0000");
+                        }
+                        Vector2 mEME = ImGui.GetWindowSize();
+                        if (mEME.X > mEME.Y)
+                        {
+                            ImGui.SetNextItemWidth(mEME.Y * 0.80f);
+                        }
+                        ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.NoTooltip);
+                        ImGui.Separator();
+                        ImGui.Text("Brightness Multiplier");
+                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, 1.0f, 10.0f);
+                        ImGui.SameLine();
+                        if (ImGuiAddons.ButtonGradient("Apply Change"))
+                        {
+                            _cPicker.X *= _colorOverload;
+                            _cPicker.Y *= _colorOverload;
+                            _cPicker.Z *= _colorOverload;
+                        }
+                        ImGui.End();
+                    }
+                }
+                // Keyboard Guide
                 if (_keyboardInputGuide)
                 {
                     ImGui.SetNextWindowDockID(MainViewport);
@@ -220,7 +262,8 @@ namespace DSFFXEditor
                     ImGui.ShowUserGuide();
                     ImGui.End();
                 }
-                if (_axbyEditorIsPopup) //Currently Unused FFXProperty Changer
+                //Currently Unused FFXProperty Changer
+                if (_axbyEditorIsPopup)
                 {
                     if (!ImGui.IsPopupOpen("AxByTypeEditor"))
                     {
@@ -262,7 +305,7 @@ namespace DSFFXEditor
             { //Main Window Here
                 ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
                 ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
-                ImGui.Columns(3);
+                ImGui.Columns(2);
                 ImGui.BeginChild("FFXTreeView");
                 if (XMLOpen == true)
                 {
@@ -273,50 +316,6 @@ namespace DSFFXEditor
                 {
                     ImGui.NextColumn();
                     FFXEditor();
-                }
-                //Tools DockSpace Declaration
-                uint WorkshopDockspace = ImGui.GetID("FFX Workshop");
-                ImGui.NextColumn();
-                ImGui.BeginChild("FFX Workshop");
-                ImGui.DockSpace(WorkshopDockspace);
-                ImGui.EndChild();
-                //Declare Workshop Tools below here
-                {
-                    if (_cPickerIsEnable)
-                    {
-                        ImGui.SetNextWindowDockID(WorkshopDockspace, ImGuiCond.Appearing);
-                        ImGui.Begin("FFX Color Picker");
-                        if (ImGuiAddons.ButtonGradient("Close Color Picker"))
-                            _cPickerIsEnable = false;
-                        ImGui.SameLine();
-                        if (ImGuiAddons.ButtonGradient("Commit Color Change"))
-                        {
-                            if (_cPickerRed.Attributes[0].Value == "FFXFieldInt" || _cPickerGreen.Attributes[0].Value == "FFXFieldInt" || _cPickerBlue.Attributes[0].Value == "FFXFieldInt" || _cPickerAlpha.Attributes[0].Value == "FFXFieldInt")
-                            {
-                                _cPickerRed.Attributes[0].Value = "FFXFieldFloat";
-                                _cPickerGreen.Attributes[0].Value = "FFXFieldFloat";
-                                _cPickerBlue.Attributes[0].Value = "FFXFieldFloat";
-                                _cPickerAlpha.Attributes[0].Value = "FFXFieldFloat";
-                            }
-                            _cPickerRed.Attributes[1].Value = _cPicker.X.ToString("#.0000");
-                            _cPickerGreen.Attributes[1].Value = _cPicker.Y.ToString("#.0000");
-                            _cPickerBlue.Attributes[1].Value = _cPicker.Z.ToString("#.0000");
-                            _cPickerAlpha.Attributes[1].Value = _cPicker.W.ToString("#.0000");
-                        }
-                        ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar);
-                        ImGui.Separator();
-                        ImGui.Text("Brightness Multiplier");
-                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, 1.0f, 10.0f);
-                        ImGui.SameLine();
-                        if (ImGuiAddons.ButtonGradient("Apply Change"))
-                        {
-                            _cPicker.X *= _colorOverload;
-                            _cPicker.Y *= _colorOverload;
-                            _cPicker.Z *= _colorOverload;
-                        }
-                        ImGui.Separator();
-                        ImGui.End();
-                    }
                 }
             }
         }
@@ -413,7 +412,7 @@ namespace DSFFXEditor
             { }
         }
 
-        private static int GetNodeIndexinParent(XmlNode Node)
+        public static int GetNodeIndexinParent(XmlNode Node)
         {
             int ChildIndex = 0;
             if (Node.PreviousSibling != null)
@@ -471,9 +470,9 @@ namespace DSFFXEditor
             }
             else if (_showFFXEditorFields)
             {
-                ImGui.PushItemWidth(ImGui.GetColumnWidth() * 0.4f);
+                //ImGui.PushItemWidth(ImGui.GetColumnWidth() * 0.4f);
                 DefParser.DefXMLParser(NodeListEditor, Fields[1], Fields[0]);
-                ImGui.PopItemWidth();
+                //ImGui.PopItemWidth();
             }
             ImGui.EndChild();
             //
@@ -519,6 +518,22 @@ namespace DSFFXEditor
             }
         }
         private static uint treeViewCurrentHighlighted = 0;
+        public static void ShowToolTipWiki(string toolTipTitle, string[] localSlot)
+        {
+            string fullToolTip = "";
+            string archetypeWiki = DefParser.DefXMLSymbolParser(localSlot[0]);
+            string argumentsWiki = DefParser.DefXMLSymbolParser(localSlot[1]);
+            if (localSlot.Length >= 4)
+            {
+                if (localSlot[3] != null)
+                {
+                    fullToolTip += $"FFX Property Slot ToolTip:\n{localSlot[3]}\n\n";
+                }
+            }
+            fullToolTip += $"Type = {localSlot[0]}: {archetypeWiki}.\n\n";
+            fullToolTip += $"Arg = {localSlot[1]}: {argumentsWiki}.";
+            ShowToolTipSimple("",toolTipTitle,fullToolTip, false, ImGuiPopupFlags.MouseButtonRight);
+        }
         private static void GetFFXProperties(XmlNode root, string PropertyType)
         {
             XmlNodeList localNodeList = root.SelectNodes($"descendant::{PropertyType}/FFXProperty");
@@ -540,7 +555,7 @@ namespace DSFFXEditor
                             ImGui.TableNextColumn();
                             string localAxBy = $"A{Node.Attributes[0].Value}B{Node.Attributes[1].Value}";
                             string localIndex = $"{GetNodeIndexinParent(Node)}:";
-                            string[] localSlot = ActionIDtoIndextoName(Node);
+                            string[] localSlot = DefParser.GetDefPropertiesArray(Node, PropertyType);
                             string localInput = AxByToName(Node);
                             string localLabel = $"{localIndex} {localSlot[0]}: {localSlot[1]} {localInput}";
                             ImGui.PushID($"ItemForLoopNode = {localLabel}");
@@ -557,8 +572,6 @@ namespace DSFFXEditor
                                 }
                                 Vector2 cursorPos = ImGui.GetCursorPos();
                                 ImGui.BulletText($"{localSlot[0]}");
-                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
-                                    ShowToolTip(localSlot[0], "Type");
                                 ImGui.SetCursorPos(cursorPos);
                                 ImGui.Selectable($"###{localLabel}", selected, ImGuiSelectableFlags.SpanAllColumns);
                                 if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
@@ -570,10 +583,9 @@ namespace DSFFXEditor
                                     _showFFXEditorProperties = true;
                                     _showFFXEditorFields = false;
                                 }
+                                ShowToolTipWiki("Wiki", localSlot);
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localSlot[1]);
-                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
-                                    ShowToolTip(localSlot[1], "Arg");
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localSlot[2]);
                                 ImGui.TableNextColumn();
@@ -586,15 +598,15 @@ namespace DSFFXEditor
                             }
                             else
                             {
+                                Vector2 cursorPos = ImGui.GetCursorPos();
                                 ImGui.Indent();
                                 ImGui.Text(localSlot[0]);
-                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
-                                    ShowToolTip(localSlot[0], "Type");
                                 ImGui.Unindent();
+                                ImGui.SetCursorPos(cursorPos);
+                                ImGui.Selectable($"###{localLabel}", false, ImGuiSelectableFlags.SpanAllColumns);
+                                ShowToolTipWiki("Wiki", localSlot);
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localSlot[1]);
-                                if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
-                                    ShowToolTip(localSlot[1], "Arg");
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localSlot[2]);
                                 ImGui.TableNextColumn();
@@ -608,645 +620,6 @@ namespace DSFFXEditor
                     ImGui.TreePop();
                 }
             }
-        }
-        private static void ShowToolTip(string input, string toolTipType)
-        {
-            ImGuiWindowFlags localtoolTipFlags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.Tooltip;
-            if (toolTipType == "Arg" || toolTipType == "Type")
-            {
-                string localOutput;
-                switch (input)
-                {
-                    case "[C]":
-                        localOutput = $"{input} = Color Archetype";
-                        break;
-                    case "[S]":
-                        localOutput = $"{input} = Scalar Archetype";
-                        break;
-                    case "[P]":
-                        localOutput = $"{input} = Particle Argument";
-                        break;
-                    case "[PG]":
-                        localOutput = $"{input} = Particle On Generation Argument";
-                        break;
-                    case "[TG]":
-                        localOutput = $"{input} = Trail On Generation Argument";
-                        break;
-                    case "[E]":
-                        localOutput = $"{input} = Effect Argument";
-                        break;
-                    case "[u]":
-                        localOutput = $"{input} = Unknown";
-                        break;
-                    default:
-                        localOutput = $"{input} = No Tooltip was found for the symbol";
-                        break;
-                }
-                ImGui.SetNextWindowPos(ImGui.GetCursorPos());
-                if (ImGui.Begin("StandardToolTip", localtoolTipFlags))
-                {
-                    ImGui.Text($"{toolTipType} Tooltip:");
-                    ImGui.Text(localOutput);
-                    ImGui.End();
-                }
-            }
-            else
-            {
-                ImGui.SetNextWindowPos(ImGui.GetCursorPos());
-                if (ImGui.Begin("StandardToolTip", localtoolTipFlags))
-                {
-                    ImGui.Text($"{toolTipType} Tooltip:");
-                    ImGui.Text("ERROR: No Tooltip was found");
-                    ImGui.End();
-                }
-            }
-        }
-        private static string[] ActionIDtoIndextoName(XmlNode Node)
-        {
-            int localActionID = Int32.Parse(Node.ParentNode.ParentNode.Attributes[0].Value);
-            int localPropertyIndex = GetNodeIndexinParent(Node);
-            string scalar = "[S]";
-            string color = "[C]";
-            string particleArg = "[P]";
-            string effectArg = "[E]";
-            string particleGenArg = "[PG]";
-            string unknown = "[u]";
-            string trailArg = "[T]";
-            string trailGenArg = "[TG]";
-            if (Node.ParentNode.Name == "Properties1") //Properties1 Here
-            {
-                switch (localActionID)
-                {
-                    case 600:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleArg, "Scale*" };
-                            case 1:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 2:
-                                return new string[] { color, particleGenArg, "Color*" };
-                            case 3:
-                                return new string[] { color, effectArg, "Color*" };
-                        }
-                        break;
-                    case 601:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleGenArg, "Lenght*" };
-                            case 1:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 2:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 3:
-                                return new string[] { color, effectArg, "Start Color" };
-                            case 4:
-                                return new string[] { color, effectArg, "End Color" };
-                            case 5:
-                                return new string[] { scalar, particleArg, "Lenght*" };
-                            case 6:
-                                return new string[] { color, effectArg, "Color*" };
-                        }
-                        break;
-                    case 602:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleGenArg, "X Scale*" };
-                            case 1:
-                                return new string[] { scalar, particleGenArg, "Y Scale*" };
-                            case 2:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 3:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 4:
-                                return new string[] { color, effectArg, "Top Color" };
-                            case 5:
-                                return new string[] { color, effectArg, "Bottom Color" };
-                            case 6:
-                                return new string[] { scalar, particleArg, "Z Scale*" };
-                            case 7:
-                                return new string[] { scalar, particleArg, "Y Scale*" };
-                            case 8:
-                                return new string[] { color, effectArg, "Color*" };
-                        }
-                        break;
-                    case 603:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleArg, "X Offset" };
-                            case 1:
-                                return new string[] { scalar, particleArg, "Y Offset" };
-                            case 2:
-                                return new string[] { scalar, particleArg, "Z Offset" };
-                            case 3:
-                                return new string[] { scalar, particleArg, "Scale*" };
-                            case 4:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 6:
-                                return new string[] { color, particleGenArg, "Color*" };
-                            case 7:
-                                return new string[] { color, effectArg, "Color*" };
-                            case 8:
-                                return new string[] { scalar, particleArg, "Opacity Threshold" };
-                            case 9:
-                                return new string[] { scalar, particleArg, "X Rotation" };
-                            case 10:
-                                return new string[] { scalar, particleArg, "Y Rotation" };
-                            case 11:
-                                return new string[] { scalar, particleArg, "Z Rotation" };
-                            case 12:
-                                return new string[] { scalar, particleArg, "X Rotation° Speed" };
-                            case 13:
-                                return new string[] { scalar, particleArg, "X Rotation° Speed*" };
-                            case 14:
-                                return new string[] { scalar, particleArg, "Y Rotation° Speed" };
-                            case 15:
-                                return new string[] { scalar, particleArg, "Y Rotation° Speed*" };
-                            case 16:
-                                return new string[] { scalar, particleArg, "Z Rotation° Speed" };
-                            case 17:
-                                return new string[] { scalar, particleArg, "Z Rotation° Speed*" };
-                            case 18:
-                                return new string[] { scalar, unknown, "-Z Position" };
-                            case 19:
-                                return new string[] { scalar, unknown, "Texture Frame Offset" };
-                            case 20:
-                                return new string[] { scalar, unknown, "Texture Frame Index" };
-                            case 21:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 22:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 604:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleArg, "X Offset" };
-                            case 1:
-                                return new string[] { scalar, particleArg, "Y Offset" };
-                            case 2:
-                                return new string[] { scalar, particleArg, "Z Offset" };
-                            case 3:
-                                return new string[] { scalar, particleArg, "Scale*" };
-                            case 4:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 5:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 7:
-                                return new string[] { scalar, particleArg, "Z Rotation" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 10:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 11:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 12:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 13:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 14:
-                                return new string[] { color, particleArg, "Color multiplier" };
-                            case 15:
-                                return new string[] { color, unknown, "Unk" };
-                            case 16:
-                                return new string[] { color, unknown, "Unk" };
-                            case 17:
-                                return new string[] { color, unknown, "Unk" };
-                            case 18:
-                                return new string[] { color, particleArg, "Color multiplier" };
-                            case 19:
-                                return new string[] { color, unknown, "Unk" };
-                            case 20:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 21:
-                                return new string[] { scalar, unknown, "1st Texture Frame Offset" };
-                            case 22:
-                                return new string[] { scalar, unknown, "1st Texture Frame Index 1" };
-                            case 23:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 24:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 25:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 26:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 27:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 28:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 29:
-                                return new string[] { scalar, unknown, "2nd Texture X Scroll Speed" };
-                            case 30:
-                                return new string[] { scalar, unknown, "2nd Texture Y Scroll Speed" };
-                            case 31:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 32:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 33:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 34:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 35:
-                                return new string[] { scalar, unknown, "3rd Texture X Scroll Speed" };
-                            case 36:
-                                return new string[] { scalar, unknown, "3rd Texture Y Scroll Speed" };
-                            case 37:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 38:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 39:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 40:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 605:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, particleArg, "X Scale*" };
-                            case 1:
-                                return new string[] { scalar, particleArg, "Y Scale*" };
-                            case 2:
-                                return new string[] { scalar, particleArg, "Z Scale*" };
-                            case 3:
-                                return new string[] { scalar, particleArg, "X Rotation" };
-                            case 4:
-                                return new string[] { scalar, particleArg, "Y Rotation" };
-                            case 5:
-                                return new string[] { scalar, particleArg, "Z Rotation" };
-                            case 6:
-                                return new string[] { scalar, particleArg, "X Rotation° Speed" };
-                            case 7:
-                                return new string[] { scalar, particleArg, "X Rotation° Speed*" };
-                            case 8:
-                                return new string[] { scalar, particleArg, "Y Rotation° Speed" };
-                            case 9:
-                                return new string[] { scalar, particleArg, "Y Rotation° Speed*" };
-                            case 10:
-                                return new string[] { scalar, particleArg, "Z Rotation° Speed" };
-                            case 11:
-                                return new string[] { scalar, particleArg, "Z Rotation° Speed*" };
-                            case 12:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 13:
-                                return new string[] { color, particleGenArg, "Color*" };
-                            case 14:
-                                return new string[] { color, effectArg, "Color*" };
-                            case 15:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 16:
-                                return new string[] { scalar, unknown, "Texture Frame Index" };
-                            case 17:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 18:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 19:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 20:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 21:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 22:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 23:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 24:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 606:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Scale*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, trailArg, "Color*" };
-                            case 5:
-                                return new string[] { color, trailGenArg, "Color*" };
-                            case 6:
-                                return new string[] { color, effectArg, "Color*" };
-                            case 7:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, trailArg, "Texture Frame Index" };
-                            case 10:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 11:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 12:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 13:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 607:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 4:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 5:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 6:
-                                return new string[] { color, particleArg, "Color*" };
-                            case 7:
-                                return new string[] { color, unknown, "Color*" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 10:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 11:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 12:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 13:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 14:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 15:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 609:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { color, unknown, "Light Color" };
-                            case 1:
-                                return new string[] { color, unknown, "Specual Color" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Light Radius" };
-                            case 3:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 4:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 5:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 7:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 10012:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Trail Size" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Scale*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, trailArg, "Color*" };
-                            case 5:
-                                return new string[] { color, trailGenArg, "Color*" };
-                            case 6:
-                                return new string[] { color, effectArg, "Color*" };
-                            case 7:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 8:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 9:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 10:
-                                return new string[] { scalar, unknown, "Segment Tex Width" };
-                            case 11:
-                                return new string[] { scalar, unknown, "Horizontal Tex Scroll speed" };
-                            case 12:
-                                return new string[] { scalar, unknown, "Vertical Tex Offset Range" };
-                            case 13:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                }
-            }
-            else //Properties2 Here
-            {
-                switch (localActionID)
-                {
-                    case 600:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-
-                    case 601:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-
-                    case 602:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-
-                    case 603:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 604:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 605:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 7:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 606:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 607:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 609:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                    case 10012:
-                        switch (localPropertyIndex)
-                        {
-                            case 0:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 1:
-                                return new string[] { scalar, unknown, "Brightness*" };
-                            case 2:
-                                return new string[] { scalar, unknown, "Unk" };
-                            case 3:
-                                return new string[] { color, unknown, "Unk" };
-                            case 4:
-                                return new string[] { color, unknown, "Unk" };
-                            case 5:
-                                return new string[] { color, unknown, "Unk" };
-                            case 6:
-                                return new string[] { scalar, unknown, "Unk" };
-                        }
-                        break;
-                }
-            }
-            return new string[] { "[u]", "[u]", "Unk" };
         }
         private static string AxByToName(XmlNode FFXProperty)
         {
@@ -1365,15 +738,8 @@ namespace DSFFXEditor
                     ImGui.Separator();
                     ImGui.NewLine();
                     { // Slider Stuff
-                        float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
                         ImGui.BulletText($"Stage {i + 1}: Position in time");
-                        if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
-                        {
-                            XmlNode localEditNode = NodeListEditor.Item(i + 9);
-                            if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                            localEditNode.Attributes[1].Value = localSlider.ToString();
-                        }
+                        FloatSliderDefaultNode(NodeListEditor.Item(i + 9), $"###Stage{i + 1}Slider", 0.0f, 2.0f);
                     }
 
                     { // ColorButton
@@ -1466,15 +832,8 @@ namespace DSFFXEditor
                     ImGui.Separator();
                     ImGui.NewLine();
                     { // Slider Stuff
-                        float localSlider = float.Parse(NodeListEditor.Item(i + 9).Attributes[1].Value);
                         ImGui.BulletText($"Stage {i + 1}: Position in time");
-                        if (ImGui.SliderFloat($"###Stage{i + 1}Slider", ref localSlider, 0.0f, 2.0f))
-                        {
-                            XmlNode localEditNode = NodeListEditor.Item(i + 9);
-                            if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                            localEditNode.Attributes[1].Value = localSlider.ToString();
-                        }
+                        FloatSliderDefaultNode(NodeListEditor.Item(i + 9), $"###Stage{i + 1}Slider", 0.0f, 2.0f);
                     }
 
                     { // ColorButton
@@ -1507,26 +866,15 @@ namespace DSFFXEditor
                                 ImGui.Indent();
                                 {
                                     int localint = 0;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
                                     int localint = 1;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 1 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 ImGui.Unindent();
                                 ImGui.TreePop();
@@ -1537,29 +885,15 @@ namespace DSFFXEditor
                                 ImGui.Indent();
                                 {
                                     int localint = 2;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
                                     int localint = 3;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 1 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 ImGui.Unindent();
                                 ImGui.TreePop();
@@ -1570,29 +904,15 @@ namespace DSFFXEditor
                                 ImGui.Indent();
                                 {
                                     int localint = 4;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
                                     int localint = 5;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 1 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 ImGui.Unindent();
                                 ImGui.TreePop();
@@ -1603,30 +923,16 @@ namespace DSFFXEditor
                                 ImGui.Indent();
                                 {
                                     int localint = 6;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
 
                                 {
                                     int localint = 7;
-                                    float localSlider = float.Parse(NodeListEditor.Item(localproperfieldpos + localint).Attributes[1].Value);
                                     ImGui.Text("Curve Point 0 = ");
                                     ImGui.SameLine();
-                                    if (ImGui.SliderFloat($"###Curve{localint}Stage{i + 1}FloatInput", ref localSlider, 0.0f, 2.0f))
-                                    {
-                                        XmlNode localEditNode = NodeListEditor.Item(localproperfieldpos + localint);
-                                        if (localEditNode.Attributes[0].Value == "FFXFieldInt")
-                                            localEditNode.Attributes[0].Value = "FFXFieldFloat";
-                                        localEditNode.Attributes[1].Value = localSlider.ToString();
-                                    }
+                                    FloatSliderDefaultNode(NodeListEditor.Item(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 ImGui.Unindent();
                                 ImGui.TreePop();
@@ -1654,6 +960,16 @@ namespace DSFFXEditor
                         node.Attributes[0].Value = "FFXFieldInt";
                     node.Attributes[1].Value = intNodeValue.ToString();
                 }
+            }
+        }
+        public static void FloatSliderDefaultNode(XmlNode node, string dataString, float minimumValue, float maximumValue)
+        {
+            float nodeValue = float.Parse(node.Attributes[1].Value);
+            if (ImGui.SliderFloat(dataString, ref nodeValue, minimumValue, maximumValue))
+            {
+                if (node.Attributes[0].Value == "FFXFieldInt")
+                    node.Attributes[0].Value = "FFXFieldFloat";
+                node.Attributes[1].Value = nodeValue.ToString("#.0000");
             }
         }
         public static void FloatInputDefaultNode(XmlNode node, string dataString)
@@ -1746,24 +1062,32 @@ namespace DSFFXEditor
                 ImGui.EndCombo();
             }
         }
-        public static void ShowToolTipSimple(string toolTipTitle, string toolTipText)
+        public static void ShowToolTipSimple(string toolTipUID, string toolTipTitle, string toolTipText, bool isToolTipObjectSpawned, ImGuiPopupFlags popupTriggerCond)
         {
-            if (ImGui.IsItemHovered() & ImGui.GetIO().KeyAlt)
+            string localUID = toolTipUID + toolTipTitle;
+            if (isToolTipObjectSpawned)
+                ImGui.TextColored(new Vector4(1f, 0f, 0f, 1f), "(?)");
+            ImGui.OpenPopupOnItemClick(localUID, popupTriggerCond);
+            if (ImGui.IsPopupOpen(localUID))
             {
-                Vector2 localMousePos = ImGui.GetMousePos();
+                Vector2 mousePos = ImGui.GetMousePos();
                 Vector2 localTextSize = ImGui.CalcTextSize(toolTipText);
                 float maxToolTipWidth = (float)_window.Width * 0.4f;
-                if (localTextSize.X > maxToolTipWidth)
-                    ImGui.SetNextWindowSize(new Vector2(maxToolTipWidth, localTextSize.Y), ImGuiCond.Appearing);
+                float windowWidth;
+                float windowHeight;
+                Vector2 windowSize = new Vector2(maxToolTipWidth, localTextSize.Y);
+                if (mousePos.X > (float)(_window.Width / 2))
+                    windowWidth = mousePos.X - maxToolTipWidth;
                 else
-                    ImGui.SetNextWindowSize(new Vector2(localTextSize.X, localTextSize.Y), ImGuiCond.Appearing);
-                ImGui.SetNextWindowPos(new Vector2(localMousePos.X, localMousePos.Y + 20f), ImGuiCond.Appearing);
-                if (ImGui.Begin(toolTipTitle, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.Tooltip))
+                    windowWidth = mousePos.X;
+                ImGui.SetNextWindowPos(new Vector2(windowWidth, mousePos.Y), ImGuiCond.Appearing);
+                ImGui.SetNextWindowSize(windowSize, ImGuiCond.Appearing);
+                if (ImGui.BeginPopupContextItem(localUID))
                 {
                     ImGui.Text(toolTipTitle);
                     ImGui.NewLine();
                     ImGui.TextWrapped(toolTipText);
-                    ImGui.End();
+                    ImGui.EndPopup();
                 }
             }
         }

@@ -1,0 +1,484 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<xml>
+	<symbolsDef>
+		<entry symbol="[C]" def="Color Archetype"/>
+		<entry symbol="[S]" def="Scalar Archetype"/>
+		<entry symbol="[P]" def="Particle Argument"/>
+		<entry symbol="[PG]" def="Particle On Generation Argument"/>
+		<entry symbol="[TG]" def="Trail On Generation Argument"/>
+		<entry symbol="[E]" def="Trail On Generation Argument"/>
+	</symbolsDef>
+	<Enums>
+		<blendModes>
+			<entry value="0" name="Unknown"/>
+			<entry value="1" name="Unknown"/>
+			<entry value="2" name="Normal(SourceOver)"/>
+			<entry value="3" name="Multiply(Ignores Texture Alpha)"/>
+			<entry value="4" name="Add"/>
+			<entry value="5" name="Subtract"/>
+			<entry value="6" name="Unknown"/>
+			<entry value="7" name="Screen"/>
+		</blendModes>
+		<orientationModes>
+			<entry value="0" name="Unknown"/>
+			<entry value="1" name="Always facing the camera"/>
+			<entry value="2" name="Aligned with global Z (vertical) axis (facing up/down)"/>
+			<entry value="3" name="Aligned with global Y axis"/>
+			<entry value="4" name="Rotates around the vertical axis to face the camera, but does not tilt up/down"/>
+			<entry value="5" name="Aligned with global X axis"/>
+			<entry value="6" name="Unknown"/>
+			<entry value="7" name="Unknown"/>
+		</orientationModes>
+	</Enums>
+	<ActionIDs>
+		<ActionID ID="600">
+			<Properties1>
+				<field type="[S]" arg="[P]" name="Scale*" />
+				<field type="[C]" arg="[P]" name="Color*" />
+				<field type="[C]" arg="[PG]" name="Color*" />
+				<field type="[C]" arg="[E]" name="Color*" />
+			</Properties1>
+			<Properties2>
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties2>
+			<Fields1>
+				<Field name="Texture ID" dataType="s32"/>
+				<Field name="Particle Blend Mode" dataType="s32" enum="blendModes"/>
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType=""/>
+			</Fields1>
+			<Fields2>
+				<Field name="" dataType=""/>
+				<Field name="" dataType=""/>
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType="" />
+				<field name="" dataType="s32" isBool=""/>
+				<field name="Color* R?" dataType="f32"/>
+				<field name="Color* G?" dataType="f32"/>
+				<field name="Color* B?" dataType="f32"/>
+				<field name="Color* Power?" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="Distance Fade: Close 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Close 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Far 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Distance Fade: Far 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Minimum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="Maximum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+			</Fields2>
+		</ActionID>
+		<ActionID ID="601">
+			<Properties1>
+				<field type="[S]" arg="[PG]" name="Lenght*" />
+				<field type="[C]" arg="[P]" name="Color*" />
+				<field type="[C]" arg="[P]" name="Color*" />
+				<field type="[C]" arg="[E]" name="Start Color" wiki="End of the line color. One color fades to the other along the line." />
+				<field type="[C]" arg="[E]" name="End Color" wiki="Start of the line color. One color fades to the other along the line." />
+				<field type="[S]" arg="[P]" name="Lenght*" />
+				<field type="[C]" arg="[E]" name="Color*" />
+			</Properties1>
+			<Properties2>
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties2>
+			<Fields1>
+				<Field name="Particle Blend Mode" dataType="s32" enum="blendModes"/>
+				<Field name="" dataType="s32"/>
+			</Fields1>
+			<Fields2>
+				<Field name="" dataType=""/>
+				<Field name="" dataType=""/>
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType="" />
+				<field name="" dataType="s32"/>
+				<field name="Color* R?" dataType="f32"/>
+				<field name="Color* G?" dataType="f32"/>
+				<field name="Color* B?" dataType="f32"/>
+				<field name="Color* Power?" dataType="f32"/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="Distance Fade: Close 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Close 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Far 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Distance Fade: Far 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Minimum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="Maximum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+			</Fields2>
+		</ActionID>
+		<ActionID ID="602">
+			<Properties1>
+				<field type="[S]" arg="[PG]" name="X Scale*" />
+				<field type="[S]" arg="[PG]" name="Y Scale*" />
+				<field type="[C]" arg="[P]" name="Color*" />
+				<field type="[C]" arg="[P]" name="Color*" />
+				<field type="[C]" arg="[E]" name="Top Color" wiki="This controls the upper square's color. One color fades to the other across the rectangle." />
+				<field type="[C]" arg="[E]" name="Bottom Color" wiki="This controls the lower square's color. One color fades to the other along the line." />
+				<field type="[S]" arg="[P]" name="X Scale*" />
+				<field type="[S]" arg="[P]" name="Y Scale*" />
+				<field type="[C]" arg="[E]" name="Color*" />
+			</Properties1>
+			<Properties2>
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties2>
+			<Fields1>
+				<Field name="Particle Blend Mode" dataType="s32" enum="blendModes"/>
+				<Field name="" dataType="s32"/>
+			</Fields1>
+			<Fields2>
+				<Field name="" dataType=""/>
+				<Field name="" dataType=""/>
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType="" />
+				<field name="" dataType="s32"/>
+				<field name="Color* R?" dataType="f32"/>
+				<field name="Color* G?" dataType="f32"/>
+				<field name="Color* B?" dataType="f32"/>
+				<field name="Color* Power?" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="Distance Fade: Close 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Close 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Far 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Distance Fade: Far 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Minimum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="Maximum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+			</Fields2>
+		</ActionID>
+		<ActionID ID="603">
+			<Properties1>
+				<field type="[S]" arg="[P]" name="X Offset" wiki="X Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
+				<field type="[S]" arg="[P]" name="Y Offset" wiki="Y Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
+				<field type="[S]" arg="[P]" name="Z Offset" wiki="Z Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
+				<field type="[S]" arg="[P]" name="Scale*" />
+				<field type="[S]" arg="" name="" />
+				<field type="[C]" arg="[P]" name="Color*" />
+				<field type="[C]" arg="[PG]" name="Color*" wiki="The color is chosen when the particle spawns and it will stay that color until it expires."/>
+				<field type="[C]" arg="[E]" name="Color*" />
+				<field type="[S]" arg="[P]" name="Opacity Threshold" wiki="The range is 0-255. Parts of the particle that have less opacity than this value will be invisible."/>
+				<field type="[S]" arg="[P]" name="X Rotation" />
+				<field type="[S]" arg="[P]" name="Y Rotation" />
+				<field type="[S]" arg="[P]" name="Z Rotation" />
+				<field type="[S]" arg="[P]" name="X Rotation Speed°" />
+				<field type="[S]" arg="[P]" name="X Rotation Speed° Multiplier" />
+				<field type="[S]" arg="[P]" name="Y Rotation Speed°" />
+				<field type="[S]" arg="[P]" name="Y Rotation Speed° Multiplier" />
+				<field type="[S]" arg="[P]" name="Z Rotation Speed°" />
+				<field type="[S]" arg="[P]" name="Z Rotation Speed° Multiplier" />
+				<field type="[S]" arg="" name="Negative Z Position?" wiki="Seems to work exactly like the Z position, but the axis is flipped around" />
+				<field type="[S]" arg="" name="Texture Animation Offset" />
+				<field type="[S]" arg="[P]" name="Texture Animation Frame Index" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties1>
+			<Properties2>
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties2>
+			<Fields1>
+				<Field name="Orientation Mode" dataType="s32" enum="orientationModes"/>
+				<Field name="Texture ID" dataType="s32"/>
+				<Field name="Texture ID 2?" dataType="s32"/>
+				<Field name="Particle Blend Mode" dataType="s32" enum="blendModes"/>
+				<Field name="Particle Size" dataType="f32"/>
+				<Field name="Particle Size?" dataType="f32"/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="Horizontal Texture Frames" dataType="s32" wiki="How many frames are stacked horizontally in the texture sheet."/>
+				<Field name="Texture Frames" dataType="s32" wiki="How many frames are in the texture sheet in total."/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" />
+				<Field name="" dataType="s32" />
+				<Field name="" dataType="f32" />
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" isBool=""/>
+			</Fields1>
+			<Fields2>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType="s32" />
+				<field name="" dataType=""/>
+				<field name="Color* R?" dataType="f32"/>
+				<field name="Color* G?" dataType="f32"/>
+				<field name="Color* B?" dataType="f32"/>
+				<field name="Color* Power?" dataType="f32"/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType="s32"/>
+				<field name="Distance Fade: Close 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Close 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Far 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Distance Fade: Far 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Minimum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="Maximum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+			</Fields2>
+		</ActionID>
+		<ActionID ID="604">
+			<Properties1>
+				<field type="[S]" arg="[P]" name="X Offset" wiki="X Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
+				<field type="[S]" arg="[P]" name="Y Offset" wiki="Y Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
+				<field type="[S]" arg="[P]" name="Z Offset" wiki="Z Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="X Rotation°?" />
+				<field type="[S]" arg="" name="Y Rotation°?" />
+				<field type="[S]" arg="[P]" name="Z Rotation°" />
+				<field type="[S]" arg="" name="X Rotation Speed°?" />
+				<field type="[S]" arg="" name="X Rotation Speed° Multiplier?" />
+				<field type="[S]" arg="" name="Y Rotation Speed°?" />
+				<field type="[S]" arg="" name="Y Rotation Speed° Multiplier?" />
+				<field type="[S]" arg="" name="Z Rotation Speed°?" />
+				<field type="[S]" arg="" name="Z Rotation Speed° Multiplier?" />
+				<field type="[C]" arg="[P]" name="Color*" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="Color*" />
+				<field type="[C]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="Texture Animation Offset 1st" />
+				<field type="[S]" arg="[P]" name="Texture Animation Frame Index 1st" wiki="The index of the frame to show of the texture animation. The offset above is added onto this. If it exceeds the number of frames in the animation, it loops around to the beginning again. Can be animated using an A64 B16 property or similar"/>
+				<field type="[S]" arg="" name="Texture Animation Offset 2nd?" />
+				<field type="[S]" arg="" name="Texture Animation Frame Index 2nd?" />
+				<field type="[S]" arg="" name="Texture Animation Offset 3rd?" />
+				<field type="[S]" arg="" name="Texture Animation Frame Index 3rd?" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="[P]" name="Texture X scroll speed 2nd" wiki="Positive = right"/>
+				<field type="[S]" arg="[P]" name="Texture Y scroll speed 2nd" wiki="Positive = up"/>
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="[P]" name="Texture X scroll speed 3rd" wiki="Positive = right"/>
+				<field type="[S]" arg="[P]" name="Texture Y scroll speed 3rd" wiki="Positive = up"/>
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties1>
+			<Properties2>
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties2>
+			<Fields1>
+				<Field name="Orientation Mode" dataType="s32" enum="orientationModes"/>
+				<Field name="Texture ID" dataType="s32"/>
+				<Field name="Texture ID 2" dataType="s32"/>
+				<Field name="Texture ID 3" dataType="s32"/>
+				<Field name="Particle Blend Mode" dataType="s32" enum="blendModes"/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" />
+				<Field name="Horizontal Texture Frames" dataType="s32" wiki="How many frames are stacked horizontally in the texture sheet."/>
+				<Field name="Texture Frames" dataType="s32" wiki="How many frames are in the texture sheet in total."/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" />
+				<Field name="" dataType="s32" />
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="" />
+			</Fields1>
+			<Fields2>
+				<Field name="" dataType="" />
+				<Field name="" dataType="" />
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType="" />
+				<field name="" dataType="s32" isBool=""/>
+				<field name="Color* R?" dataType="f32"/>
+				<field name="Color* G?" dataType="f32"/>
+				<field name="Color* B?" dataType="f32"/>
+				<field name="Color* Power?" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType="s32"/>
+				<field name="Distance Fade: Close 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Close 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Far 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Distance Fade: Far 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Minimum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="Maximum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+			</Fields2>
+		</ActionID>
+		<ActionID ID="605">
+			<Properties1>
+				<field type="[S]" arg="[P]" name="X Scale*" />
+				<field type="[S]" arg="[P]" name="Y Scale*" />
+				<field type="[S]" arg="[P]" name="Z Scale*" />
+				<field type="[S]" arg="[P]" name="X Rotation°" />
+				<field type="[S]" arg="[P]" name="Y Rotation°" />
+				<field type="[S]" arg="[P]" name="Z Rotation°" />
+				<field type="[S]" arg="[P]" name="X Rotation Speed°" />
+				<field type="[S]" arg="[P]" name="X Rotation Speed° Multiplier" />
+				<field type="[S]" arg="[P]" name="Y Rotation Speed°" />
+				<field type="[S]" arg="[P]" name="Y Rotation Speed° Multiplier" />
+				<field type="[S]" arg="[P]" name="Z Rotation Speed°" />
+				<field type="[S]" arg="[P]" name="Z Rotation Speed° Multiplier" />
+				<field type="[C]" arg="[P]" name="Color*" />
+				<field type="[C]" arg="[PG]" name="Color*" wiki="The color is chosen when the particle spawns and it will stay that color until it expires."/>
+				<field type="[C]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="[P]" name="Texture Animation Frame Index" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties1>
+			<Properties2>
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="Brightness*" />
+				<field type="[S]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[C]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+			</Properties2>
+			<Fields1>
+				<Field name="Orientation Mode" dataType="s32" enum="orientationModes"/>
+				<Field name="Model ID" dataType="s32"/>
+				<Field name="" dataType="f32"/>
+				<Field name="" dataType="f32"/>
+				<Field name="" dataType="f32"/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="Particle Blend Mode" dataType="s32" enum="blendModes"/>
+				<Field name="Horizontal Texture Frames" dataType="s32" wiki="How many frames are stacked horizontally in the texture sheet."/>
+				<Field name="Texture Frames" dataType="s32" wiki="How many frames are in the texture sheet in total."/>
+				<Field name="" dataType="s32" />
+				<Field name="" dataType="s32" />
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="f32" isBool=""/>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32" />
+				<Field name="" dataType="" />
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="f32" />
+				<Field name="" dataType="" />
+			</Fields1>
+			<Fields2>
+				<Field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="" />
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType="" />
+				<field name="" dataType=""/>
+				<field name="Color* R?" dataType="f32"/>
+				<field name="Color* G?" dataType="f32"/>
+				<field name="Color* B?" dataType="f32"/>
+				<field name="Color* Power?" dataType="f32"/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="Distance Fade: Close 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Close 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera decreases."/>
+				<field name="Distance Fade: Far 0" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Distance Fade: Far 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
+				<field name="Minimum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="Maximum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType=""/>
+				<field name="" dataType="f32"/>
+				<field name="" dataType=""/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType="s32"/>
+				<field name="" dataType="f32"/>
+			</Fields2>
+		</ActionID>
+	</ActionIDs>
+</xml>
