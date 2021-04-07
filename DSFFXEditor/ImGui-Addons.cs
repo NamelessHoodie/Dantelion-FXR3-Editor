@@ -8,10 +8,11 @@ namespace ImGuiNETAddons
 {
     public static class ImGuiAddons
     {
-        public static void ToggleButton(string str_id, ref bool v)
+        public static bool ToggleButton(string str_id, ref bool v)
         {
             Vector2 p = ImGuiNET.ImGui.GetCursorScreenPos();
             ImDrawListPtr draw_list = ImGuiNET.ImGui.GetWindowDrawList();
+            bool isClicked = false;
 
             float height = ImGuiNET.ImGui.GetFrameHeight();
             float width = height * 1.55f;
@@ -19,6 +20,7 @@ namespace ImGuiNETAddons
 
             if (ImGuiNET.ImGui.InvisibleButton(str_id, new Vector2(width, height)))
             {
+                isClicked = true;
                 v = !v;
             }
             uint col_bg;
@@ -35,6 +37,7 @@ namespace ImGuiNETAddons
             }
             draw_list.AddRectFilled(p, new Vector2(p.X + width, p.Y + height), col_bg, height * 0.5f);
             draw_list.AddCircleFilled(new Vector2(v ? (p.X + width - radius) : (p.X + radius), p.Y + radius), radius - 1.5f, col_Nub);
+            return isClicked;
         }
 
         public static bool ButtonGradient(string str_id)
