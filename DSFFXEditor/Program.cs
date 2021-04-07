@@ -89,7 +89,7 @@ namespace DSFFXEditor
             _memoryEditorData = Enumerable.Range(0, 1024).Select(i => (byte)random.Next(255)).ToArray();
 
             ImGuiIOPtr io = ImGui.GetIO();
-            io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+            io.ConfigFlags |= ImGuiConfigFlags.DockingEnable | ImGuiConfigFlags.NavEnableKeyboard;
 
             DSFFXThemes.ThemesSelector(_activeTheme); //Default Theme
             DefParser.Initialize();
@@ -153,6 +153,8 @@ namespace DSFFXEditor
                             ofd.Filter = "XML|*.xml";
                             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                             {
+                                if (XMLOpen)
+                                    CloseOpenFFXWithoutSaving();
                                 _loadedFilePath = ofd.FileName;
                                 XMLOpen = true;
                                 if (_isStripXml)
@@ -1018,8 +1020,8 @@ namespace DSFFXEditor
                 float floatNodeValue;
                 if (float.TryParse(nodeValue, out floatNodeValue))
                 {
-                    if (node.Attributes[0].Value == "FFXFieldFloat")
-                        node.Attributes[0].Value = "FFXFieldInt";
+                    if (node.Attributes[0].Value == "FFXFieldInt")
+                        node.Attributes[0].Value = "FFXFieldFloat";
                     node.Attributes[1].Value = floatNodeValue.ToString("#.0000");
                 }
             }
