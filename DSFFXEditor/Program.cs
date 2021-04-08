@@ -72,6 +72,7 @@ namespace DSFFXEditor
         [STAThread]
         static void Main()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             // Create window, GraphicsDevice, and all resources necessary for the demo.
             VeldridStartup.CreateWindowAndGraphicsDevice(
                 new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "Dark Souls FFX Studio"),
@@ -282,7 +283,7 @@ namespace DSFFXEditor
                         ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.NoTooltip);
                         ImGui.Separator();
                         ImGui.Text("Brightness Multiplier");
-                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, 1.0f, 10.0f);
+                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, -10f, 10f);
                         ImGui.SameLine();
                         if (ImGuiAddons.ButtonGradient("Apply Change"))
                         {
