@@ -13,6 +13,7 @@ using System.Collections;
 using ImGuiNETAddons;
 using System.Xml.Linq;
 using System.IO;
+using System.Linq;
 
 namespace DSFFXEditor
 {
@@ -66,7 +67,7 @@ namespace DSFFXEditor
         public static Vector4 _cPicker = new Vector4();
 
         public static float _colorOverload = 1.0f;
-        //</Color Editor>
+        // Color Editor
 
         [STAThread]
         static void Main()
@@ -218,7 +219,7 @@ namespace DSFFXEditor
                             CloseOpenFFXWithoutSaving();
                         }
                         ImGui.SameLine();
-                        ShowToolTipSimple("", "Strip XML ToolTip:", "If the program is crashing upon trying to edit a property, consider enabling this.\nIt will strip invalid elements from the XML, including comments and whitespaces.\n\nWarning: Enabling/Disabling this will close the open FFX without saving.",true,ImGuiPopupFlags.MouseButtonRight);
+                        ShowToolTipSimple("", "Strip XML ToolTip:", "If the program is crashing upon trying to edit a property, consider enabling this.\nIt will strip invalid elements from the XML, including comments and whitespaces.\n\nWarning: Enabling/Disabling this will close the open FFX without saving.\n\nWarning 2: This option is likely obsolete, comments should not count as valid nodes anymore. I will leave it here as legacy in order to ensure it is there if needed.",true,ImGuiPopupFlags.MouseButtonRight);
                         // Strip Xml End
 
                         // Keybord Interactions Start
@@ -367,6 +368,7 @@ namespace DSFFXEditor
             {
                 ImGui.PushID($"TreeFunctionlayer = {root.Name} ChildIndex = {GetNodeIndexinParent(root)}");
                 string[] _actionIDsFilter = { "600", "601", "602", "603", "604", "605", "606", "607", "609", "10012" };
+                XmlNodeList localNodeList = XMLChildNodesValid(root);
                 if (root.Attributes["ActionID"] != null)
                 {
                     if (_actionIDsFilter.Contains(root.Attributes[0].Value) || _filtertoggle)
@@ -383,9 +385,9 @@ namespace DSFFXEditor
                 }
                 else if (root.Name == "EffectAs" || root.Name == "EffectBs" || root.Name == "RootEffectCall" || root.Name == "Actions")
                 {
-                    if (root.HasChildNodes)
+                    if (localNodeList.Count > 0)
                     {
-                        foreach (XmlNode node in root.ChildNodes)
+                        foreach (XmlNode node in localNodeList)
                         {
                             PopulateTree(node);
                         }
@@ -402,22 +404,22 @@ namespace DSFFXEditor
                             break;
                         }
                     }
-                    if (root.Name == "FFXEffectCallA" & root.HasChildNodes & localLoopPass)
+                    if (root.Name == "FFXEffectCallA" & localNodeList.Count > 0 & localLoopPass)
                     {
                         if (ImGui.TreeNodeEx($"FFX Container = {root.Attributes[0].Value}"))
                         {
-                            foreach (XmlNode node in root.ChildNodes)
+                            foreach (XmlNode node in localNodeList)
                             {
                                 PopulateTree(node);
                             }
                             ImGui.TreePop();
                         }
                     }
-                    else if (root.Name == "FFXEffectCallB" & root.HasChildNodes & localLoopPass)
+                    else if (root.Name == "FFXEffectCallB" & localNodeList.Count > 0 & localLoopPass)
                     {
                         if (ImGui.TreeNodeEx($"FFX Call"))
                         {
-                            foreach (XmlNode node in root.ChildNodes)
+                            foreach (XmlNode node in localNodeList)
                             {
                                 PopulateTree(node);
                             }
@@ -426,7 +428,7 @@ namespace DSFFXEditor
                     }
                     else
                     {
-                        foreach (XmlNode node in root.ChildNodes)
+                        foreach (XmlNode node in localNodeList)
                         {
                             PopulateTree(node);
                         }
@@ -437,7 +439,7 @@ namespace DSFFXEditor
                     if (ImGui.TreeNodeEx($"{root.Name}"))
                     {
                         //DoWork(root);
-                        foreach (XmlNode node in root.ChildNodes)
+                        foreach (XmlNode node in localNodeList)
                         {
                             PopulateTree(node);
                         }
@@ -521,7 +523,7 @@ namespace DSFFXEditor
                 ImGui.SetNextWindowDockID(MainViewport);
                 ImGui.Begin("axbxDebug");
                 int integer = 0;
-                foreach (XmlNode node in NodeListEditor.Item(0).ParentNode.ChildNodes)
+                foreach (XmlNode node in XMLChildNodesValid(NodeListEditor.Item(0).ParentNode))
                 {
                     ImGui.Text($"TempID = '{integer}' XMLElementName = '{node.LocalName}' AttributesNum = '{node.Attributes.Count}' Attributes({node.Attributes[0].Name} = '{node.Attributes[0].Value}', {node.Attributes[1].Name} = '{float.Parse(node.Attributes[1].Value)}')");
                     integer++;
@@ -531,7 +533,7 @@ namespace DSFFXEditor
         }
         private static void GetFFXFields(XmlNode root, string fieldType)
         {
-            XmlNodeList NodeListProcessing = root.SelectNodes($"descendant::{fieldType}")[0].ChildNodes;
+            XmlNodeList NodeListProcessing = XMLChildNodesValid(root.SelectNodes($"descendant::{fieldType}")[0]);
             if (NodeListProcessing.Count > 0)
             {
                 uint IDStorage = ImGui.GetID(fieldType);
@@ -601,7 +603,7 @@ namespace DSFFXEditor
                             ImGui.PushID($"ItemForLoopNode = {localLabel}");
                             if (localAxBy == "A67B19" || localAxBy == "A35B11" || localAxBy == "A99B27" || (Node.Attributes[0].Value == "A4163B35"))
                             {
-                                XmlNodeList NodeListProcessing = Node.SelectNodes("Fields")[0].ChildNodes;
+                                XmlNodeList NodeListProcessing = XMLChildNodesValid(Node.SelectNodes("Fields")[0]);
                                 uint IDStorage = ImGui.GetID(localLabel);
                                 ImGuiStoragePtr storage = ImGui.GetStateStorage();
                                 bool selected = storage.GetBool(IDStorage);
@@ -1077,7 +1079,7 @@ namespace DSFFXEditor
                 localSelectedItem = $"{node.Attributes[1].Value}: Not Enumerated";
 
             ArrayList localTempArray = new ArrayList();
-            foreach (XmlNode node1 in EnumEntries.ChildNodes)
+            foreach (XmlNode node1 in XMLChildNodesValid(EnumEntries))
             {
                 localTempArray.Add($"{node1.Attributes["value"].Value}: {node1.Attributes["name"].Value}");
             }
@@ -1093,7 +1095,7 @@ namespace DSFFXEditor
                         if (node.Attributes[0].Value == "FFXFieldFloat")
                             node.Attributes[0].Value = "FFXFieldInt";
                         int safetyNetInt;
-                        if (Int32.TryParse(EnumEntries.ChildNodes[i].Attributes["value"].Value, out safetyNetInt))
+                        if (Int32.TryParse(XMLChildNodesValid(EnumEntries)[i].Attributes["value"].Value, out safetyNetInt))
                         {
                             node.Attributes[1].Value = safetyNetInt.ToString();
                         }
@@ -1139,6 +1141,11 @@ namespace DSFFXEditor
             _showFFXEditorFields = false;
             _showFFXEditorProperties = false;
             xDoc = new XmlDocument();
+        }
+
+        public static XmlNodeList XMLChildNodesValid(XmlNode Node) 
+        {
+            return Node.SelectNodes("*");
         }
     }
 }
