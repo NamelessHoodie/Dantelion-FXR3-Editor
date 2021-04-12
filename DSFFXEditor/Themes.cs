@@ -53,6 +53,10 @@ namespace DSFFXEditor
                 //ImGui.PushStyleColor(ImGuiCol.PlotHistogram, new Vector4(0.90f, 0.70f, 0.00f, 1.00f));
                 //ImGui.PushStyleColor(ImGuiCol.PlotHistogramHovered, new Vector4(1.00f, 0.60f, 0.00f, 1.00f));
                 //ImGui.PushStyleColor(ImGuiCol.TextSelectedBg, new Vector4(0.26f, 0.59f, 0.98f, 0.35f)); // Most Likely Selected Text
+                ImGui.PushStyleColor(ImGuiCol.Separator, new Vector4(0.31f, 0.31f, 0.31f, 1.00f));
+                ImGui.PushStyleColor(ImGuiCol.TableBorderLight, new Vector4(0.31f, 0.31f, 0.31f, 0.70f));
+                ImGui.PushStyleColor(ImGuiCol.TableBorderStrong, new Vector4(0.31f, 0.31f, 0.31f, 1.00f));
+                ImGui.PushStyleColor(ImGuiCol.TableHeaderBg, new Vector4(0.36f, 0.26f, 0.26f, 1.00f));
             }
             else if (themeName == "ImGuiDark")
             {

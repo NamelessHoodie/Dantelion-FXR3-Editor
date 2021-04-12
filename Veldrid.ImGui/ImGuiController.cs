@@ -97,6 +97,8 @@ namespace DSFFXEditor
             ImGuiIOPtr io = ImGui.GetIO();
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
             io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+            io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+            io.ConfigFlags |= ImGuiConfigFlags.NavEnableGamepad;
 
             ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
             ImGuiViewportPtr mainViewport = platformIO.Viewports[0];
