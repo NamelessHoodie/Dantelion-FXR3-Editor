@@ -6,14 +6,12 @@ using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using ImGuiNET;
 using ImPlotNET;
-using ImNodesNET;
+using imnodesNET;
 using ImGuizmoNET;
 using System.Xml;
 using System.Collections;
 using ImGuiNETAddons;
-using System.Xml.Linq;
 using System.IO;
-using System.Linq;
 
 namespace DSFFXEditor
 {
@@ -22,13 +20,10 @@ namespace DSFFXEditor
         private static Sdl2Window _window;
         private static GraphicsDevice _gd;
         private static CommandList _cl;
-        private static ImGuiRenderer _controller;
-        private static MemoryEditor _memoryEditor;
+        private static ImGuiController _controller;
 
         // UI state
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
-        private static byte[] _memoryEditorData;
-        private static string _activeTheme = "DarkRedClay"; //Initialized Default Theme
         private static uint MainViewport;
         private static bool _keyboardInputGuide = false;
 
@@ -44,8 +39,7 @@ namespace DSFFXEditor
         static bool[] s_opened = { true, true, true, true }; // Persistent user state
 
         //Theme Selector
-        private static int _themeSelectorSelectedItem = 0;
-        private static String[] _themeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Light", "ImGui Classic" };
+        readonly static String[] _themeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Light", "ImGui Classic" };
 
         //XML
         private static XmlDocument xDoc = new XmlDocument();
@@ -70,13 +64,13 @@ namespace DSFFXEditor
         // Color Editor
 
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             // Create window, GraphicsDevice, and all resources necessary for the demo.
-            VeldridStartup.CreateWindowAndGraphicsDevice(
-                new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "Dark Souls FFX Studio"),
+            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "Dark Souls FFX Editor"),
                 new GraphicsDeviceOptions(true, null, true, ResourceBindingModel.Improved, true, true),
+                GraphicsBackend.Direct3D11,
                 out _window,
                 out _gd);
             _window.Resized += () =>
@@ -85,15 +79,14 @@ namespace DSFFXEditor
                 _controller.WindowResized(_window.Width, _window.Height);
             };
             _cl = _gd.ResourceFactory.CreateCommandList();
-            _controller = new ImGuiRenderer(_gd, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
-            _memoryEditor = new MemoryEditor();
-            Random random = new Random();
-            _memoryEditorData = Enumerable.Range(0, 1024).Select(i => (byte)random.Next(255)).ToArray();
+            _controller = new ImGuiController(_gd, _window, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
 
-            ImGuiIOPtr io = ImGui.GetIO();
-            io.ConfigFlags |= ImGuiConfigFlags.DockingEnable | ImGuiConfigFlags.NavEnableKeyboard;
+            //Runtime Configs Load
+            DSFFXConfig.ReadConfigs();
 
-            DSFFXThemes.ThemesSelector(_activeTheme); //Default Theme
+            //Theme Selector
+            DSFFXThemes.ThemesSelector(DSFFXConfig._activeTheme);
+
             DefParser.Initialize();
             // Main application loop
             while (_window.Exists)
@@ -111,7 +104,10 @@ namespace DSFFXEditor
                 _cl.End();
                 _gd.SubmitCommands(_cl);
                 _gd.SwapBuffers(_gd.MainSwapchain);
+                _controller.SwapExtraWindows(_gd);
             }
+            //Runtime Configs Save
+            DSFFXConfig.SaveConfigs();
 
             // Clean up Veldrid resources
             _gd.WaitForIdle();
@@ -120,147 +116,140 @@ namespace DSFFXEditor
             _gd.Dispose();
         }
 
+        static void SetThing(out float i, float val) { i = val; }
+
         private static bool _axbyEditorIsPopup = false;
         private static int _axbyEditorSelectedItem;
-        private static XmlNode _axbyeditoractionidnode;
         private static unsafe void SubmitUI()
         {
-            // Demo code adapted from the official Dear ImGui demo program:
-            // https://github.com/ocornut/imgui/blob/master/examples/example_win32_directx11/main.cpp#L172
-
-            // 1. Show a simple window.
-            // Tip: if we don't call ImGui.BeginWindow()/ImGui.EndWindow() the widgets automatically appears in a window called "Debug".
             ImGuiViewport* viewport = ImGui.GetMainViewport();
-            MainViewport = ImGui.GetID("MainViewPort");
+            MainViewport = ImGui.DockSpaceOverViewport(viewport);
+
+            if (ImGui.BeginMainMenuBar())
             {
-                // Docking setup
-                ImGui.SetNextWindowPos(new Vector2(viewport->Pos.X, viewport->Pos.Y + 18.0f));
-                ImGui.SetNextWindowSize(new Vector2(viewport->Size.X, viewport->Size.Y - 18.0f));
-                ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
-                ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f);
-                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0.0f, 0.0f));
-                ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 0.0f);
-                ImGuiWindowFlags flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove;
-                flags |= ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoDocking;
-                flags |= ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.DockNodeHost;
-                ImGui.Begin("Main Viewport", flags);
-                ImGui.PopStyleVar(4);
-                if (ImGui.BeginMainMenuBar())
+                if (ImGui.BeginMenu("File"))
                 {
-                    if (ImGui.BeginMenu("File"))
+                    if (ImGui.MenuItem("Open FFX *XML"))
                     {
-                        if (ImGui.MenuItem("Open FFX *XML"))
+                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
+                        ofd.Filter = "XML|*.xml";
+                        if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         {
-                            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
-                            ofd.Filter = "XML|*.xml";
-                            if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            if (XMLOpen)
+                                CloseOpenFFXWithoutSaving();
+                            _loadedFilePath = ofd.FileName;
+                            XMLOpen = true;
+                            if (_isStripXml)
                             {
-                                if (XMLOpen)
-                                    CloseOpenFFXWithoutSaving();
-                                _loadedFilePath = ofd.FileName;
-                                XMLOpen = true;
-                                if (_isStripXml)
-                                {
-                                    FileStream file = File.OpenRead(ofd.FileName);
-                                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
-                                    XmlReader xmlReader = XmlReader.Create(file, settings);
-                                    xDoc.Load(xmlReader);
-                                }
-                                else
-                                {
-                                    xDoc.Load(ofd.FileName);
-                                }
+                                FileStream file = File.OpenRead(ofd.FileName);
+                                XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
+                                XmlReader xmlReader = XmlReader.Create(file, settings);
+                                xDoc.Load(xmlReader);
+                            }
+                            else
+                            {
+                                xDoc.Load(ofd.FileName);
                             }
                         }
-                        if (_loadedFilePath != "" & XMLOpen)
-                        {
-                            if (ImGui.MenuItem("Save Open FFX *XML"))
-                            {
-                                xDoc.Save(_loadedFilePath);
-                            }
-                        }
-                        else
-                        {
-                            ImGui.TextColored(new Vector4(0.5f,0.5f,0.5f,1f), "Save Open FFX *XML");
-                        }
-                        ImGui.EndMenu();
                     }
-                    if (ImGui.BeginMenu("Themes"))
+                    if (_loadedFilePath != "" & XMLOpen)
                     {
-                        if (ImGui.Combo("Theme Selector", ref _themeSelectorSelectedItem, _themeSelectorEntriesArray, _themeSelectorEntriesArray.Length))
+                        if (ImGui.MenuItem("Save Open FFX *XML"))
                         {
-                            switch (_themeSelectorSelectedItem)
-                            {
-                                case 0:
-                                    _activeTheme = "DarkRedClay";
-                                    break;
-                                case 1:
-                                    _activeTheme = "ImGuiDark";
-                                    break;
-                                case 2:
-                                    _activeTheme = "ImGuiLight";
-                                    break;
-                                case 3:
-                                    _activeTheme = "ImGuiClassic";
-                                    break;
-                                default:
-                                    break;
-                            }
-                            DSFFXThemes.ThemesSelector(_activeTheme);
+                            xDoc.Save(_loadedFilePath);
                         }
-                        ImGui.EndMenu();
                     }
-                    if (ImGui.BeginMenu("Useful Info"))
+                    else
                     {
-                        // Strip Xml Start
-                        ImGui.Text("Strip XML Comments");
-                        ImGui.SameLine();
-                        if (ImGuiAddons.ToggleButton("Strip XML", ref _isStripXml) & XMLOpen)
-                        {
-                            CloseOpenFFXWithoutSaving();
-                        }
-                        ImGui.SameLine();
-                        ShowToolTipSimple("", "Strip XML ToolTip:", "If the program is crashing upon trying to edit a property, consider enabling this.\nIt will strip invalid elements from the XML, including comments and whitespaces.\n\nWarning: Enabling/Disabling this will close the open FFX without saving.\n\nWarning 2: This option is likely obsolete, comments should not count as valid nodes anymore. I will leave it here as legacy in order to ensure it is there if needed.",true,ImGuiPopupFlags.MouseButtonRight);
-                        // Strip Xml End
-
-                        // Keybord Interactions Start
-                        ImGui.Text("Keyboard Interactions Guide");
-                        ImGui.SameLine();
-                        ImGuiAddons.ToggleButton("Keyboard InteractionsToggle", ref _keyboardInputGuide);
-                        // Keybord Interactions End
-
-                        // AxBy Debugger Start
-                        ImGui.Text("AxBy Debugger");
-                        ImGui.SameLine();
-                        ImGuiAddons.ToggleButton("AxByDebugger", ref _axbyDebugger);
-                        // AxBy Debugger End
-
-                        // No Action ID Filter Start
-                        ImGui.Text("No ActionID Filter");
-                        ImGui.SameLine();
-                        ImGuiAddons.ToggleButton("No ActionID Filter", ref _filtertoggle);
-                        // No Action ID Filter End
-
-                        ImGui.EndMenu();
+                        ImGui.TextColored(new Vector4(0.5f, 0.5f, 0.5f, 1f), "Save Open FFX *XML");
                     }
-                    ImGui.EndMainMenuBar();
+                    ImGui.EndMenu();
                 }
-                ImGui.DockSpace(MainViewport, new Vector2(0, 0));
-                ImGui.End();
+                if (ImGui.BeginMenu("Themes"))
+                {
+                    if (ImGui.Combo("Theme Selector", ref DSFFXConfig._themeSelectorSelectedItem, _themeSelectorEntriesArray, _themeSelectorEntriesArray.Length))
+                    {
+                        switch (DSFFXConfig._themeSelectorSelectedItem)
+                        {
+                            case 0:
+                                DSFFXConfig._activeTheme = "DarkRedClay";
+                                break;
+                            case 1:
+                                DSFFXConfig._activeTheme = "ImGuiDark";
+                                break;
+                            case 2:
+                                DSFFXConfig._activeTheme = "ImGuiLight";
+                                break;
+                            case 3:
+                                DSFFXConfig._activeTheme = "ImGuiClassic";
+                                break;
+                            default:
+                                break;
+                        }
+                        DSFFXThemes.ThemesSelector(DSFFXConfig._activeTheme);
+                    }
+                    ImGui.EndMenu();
+                }
+                if (ImGui.BeginMenu("Useful Info"))
+                {
+                    // Strip Xml Start
+                    ImGui.Text("Strip XML Comments");
+                    ImGui.SameLine();
+                    if (ImGuiAddons.ToggleButton("Strip XML", ref _isStripXml) & XMLOpen)
+                    {
+                        CloseOpenFFXWithoutSaving();
+                    }
+                    ImGui.SameLine();
+                    ShowToolTipSimple("", "Strip XML ToolTip:", "If the program is crashing upon trying to edit a property, consider enabling this.\nIt will strip invalid elements from the XML, including comments and whitespaces.\n\nWarning: Enabling/Disabling this will close the open FFX without saving.\n\nWarning 2: This option is likely obsolete, comments should not count as valid nodes anymore. I will leave it here as legacy in order to ensure it is there if needed.", true, ImGuiPopupFlags.MouseButtonRight);
+                    // Strip Xml End
+
+                    // Keybord Interactions Start
+                    ImGui.Text("Keyboard Interactions Guide");
+                    ImGui.SameLine();
+                    ImGuiAddons.ToggleButton("Keyboard InteractionsToggle", ref _keyboardInputGuide);
+                    // Keybord Interactions End
+
+                    // AxBy Debugger Start
+                    ImGui.Text("AxBy Debugger");
+                    ImGui.SameLine();
+                    ImGuiAddons.ToggleButton("AxByDebugger", ref _axbyDebugger);
+                    // AxBy Debugger End
+
+                    // No Action ID Filter Start
+                    ImGui.Text("No ActionID Filter");
+                    ImGui.SameLine();
+                    ImGuiAddons.ToggleButton("No ActionID Filter", ref _filtertoggle);
+                    // No Action ID Filter End
+
+                    ImGui.EndMenu();
+                }
+                ImGui.EndMainMenuBar();
+            }
+
+            { //Main Window Here
+                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
+                ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
+                ImGui.Columns(2);
+                ImGui.BeginChild("FFXTreeView");
+                if (XMLOpen)
+                {
+                    PopulateTree(xDoc.SelectSingleNode("descendant::RootEffectCall"));
+                }
+                ImGui.EndChild();
+                if (_showFFXEditorProperties || _showFFXEditorFields)
+                {
+                    ImGui.NextColumn();
+                    FFXEditor();
+                }
             }
 
             { //Declare Standalone Windows here
                 // Color Picker
                 if (_cPickerIsEnable)
                 {
-                    float popupWidth = _window.Width * 0.7f;
-                    float popupHeight = _window.Height * 0.7f;
-                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Once);
-                    if (ImGui.Begin("FFX Color Picker"))
+                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.FirstUseEver);
+                    if (ImGui.Begin("FFX Color Picker", ref _cPickerIsEnable))
                     {
-                        if (ImGuiAddons.ButtonGradient("Close Color Picker"))
-                            _cPickerIsEnable = false;
-                        ImGui.SameLine();
                         if (ImGuiAddons.ButtonGradient("Commit Color Change"))
                         {
                             if (_cPickerRed.Attributes[0].Value == "FFXFieldInt" || _cPickerGreen.Attributes[0].Value == "FFXFieldInt" || _cPickerBlue.Attributes[0].Value == "FFXFieldInt" || _cPickerAlpha.Attributes[0].Value == "FFXFieldInt")
@@ -297,69 +286,17 @@ namespace DSFFXEditor
                 // Keyboard Guide
                 if (_keyboardInputGuide)
                 {
-                    ImGui.SetNextWindowDockID(MainViewport);
-                    ImGui.Begin("Keyboard Guide", ImGuiWindowFlags.MenuBar);
+                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.FirstUseEver);
+                    ImGui.Begin("Keyboard Guide", ref _keyboardInputGuide, ImGuiWindowFlags.MenuBar);
                     ImGui.BeginMenuBar();
                     ImGui.EndMenuBar();
                     ImGui.ShowUserGuide();
                     ImGui.End();
                 }
-                //Currently Unused FFXProperty Changer
-                if (_axbyEditorIsPopup)
-                {
-                    if (!ImGui.IsPopupOpen("AxByTypeEditor"))
-                    {
-                        ImGui.OpenPopup("AxByTypeEditor");
-                    }
-                    float popupWidth = 400;
-                    float popupHeight = 250;
-                    ImGui.SetNextWindowSize(new Vector2(popupWidth, popupHeight));
-                    ImGui.SetNextWindowPos(new Vector2(viewport->Pos.X + (viewport->Size.X / 2) - (popupWidth / 2), viewport->Pos.Y + (viewport->Size.Y / 2) - (popupHeight / 2)));
-                    ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8.0f);
-                    if (ImGui.BeginPopupModal("AxByTypeEditor", ref _axbyEditorIsPopup, ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize))
-                    {
-                        //ImGui.PushStyleColor(ImGuiCol.ModalWindowDimBg, ImGui.GetColorU32(ImGuiCol.ButtonHovered));
-                        ArrayList localaxbylist = new ArrayList();
-                        string actionid = _axbyeditoractionidnode.ParentNode.ParentNode.Attributes[0].Value;
-                        int indexinparent = GetNodeIndexinParent(_axbyeditoractionidnode);
-                        localaxbylist.Add($"{indexinparent}: A{_axbyeditoractionidnode.Attributes[0].Value}B{_axbyeditoractionidnode.Attributes[1].Value}");
-                        string[] meme = new string[localaxbylist.Count];
-
-                        localaxbylist.CopyTo(meme);
-                        ImGui.Text("FFXProperty Type Editor");
-                        ImGui.Text(actionid);
-                        ImGui.Combo("i am a combo", ref _axbyEditorSelectedItem, meme, meme.Length);
-
-                        if (ImGui.Button("OK")) { ImGui.CloseCurrentPopup(); }
-                        ImGui.SameLine();
-                        if (ImGui.Button("Cancel")) { ImGui.CloseCurrentPopup(); }
-                        if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape))) { ImGui.CloseCurrentPopup(); }
-                        ImGui.EndPopup();
-                    }
-                    ImGui.PopStyleVar();
-                    if (!ImGui.IsPopupOpen("AxByTypeEditor"))
-                    {
-                        _axbyEditorIsPopup = false;
-                    }
-                }
             }
 
-            { //Main Window Here
-                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
-                ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
-                ImGui.Columns(2);
-                ImGui.BeginChild("FFXTreeView");
-                if (XMLOpen == true)
-                {
-                    PopulateTree(xDoc.SelectSingleNode("descendant::RootEffectCall"));
-                }
-                ImGui.EndChild();
-                if (_showFFXEditorProperties || _showFFXEditorFields)
-                {
-                    ImGui.NextColumn();
-                    FFXEditor();
-                }
-            }
+            ImGuiIOPtr io = ImGui.GetIO();
+            SetThing(out io.DeltaTime, 2f);
         }
 
         private static bool _filtertoggle = false;
@@ -521,8 +458,8 @@ namespace DSFFXEditor
             //
             if (_axbyDebugger)
             {
-                ImGui.SetNextWindowDockID(MainViewport);
-                ImGui.Begin("axbxDebug");
+                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.FirstUseEver);
+                ImGui.Begin("axbxDebug", ref _axbyDebugger);
                 int integer = 0;
                 foreach (XmlNode node in XMLChildNodesValid(NodeListEditor.Item(0).ParentNode))
                 {
@@ -633,11 +570,6 @@ namespace DSFFXEditor
                                 ImGui.Text(localSlot[2]);
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localInput);
-                                /*if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-                                {
-                                    _axbyeditoractionidnode = Node;
-                                    _axbyEditorIsPopup = true;
-                                }*/
                             }
                             else
                             {
@@ -1135,7 +1067,7 @@ namespace DSFFXEditor
             }
         }
 
-        private static void CloseOpenFFXWithoutSaving() 
+        private static void CloseOpenFFXWithoutSaving()
         {
             XMLOpen = false;
             _cPickerIsEnable = false;
@@ -1144,7 +1076,7 @@ namespace DSFFXEditor
             xDoc = new XmlDocument();
         }
 
-        public static XmlNodeList XMLChildNodesValid(XmlNode Node) 
+        public static XmlNodeList XMLChildNodesValid(XmlNode Node)
         {
             return Node.SelectNodes("*");
         }

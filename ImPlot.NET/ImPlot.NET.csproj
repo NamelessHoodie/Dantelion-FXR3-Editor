@@ -28,11 +28,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="build\net40\ImPlot.NET.targets" />
-    <None Remove="cimplot.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="cimplot.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>
