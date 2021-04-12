@@ -6,14 +6,12 @@ using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using ImGuiNET;
 using ImPlotNET;
-using ImNodesNET;
+using imnodesNET;
 using ImGuizmoNET;
 using System.Xml;
 using System.Collections;
 using ImGuiNETAddons;
-using System.Xml.Linq;
 using System.IO;
-using System.Linq;
 
 namespace DSFFXEditor
 {
@@ -22,12 +20,10 @@ namespace DSFFXEditor
         private static Sdl2Window _window;
         private static GraphicsDevice _gd;
         private static CommandList _cl;
-        private static ImGuiRenderer _controller;
-        private static MemoryEditor _memoryEditor;
+        private static ImGuiController _controller;
 
         // UI state
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
-        private static byte[] _memoryEditorData;
         private static string _activeTheme = "DarkRedClay"; //Initialized Default Theme
         private static uint MainViewport;
         private static bool _keyboardInputGuide = false;
@@ -70,12 +66,12 @@ namespace DSFFXEditor
         // Color Editor
 
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             // Create window, GraphicsDevice, and all resources necessary for the demo.
             VeldridStartup.CreateWindowAndGraphicsDevice(
-                new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "Dark Souls FFX Studio"),
+                new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "ImGui.NET Sample Program"),
                 new GraphicsDeviceOptions(true, null, true, ResourceBindingModel.Improved, true, true),
                 out _window,
                 out _gd);
@@ -85,13 +81,8 @@ namespace DSFFXEditor
                 _controller.WindowResized(_window.Width, _window.Height);
             };
             _cl = _gd.ResourceFactory.CreateCommandList();
-            _controller = new ImGuiRenderer(_gd, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
-            _memoryEditor = new MemoryEditor();
+            _controller = new ImGuiController(_gd, _window, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
             Random random = new Random();
-            _memoryEditorData = Enumerable.Range(0, 1024).Select(i => (byte)random.Next(255)).ToArray();
-
-            ImGuiIOPtr io = ImGui.GetIO();
-            io.ConfigFlags |= ImGuiConfigFlags.DockingEnable | ImGuiConfigFlags.NavEnableKeyboard;
 
             DSFFXThemes.ThemesSelector(_activeTheme); //Default Theme
             DefParser.Initialize();
@@ -111,6 +102,7 @@ namespace DSFFXEditor
                 _cl.End();
                 _gd.SubmitCommands(_cl);
                 _gd.SwapBuffers(_gd.MainSwapchain);
+                _controller.SwapExtraWindows(_gd);
             }
 
             // Clean up Veldrid resources
@@ -120,9 +112,10 @@ namespace DSFFXEditor
             _gd.Dispose();
         }
 
+        static void SetThing(out float i, float val) { i = val; }
+
         private static bool _axbyEditorIsPopup = false;
         private static int _axbyEditorSelectedItem;
-        private static XmlNode _axbyeditoractionidnode;
         private static unsafe void SubmitUI()
         {
             // Demo code adapted from the official Dear ImGui demo program:
@@ -304,44 +297,6 @@ namespace DSFFXEditor
                     ImGui.ShowUserGuide();
                     ImGui.End();
                 }
-                //Currently Unused FFXProperty Changer
-                if (_axbyEditorIsPopup)
-                {
-                    if (!ImGui.IsPopupOpen("AxByTypeEditor"))
-                    {
-                        ImGui.OpenPopup("AxByTypeEditor");
-                    }
-                    float popupWidth = 400;
-                    float popupHeight = 250;
-                    ImGui.SetNextWindowSize(new Vector2(popupWidth, popupHeight));
-                    ImGui.SetNextWindowPos(new Vector2(viewport->Pos.X + (viewport->Size.X / 2) - (popupWidth / 2), viewport->Pos.Y + (viewport->Size.Y / 2) - (popupHeight / 2)));
-                    ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8.0f);
-                    if (ImGui.BeginPopupModal("AxByTypeEditor", ref _axbyEditorIsPopup, ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize))
-                    {
-                        //ImGui.PushStyleColor(ImGuiCol.ModalWindowDimBg, ImGui.GetColorU32(ImGuiCol.ButtonHovered));
-                        ArrayList localaxbylist = new ArrayList();
-                        string actionid = _axbyeditoractionidnode.ParentNode.ParentNode.Attributes[0].Value;
-                        int indexinparent = GetNodeIndexinParent(_axbyeditoractionidnode);
-                        localaxbylist.Add($"{indexinparent}: A{_axbyeditoractionidnode.Attributes[0].Value}B{_axbyeditoractionidnode.Attributes[1].Value}");
-                        string[] meme = new string[localaxbylist.Count];
-
-                        localaxbylist.CopyTo(meme);
-                        ImGui.Text("FFXProperty Type Editor");
-                        ImGui.Text(actionid);
-                        ImGui.Combo("i am a combo", ref _axbyEditorSelectedItem, meme, meme.Length);
-
-                        if (ImGui.Button("OK")) { ImGui.CloseCurrentPopup(); }
-                        ImGui.SameLine();
-                        if (ImGui.Button("Cancel")) { ImGui.CloseCurrentPopup(); }
-                        if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape))) { ImGui.CloseCurrentPopup(); }
-                        ImGui.EndPopup();
-                    }
-                    ImGui.PopStyleVar();
-                    if (!ImGui.IsPopupOpen("AxByTypeEditor"))
-                    {
-                        _axbyEditorIsPopup = false;
-                    }
-                }
             }
 
             { //Main Window Here
@@ -360,6 +315,9 @@ namespace DSFFXEditor
                     FFXEditor();
                 }
             }
+
+            ImGuiIOPtr io = ImGui.GetIO();
+            SetThing(out io.DeltaTime, 2f);
         }
 
         private static bool _filtertoggle = false;
@@ -633,11 +591,6 @@ namespace DSFFXEditor
                                 ImGui.Text(localSlot[2]);
                                 ImGui.TableNextColumn();
                                 ImGui.Text(localInput);
-                                /*if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-                                {
-                                    _axbyeditoractionidnode = Node;
-                                    _axbyEditorIsPopup = true;
-                                }*/
                             }
                             else
                             {

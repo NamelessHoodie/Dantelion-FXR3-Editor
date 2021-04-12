@@ -1,4 +1,4 @@
-#version 300 es
+#version 330 core
 
 uniform ProjectionMatrixBuffer
 {
@@ -11,11 +11,6 @@ in vec4 in_color;
 
 out vec4 color;
 out vec2 texCoord;
-
-vec3 SrgbToLinear(vec3 srgb)
-{
-    return srgb * (srgb * (srgb * 0.305306011 + 0.682171111) + 0.012522878);
-}
 
 void main()
 {
