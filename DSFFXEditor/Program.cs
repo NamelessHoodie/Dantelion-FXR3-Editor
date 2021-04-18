@@ -9,9 +9,11 @@ using ImPlotNET;
 using imnodesNET;
 using ImGuizmoNET;
 using System.Xml;
+using System.Xml.Linq;
 using System.Collections;
 using ImGuiNETAddons;
 using System.IO;
+using System.Collections.Generic;
 
 namespace DSFFXEditor
 {
@@ -43,8 +45,10 @@ namespace DSFFXEditor
 
         //XML
         private static XmlDocument xDoc = new XmlDocument();
+        private static XDocument xDocLinq;
         private static bool XMLOpen = false;
         private static bool _axbyDebugger = false;
+        private static bool experimentalLinqXmlReader = false;
 
         //FFX Workshop Tools
         //<Color Editor>
@@ -129,6 +133,16 @@ namespace DSFFXEditor
             {
                 if (ImGui.BeginMenu("File"))
                 {
+                    if (ImGui.MenuItem("Open FFX *XML Linq"))
+                    {
+                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
+                        ofd.Filter = "XML|*.xml";
+                        if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            experimentalLinqXmlReader = true;
+                            xDocLinq = XDocument.Load(ofd.FileName);
+                        }
+                    }
                     if (ImGui.MenuItem("Open FFX *XML"))
                     {
                         System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
@@ -292,6 +306,18 @@ namespace DSFFXEditor
                     ImGui.EndMenuBar();
                     ImGui.ShowUserGuide();
                     ImGui.End();
+                }
+                if (experimentalLinqXmlReader)
+                {
+                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
+                    ImGui.Begin("urmom");
+                    IEnumerable<XElement> enumerablememe = xDocLinq.Descendants("FFXField");
+                    foreach (var meme in enumerablememe)
+                    {
+                        ImGui.Text(meme.ToString());
+                    }
+                    ImGui.End();
+
                 }
             }
 
