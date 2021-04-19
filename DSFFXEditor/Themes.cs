@@ -13,7 +13,7 @@ namespace DSFFXEditor
             if (themeName == "DarkRedClay")
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.00f, 1.00f)); //Pretty Self explanatory
-                //ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.60f, 1.0f, 0.60f, 1.00f)); //idk yet
+                ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.5f, 0.5f, 0.5f, 1f)); //Disabled Text Duh
                 ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.17f, 0.16f, 0.16f, 1.0f)); //Window Background
                 ImGui.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.35f, 0.24f, 0.24f, 1.00f)); //Popup Background
                 ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0.61f, 0.50f, 0.50f, 0.90f)); //Context Menu Border
