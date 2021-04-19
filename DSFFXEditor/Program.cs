@@ -14,6 +14,7 @@ using ImGuiNETAddons;
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
+using System.Threading;
 
 namespace DSFFXEditor
 {
@@ -111,6 +112,7 @@ namespace DSFFXEditor
                 _gd.SubmitCommands(_cl);
                 _gd.SwapBuffers(_gd.MainSwapchain);
                 _controller.SwapExtraWindows(_gd);
+                Thread.Sleep(16);
             }
             //Runtime Configs Save
             DSFFXConfig.SaveConfigs();
