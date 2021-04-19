@@ -21,10 +21,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="meme.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="cimgui.dll" />
     <None Remove="cimguizmo.dll" />
     <None Remove="cimnodes.dll" />
@@ -44,10 +40,6 @@
     <Content Include="cimplot.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="meme.cs" />
   </ItemGroup>
 
   <ItemGroup>

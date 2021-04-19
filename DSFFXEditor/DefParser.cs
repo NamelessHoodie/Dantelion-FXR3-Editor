@@ -22,11 +22,11 @@ namespace DSFFXEditor
                 ImGui.TableSetupColumn("dataType", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize);
                 ImGui.TableSetupColumn("Text");
                 ImGui.TableSetupColumn("Controls");
-                IEnumerable<XElement> LocalNodeIEnumerable = from element0 in FieldDef.Descendants("ActionIDs")
-                                                             from element1 in element0.Descendants("ActionID")
+                IEnumerable<XElement> LocalNodeIEnumerable = from element0 in FieldDef.Root.Elements("ActionIDs")
+                                                             from element1 in element0.Elements("ActionID")
                                                              where element1.Attribute("ID").Value == actionID
-                                                             from element2 in element1.Descendants(fieldType)
-                                                             from element3 in element2.Descendants()
+                                                             from element2 in element1.Elements(fieldType)
+                                                             from element3 in element2.Elements()
                                                              select element3;
                 if (LocalNodeIEnumerable.Count() > 0)
                 {
@@ -160,11 +160,10 @@ namespace DSFFXEditor
                 ImGui.EndTable();
             }
         }
-
         public static string DefXMLSymbolParser(string symbol)
         {
-            IEnumerable<XAttribute> localSymbolIEnumerable = from element0 in FieldDef.Descendants($"symbolsDef")
-                                                             from element1 in element0.Descendants("entry")
+            IEnumerable<XAttribute> localSymbolIEnumerable = from element0 in FieldDef.Root.Elements($"symbolsDef")
+                                                             from element1 in element0.Elements("entry")
                                                              where element1.Attribute("symbol").Value == symbol
                                                              where element1.Attribute("def") != null
                                                              select element1.Attribute("def");
@@ -182,19 +181,18 @@ namespace DSFFXEditor
             string defaultwiki = null;
             int localActionID = Int32.Parse(root.Parent.Parent.Attribute("ActionID").Value);
             int localPropertyIndex = DSFFXGUIMain.GetNodeIndexinParent(root);
-            IEnumerable<XElement> idk = from element0 in FieldDef.Descendants("ActionIDs")
-                                        from element1 in element0.Descendants("ActionID")
+            IEnumerable<XElement> idk = from element0 in FieldDef.Root.Elements("ActionIDs")
+                                        from element1 in element0.Elements("ActionID")
                                         where element1.Attribute("ID").Value == localActionID.ToString()
-                                        from element2 in element1.Descendants(fieldType)
-                                        from element3 in element2.Descendants()
+                                        from element2 in element1.Elements(fieldType)
+                                        from element3 in element2.Elements()
                                         select element3;
             ;
             if (idk.Count() > 0)
             {
-                XElement[] localNodeList = idk.ToArray();
-                XElement localLoopNode = localNodeList[localPropertyIndex];
-                if (localLoopNode != null)
+                if (idk.Count() - 1 >= localPropertyIndex)
                 {
+                    XElement localLoopNode = idk.ElementAt(localPropertyIndex);
                     XAttribute localLoopAttributetype = localLoopNode.Attribute("type");
                     XAttribute localLoopAttributearg = localLoopNode.Attribute("arg");
                     XAttribute localLoopAttributename = localLoopNode.Attribute("name");
