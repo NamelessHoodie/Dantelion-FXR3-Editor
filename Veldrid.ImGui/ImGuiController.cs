@@ -229,7 +229,7 @@ namespace DSFFXEditor
             return (flags & SDL_WindowFlags.InputFocus) != 0 ? (byte)1 : (byte)0;
         }
 
-        private byte GetWindowMinimized(ImGuiViewportPtr vp)
+        public static byte GetWindowMinimized(ImGuiViewportPtr vp)
         {
             VeldridImGuiWindow window = (VeldridImGuiWindow)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
             SDL_WindowFlags flags = Sdl2Native.SDL_GetWindowFlags(window.Window.SdlWindowHandle);

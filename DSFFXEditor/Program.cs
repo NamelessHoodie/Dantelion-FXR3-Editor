@@ -27,7 +27,7 @@ namespace DSFFXEditor
 
         // UI state
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
-        private static uint MainViewport;
+        private static uint mainViewPortDockSpaceID;
         private static bool _keyboardInputGuide = false;
 
         // Save/Load Path
@@ -93,16 +93,23 @@ namespace DSFFXEditor
             //Theme Selector
             DSFFXThemes.ThemesSelector(DSFFXConfig._activeTheme);
 
-            ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
-
             // Main application loop
             while (_window.Exists)
             {
                 InputSnapshot snapshot = _window.PumpEvents();
                 if (!_window.Exists) { break; }
-                _controller.Update(1f / 60f, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
+                _controller.Update(1f / 58.82352941176471f, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
 
-                SubmitUI();
+                //SetupMainDockingSpace
+                ImGuiViewportPtr mainViewportPtr = ImGui.GetMainViewport();
+                mainViewPortDockSpaceID = ImGui.DockSpaceOverViewport(mainViewportPtr);
+
+                if (ImGuiController.GetWindowMinimized(mainViewportPtr) == 0)
+                {
+                    SubmitMainWindowUI();
+                }
+
+                SubmitDockableUI();
 
                 _cl.Begin();
                 _cl.SetFramebuffer(_gd.MainSwapchain.Framebuffer);
@@ -112,7 +119,7 @@ namespace DSFFXEditor
                 _gd.SubmitCommands(_cl);
                 _gd.SwapBuffers(_gd.MainSwapchain);
                 _controller.SwapExtraWindows(_gd);
-                Thread.Sleep(16);
+                Thread.Sleep(17);
             }
             //Runtime Configs Save
             DSFFXConfig.SaveConfigs();
@@ -124,11 +131,8 @@ namespace DSFFXEditor
             _gd.Dispose();
         }
         static void SetThing(out float i, float val) { i = val; }
-        private static unsafe void SubmitUI()
+        private static unsafe void SubmitMainWindowUI()
         {
-            ImGuiViewport* viewport = ImGui.GetMainViewport();
-            MainViewport = ImGui.DockSpaceOverViewport(viewport);
-
             if (ImGui.BeginMainMenuBar())
             {
                 if (ImGui.BeginMenu("File"))
@@ -211,7 +215,7 @@ namespace DSFFXEditor
             }
 
             { //Main Window Here
-                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
+                ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.Appearing);
                 ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize);
                 ImGui.Columns(2);
                 ImGui.BeginChild("FFXTreeView");
@@ -229,11 +233,14 @@ namespace DSFFXEditor
                     FFXEditor();
                 }
             }
+        }
+        private static void SubmitDockableUI()
+        {
             { //Declare Standalone Windows here
                 // Color Picker
                 if (_cPickerIsEnable)
                 {
-                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.FirstUseEver);
+                    ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
                     if (ImGui.Begin("FFX Color Picker", ref _cPickerIsEnable))
                     {
                         if (ImGuiAddons.ButtonGradient("Commit Color Change"))
@@ -272,7 +279,7 @@ namespace DSFFXEditor
                 // Keyboard Guide
                 if (_keyboardInputGuide)
                 {
-                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.FirstUseEver);
+                    ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
                     ImGui.Begin("Keyboard Guide", ref _keyboardInputGuide, ImGuiWindowFlags.MenuBar);
                     ImGui.BeginMenuBar();
                     ImGui.EndMenuBar();
@@ -282,7 +289,7 @@ namespace DSFFXEditor
                 if (experimentalLinqXmlReader)
                 {
                     string[] aaa = new string[] { "609", "603" };
-                    ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.Appearing);
+                    ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.Appearing);
                     ImGui.Begin("urmom");
                     IEnumerable<XElement> enumerablememe = xDocLinq.Descendants();
                     var memeidk = from memeitem in enumerablememe
@@ -296,9 +303,6 @@ namespace DSFFXEditor
                     ImGui.End();
                 }
             }
-
-            ImGuiIOPtr io = ImGui.GetIO();
-            SetThing(out io.DeltaTime, 2f);
         }
         private static void PopulateTree(XElement root)
         {
@@ -759,7 +763,7 @@ namespace DSFFXEditor
             //
             if (_axbyDebugger)
             {
-                ImGui.SetNextWindowDockID(MainViewport, ImGuiCond.FirstUseEver);
+                ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
                 ImGui.Begin("axbxDebug", ref _axbyDebugger);
                 int integer = 0;
                 foreach (XElement node in XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent))
