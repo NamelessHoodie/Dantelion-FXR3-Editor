@@ -286,22 +286,6 @@ namespace DSFFXEditor
                     ImGui.ShowUserGuide();
                     ImGui.End();
                 }
-                if (experimentalLinqXmlReader)
-                {
-                    string[] aaa = new string[] { "609", "603" };
-                    ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.Appearing);
-                    ImGui.Begin("urmom");
-                    IEnumerable<XElement> enumerablememe = xDocLinq.Descendants();
-                    var memeidk = from memeitem in enumerablememe
-                                  where memeitem.Name == "FFXActionCall"
-                                  where aaa.Contains(memeitem.Attribute("ActionID").Value)
-                                  select memeitem;
-                    foreach (var meme in memeidk)
-                    {
-                        ImGui.Text(meme.ToString());
-                    }
-                    ImGui.End();
-                }
             }
         }
         private static void PopulateTree(XElement root)
@@ -315,7 +299,7 @@ namespace DSFFXEditor
                 {
                     if (_actionIDsFilter.Contains(root.Attribute("ActionID").Value) || _filtertoggle)
                     {
-                        if (ImGui.TreeNodeEx($"ActionID = {root.Attribute("ActionID").Value}", ImGuiTreeNodeFlags.None))
+                        if (ImGuiAddons.TreeNodeTitleColored($"ActionID('{root.Attribute("ActionID").Value}')", ImGuiTreeNodeFlags.None))
                         {
                             GetFFXProperties(root, "Properties1");
                             GetFFXProperties(root, "Properties2");
@@ -342,7 +326,7 @@ namespace DSFFXEditor
                     {
                         if (root.Name == "FFXEffectCallA")
                         {
-                            if (ImGui.TreeNodeEx($"FFX Container = {root.Attribute("EffectID").Value}"))
+                            if (ImGuiAddons.TreeNodeTitleColored($"FFX Container('{root.Attribute("EffectID").Value}')"))
                             {
                                 foreach (XElement node in localNodeList)
                                 {
