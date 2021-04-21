@@ -258,10 +258,10 @@ namespace DSFFXEditor
                                 _cPickerBlue.Attribute(xsi + "type").Value = "FFXFieldFloat";
                                 _cPickerAlpha.Attribute(xsi + "type").Value = "FFXFieldFloat";
                             }
-                            _cPickerRed.Attribute("Value").Value = _cPicker.X.ToString("#.0000");
-                            _cPickerGreen.Attribute("Value").Value = _cPicker.Y.ToString("#.0000");
-                            _cPickerBlue.Attribute("Value").Value = _cPicker.Z.ToString("#.0000");
-                            _cPickerAlpha.Attribute("Value").Value = _cPicker.W.ToString("#.0000");
+                            _cPickerRed.Attribute("Value").Value = _cPicker.X.ToString("0.####");
+                            _cPickerGreen.Attribute("Value").Value = _cPicker.Y.ToString("0.####");
+                            _cPickerBlue.Attribute("Value").Value = _cPicker.Z.ToString("0.####");
+                            _cPickerAlpha.Attribute("Value").Value = _cPicker.W.ToString("0.####");
                         }
                         Vector2 mEME = ImGui.GetWindowSize();
                         if (mEME.X > mEME.Y)
@@ -450,7 +450,7 @@ namespace DSFFXEditor
                             string localInput = AxByToName(Node);
                             string localLabel = $"{localIndex} {localSlot[0]}: {localSlot[1]} {localInput}";
                             ImGui.PushID($"ItemForLoopNode = {localLabel}");
-                            if (localAxBy == "A67B19" || localAxBy == "A35B11" || localAxBy == "A99B27" || "null" == "A4163B35")
+                            if (true)//localAxBy == "A67B19" || localAxBy == "A35B11" || localAxBy == "A99B27" || "null" == "A4163B35")
                             {
                                 IEnumerable<XElement> NodeListProcessing = XMLChildNodesValid(Node.Element("Fields"));
                                 uint IDStorage = ImGui.GetID(localLabel);
@@ -527,7 +527,7 @@ namespace DSFFXEditor
             {
                 if (node.Attribute(xsi + "type").Value == "FFXFieldInt")
                     node.Attribute(xsi + "type").Value = "FFXFieldFloat";
-                node.Attribute("Value").Value = nodeValue.ToString("#.0000");
+                node.Attribute("Value").Value = nodeValue.ToString("0.####");
             }
         }
         public static void FloatInputDefaultNode(XElement node, string dataString)
@@ -540,7 +540,7 @@ namespace DSFFXEditor
                 {
                     if (node.Attribute(xsi + "type").Value == "FFXFieldInt")
                         node.Attribute(xsi + "type").Value = "FFXFieldFloat";
-                    node.Attribute("Value").Value = floatNodeValue.ToString("#.0000");
+                    node.Attribute("Value").Value = floatNodeValue.ToString("0.####");
                 }
             }
         }
@@ -735,10 +735,19 @@ namespace DSFFXEditor
                         FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
                         break;
                     default:
-                        ImGui.Text("ERROR: FFX Property Handler not found, using Default Read Only Handler.");
+                        ImGui.Text("ERROR: FFX Property Handler not found, using Default Handler.");
                         foreach (XElement node in NodeListEditor)
                         {
-                            ImGui.TextWrapped($"{node.Attribute(xsi + "type").Value} = {node.Attribute("Value").Value}");
+                            string dataType = node.Attribute(xsi + "type").Value;
+                            string Name = node.Name.ToString();
+                            if (dataType == "FFXFieldFloat")
+                            {
+                                FloatInputDefaultNode(node, Name);
+                            }
+                            else if (dataType == "FFXFieldInt")
+                            {
+                                IntInputDefaultNode(node, Name);
+                            }
                         }
                         break;
                 }
