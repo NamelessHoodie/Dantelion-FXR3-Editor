@@ -30,6 +30,15 @@ namespace DSFFXEditor
         private static uint mainViewPortDockSpaceID;
         private static bool _keyboardInputGuide = false;
 
+        // Config
+        private static string iniPath = "Config/EditorConfigs.ini";
+
+        private static IniConfigFile _selectedTheme = new IniConfigFile("General", "Theme", "DarkRedClay", iniPath);
+        private static string _activeTheme = _selectedTheme.ReadConfigsIni();
+
+        private static IniConfigFile _selectedThemeIndex = new IniConfigFile("General", "ThemeIndex", 0, iniPath);
+        public static int _themeSelectorSelectedItem = Int32.Parse(_selectedThemeIndex.ReadConfigsIni());
+
         // Save/Load Path
         private static String _loadedFilePath = "";
 
@@ -87,11 +96,8 @@ namespace DSFFXEditor
             _cl = _gd.ResourceFactory.CreateCommandList();
             _controller = new ImGuiController(_gd, _window, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
 
-            //Runtime Configs Load
-            DSFFXConfig.ReadConfigs();
-
             //Theme Selector
-            DSFFXThemes.ThemesSelector(DSFFXConfig._activeTheme);
+            DSFFXThemes.ThemesSelector(_activeTheme);
 
             // Main application loop
             while (_window.Exists)
@@ -104,11 +110,10 @@ namespace DSFFXEditor
                 ImGuiViewportPtr mainViewportPtr = ImGui.GetMainViewport();
                 mainViewPortDockSpaceID = ImGui.DockSpaceOverViewport(mainViewportPtr);
 
-                if (ImGuiController.GetWindowMinimized(mainViewportPtr) == 0)
+                if (_controller.GetWindowMinimized(mainViewportPtr) == 0)
                 {
                     SubmitMainWindowUI();
                 }
-
                 SubmitDockableUI();
 
                 _cl.Begin();
@@ -122,7 +127,6 @@ namespace DSFFXEditor
                 Thread.Sleep(17);
             }
             //Runtime Configs Save
-            DSFFXConfig.SaveConfigs();
 
             // Clean up Veldrid resources
             _gd.WaitForIdle();
@@ -166,26 +170,28 @@ namespace DSFFXEditor
                 }
                 if (ImGui.BeginMenu("Themes"))
                 {
-                    if (ImGui.Combo("Theme Selector", ref DSFFXConfig._themeSelectorSelectedItem, _themeSelectorEntriesArray, _themeSelectorEntriesArray.Length))
+                    if (ImGui.Combo("Theme Selector", ref _themeSelectorSelectedItem, _themeSelectorEntriesArray, _themeSelectorEntriesArray.Length))
                     {
-                        switch (DSFFXConfig._themeSelectorSelectedItem)
+                        switch (_themeSelectorSelectedItem)
                         {
                             case 0:
-                                DSFFXConfig._activeTheme = "DarkRedClay";
+                                _activeTheme = "DarkRedClay";
                                 break;
                             case 1:
-                                DSFFXConfig._activeTheme = "ImGuiDark";
+                                _activeTheme = "ImGuiDark";
                                 break;
                             case 2:
-                                DSFFXConfig._activeTheme = "ImGuiLight";
+                                _activeTheme = "ImGuiLight";
                                 break;
                             case 3:
-                                DSFFXConfig._activeTheme = "ImGuiClassic";
+                                _activeTheme = "ImGuiClassic";
                                 break;
                             default:
                                 break;
                         }
-                        DSFFXThemes.ThemesSelector(DSFFXConfig._activeTheme);
+                        DSFFXThemes.ThemesSelector(_activeTheme);
+                        _selectedTheme.WriteConfigsIni(_activeTheme);
+                        _selectedThemeIndex.WriteConfigsIni(_themeSelectorSelectedItem);
                     }
                     ImGui.EndMenu();
                 }
@@ -372,14 +378,16 @@ namespace DSFFXEditor
         }
         public static IEnumerable<XElement> XMLChildNodesValid(XElement Node)
         {
+            //return from element in Node.Elements()
+            //       where element.NodeType == XmlNodeType.Element
+            //       select element;
 
-            return from element in Node.Elements()
-                   where element.NodeType == XmlNodeType.Element
-                   select element;
+            return Node.Elements();
         }
         public static int GetNodeIndexinParent(XElement Node)
         {
-            return Node.ElementsBeforeSelf().Where(n => n.NodeType == XmlNodeType.Element).Count();
+            //return Node.ElementsBeforeSelf().Where(n => n.NodeType == XmlNodeType.Element).Count();
+            return Node.ElementsBeforeSelf().Count();
         }
         private static void CloseOpenFFXWithoutSaving()
         {
@@ -425,7 +433,6 @@ namespace DSFFXEditor
             {
                 if (ImGui.TreeNodeEx($"{PropertyType}"))
                 {
-                    ImGui.Unindent();
                     if (ImGui.BeginTable("##table2", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
                     {
                         ImGui.TableSetupColumn("Type");
@@ -495,7 +502,6 @@ namespace DSFFXEditor
                         }
                         ImGui.EndTable();
                     }
-                    ImGui.Indent();
                     ImGui.TreePop();
                 }
             }

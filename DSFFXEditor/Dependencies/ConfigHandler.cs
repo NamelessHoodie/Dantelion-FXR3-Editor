@@ -4,17 +4,19 @@ using System.Text;
 
 namespace DSFFXEditor
 {
-    class EditorConfig
+    class IniConfigFile
     {
         string Section;
         string Key;
+        public string Value;
         string DefaultValue;
         IniFile Configs;
-        public EditorConfig(string Section, string Key, string DefaultValue, string IniPath)
+        public IniConfigFile(string Section, string Key, object DefaultValue, string IniPath)
         {
             this.Section = Section;
             this.Key = Key;
-            this.DefaultValue = DefaultValue;
+            this.DefaultValue = DefaultValue.ToString();
+            this.Value = DefaultValue.ToString();
             Configs = new IniFile(IniPath);
         }
         public string ReadConfigsIni()
@@ -26,33 +28,14 @@ namespace DSFFXEditor
             }
             else
             {
-                return Configs.Read(Key, Section);
+                Value = Configs.Read(Key, Section);
+                return Value;
             }
         }
 
-        public void WriteConfigsIni(string NewValue)
+        public void WriteConfigsIni(Object NewValue)
         {
-            Configs.Write(Key, NewValue, Section);
-        }
-    }
-
-    class DSFFXConfig 
-    {
-        public static int _themeSelectorSelectedItem = 0;
-        public static string _activeTheme = "DarkRedClay";
-        private static string iniPath = "Config/EditorConfigs.ini";
-        private static EditorConfig theme = new EditorConfig("General", "Theme", _activeTheme, iniPath);
-        private static EditorConfig themeIndex = new EditorConfig("General", "ThemeIndex", _themeSelectorSelectedItem.ToString(), iniPath);
-        public static void ReadConfigs() 
-        {
-            _activeTheme = theme.ReadConfigsIni();
-            _themeSelectorSelectedItem = Int32.Parse(themeIndex.ReadConfigsIni());
-        }
-
-        public static void SaveConfigs() 
-        {
-            theme.WriteConfigsIni(_activeTheme);
-            themeIndex.WriteConfigsIni(_themeSelectorSelectedItem.ToString());
+            Configs.Write(Key, NewValue.ToString(), Section);
         }
     }
 }
