@@ -468,7 +468,7 @@ namespace DSFFXEditor
                             string localAxBy = $"A{Node.Attribute("TypeEnumA").Value}B{Node.Attribute("TypeEnumB").Value}";
                             string localIndex = $"{GetNodeIndexinParent(Node)}:";
                             string[] localSlot = DefParser.GetDefPropertiesArray(Node, PropertyType);
-                            string localInput = AxByToName(Node);
+                            string localInput = AxByToName(localAxBy);
                             string localLabel = $"{localIndex} {localSlot[0]}: {localSlot[1]} {localInput}";
                             ImGui.PushID($"ItemForLoopNode = {localLabel}");
                             if (AxByScalarArray.Contains(localAxBy) || AxByColorArray.Contains(localAxBy))
@@ -644,49 +644,23 @@ namespace DSFFXEditor
                 ImGui.EndCombo();
             }
         }
-        private static string AxByToName(XElement FFXProperty)
+        private static string AxByToName(string FFXPropertyAxBy)
         {
-            string localAxBy = $"A{FFXProperty.Attribute("TypeEnumA").Value}B{FFXProperty.Attribute("TypeEnumB").Value}";
-            string outputName;
-            switch (localAxBy)
+            string outputName = FFXPropertyAxBy switch
             {
-                case "A0B0":
-                    outputName = "Static 0";
-                    break;
-                case "A16B4":
-                    outputName = "Static 1";
-                    break;
-                case "A19B7":
-                    outputName = "Static Opaque White";
-                    break;
-                case "A32B8":
-                    outputName = "Static Input";
-                    break;
-                case "A35B11":
-                    outputName = "Static Input";
-                    break;
-                case "A64B16":
-                    outputName = "Linear Interpolation";
-                    break;
-                case "A67B19":
-                    outputName = "Linear Interpolation";
-                    break;
-                case "A96B24":
-                    outputName = "Curve interpolation";
-                    break;
-                case "A99B27":
-                    outputName = "Curve interpolation";
-                    break;
-                case "A4160B32":
-                    outputName = "Loop Linear Interpolation";
-                    break;
-                case "A4163B35":
-                    outputName = "Loop Linear Interpolation";
-                    break;
-                default:
-                    outputName = "NoNameHandler";
-                    break;
-            }
+                "A0B0" => "Static 0",
+                "A16B4" => "Static 1",
+                "A19B7" => "Static Opaque White",
+                "A32B8" => "Static Input",
+                "A35B11" => "Static Input",
+                "A64B16" => "Linear Interpolation",
+                "A67B19" => "Linear Interpolation",
+                "A96B24" => "Curve interpolation",
+                "A99B27" => "Curve interpolation",
+                "A4160B32" => "Loop Linear Interpolation",
+                "A4163B35" => "Loop Linear Interpolation",
+                _ => FFXPropertyAxBy,
+            };
             return outputName;
         }
         public static void ShowToolTipWiki(string toolTipTitle, string[] localSlot)
@@ -735,7 +709,9 @@ namespace DSFFXEditor
         }
         private static void AxBySwapper()
         {
-            if (ImGui.BeginCombo("##Current AxBy", AxBy))
+            ImGui.BulletText("Input Type:");
+            ImGui.SameLine();
+            if (ImGui.BeginCombo("##Current AxBy", AxByToName(AxBy)))
             {
                 if (AxByColorArray.Contains(AxBy))
                 {
@@ -744,7 +720,7 @@ namespace DSFFXEditor
                         bool selected = false;
                         if (AxBy == str)
                             selected = true;
-                        if (ImGui.Selectable(str, selected) & str != AxBy)
+                        if (ImGui.Selectable(AxByToName(str), selected) & str != AxBy)
                         {
                             XElement axbyElement = ffxPropertyEditorElement;
                             if (str == "A19B7")
@@ -907,6 +883,7 @@ namespace DSFFXEditor
                             }
                             _showFFXEditorProperties = false;
                             treeViewCurrentHighlighted = 0;
+                            _cPickerIsEnable = false;
                             return;
                         }
                     }
@@ -914,6 +891,10 @@ namespace DSFFXEditor
                 else if (AxByScalarArray.Contains(AxBy))
                 {
 
+                }
+                else
+                {
+                    ImGui.Selectable(AxBy, true);
                 }
                 ImGui.EndCombo();
             }
@@ -925,8 +906,7 @@ namespace DSFFXEditor
             if (_showFFXEditorProperties)
             {
                 AxBySwapper();
-                ImGui.SameLine();
-                ImGui.Text(AxByToName(ffxPropertyEditorElement));
+                ImGui.NewLine();
                 switch (AxBy)
                 {
                     case "A19B7":
