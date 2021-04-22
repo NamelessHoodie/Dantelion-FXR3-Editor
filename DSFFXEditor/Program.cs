@@ -38,6 +38,9 @@ namespace DSFFXEditor
 
         private static IniConfigFile _selectedThemeIndex = new IniConfigFile("General", "ThemeIndex", 0, iniPath);
         public static int _themeSelectorSelectedItem = Int32.Parse(_selectedThemeIndex.ReadConfigsIni());
+        // Supported FFX Arguments
+        private static string[] AxByColorArray = new string[] { "A19B7", "A35B11", "A67B19", "A99B27", "A4163B35" };
+        private static string[] AxByScalarArray = new string[] { "" };
 
         // Save/Load Path
         private static String _loadedFilePath = "";
@@ -56,7 +59,6 @@ namespace DSFFXEditor
         private static XDocument xDocLinq;
         private static bool XMLOpen = false;
         private static bool _axbyDebugger = false;
-        private static bool experimentalLinqXmlReader = false;
         private static bool _filtertoggle = false;
         public static bool _showFFXEditorFields = false;
         public static bool _showFFXEditorProperties = false;
@@ -65,6 +67,7 @@ namespace DSFFXEditor
         public static string AxBy;
         public static string[] Fields;
         private static XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        private static XElement ffxPropertyEditorElement;
 
         //FFX Workshop Tools
         //<Color Editor>
@@ -292,6 +295,24 @@ namespace DSFFXEditor
                     ImGui.ShowUserGuide();
                     ImGui.End();
                 }
+                if (_axbyDebugger & (_showFFXEditorFields || _showFFXEditorProperties))
+                {
+                    if (NodeListEditor != null)
+                    {
+                        if (NodeListEditor.Count() > 0)
+                        {
+                            ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
+                            ImGui.Begin("axbxDebug", ref _axbyDebugger);
+                            int integer = 0;
+                            foreach (XElement node in XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent))
+                            {
+                                ImGui.Text($"Index = '{integer} Node = '{node}')");
+                                integer++;
+                            }
+                        }
+                    }
+                    ImGui.End();
+                }
             }
         }
         private static void PopulateTree(XElement root)
@@ -450,7 +471,7 @@ namespace DSFFXEditor
                             string localInput = AxByToName(Node);
                             string localLabel = $"{localIndex} {localSlot[0]}: {localSlot[1]} {localInput}";
                             ImGui.PushID($"ItemForLoopNode = {localLabel}");
-                            if (true)//localAxBy == "A67B19" || localAxBy == "A35B11" || localAxBy == "A99B27" || "null" == "A4163B35")
+                            if (AxByScalarArray.Contains(localAxBy) || AxByColorArray.Contains(localAxBy))
                             {
                                 IEnumerable<XElement> NodeListProcessing = XMLChildNodesValid(Node.Element("Fields"));
                                 uint IDStorage = ImGui.GetID(localLabel);
@@ -470,6 +491,7 @@ namespace DSFFXEditor
                                     treeViewCurrentHighlighted = IDStorage;
                                     storage.SetBool(IDStorage, true);
                                     NodeListEditor = NodeListProcessing;
+                                    ffxPropertyEditorElement = Node;
                                     AxBy = localAxBy;
                                     _showFFXEditorProperties = true;
                                     _showFFXEditorFields = false;
@@ -711,27 +733,214 @@ namespace DSFFXEditor
                 }
             }
         }
+        private static void AxBySwapper()
+        {
+            if (ImGui.BeginCombo("##Current AxBy", AxBy))
+            {
+                if (AxByColorArray.Contains(AxBy))
+                {
+                    foreach (string str in AxByColorArray)
+                    {
+                        bool selected = false;
+                        if (AxBy == str)
+                            selected = true;
+                        if (ImGui.Selectable(str, selected) & str != AxBy)
+                        {
+                            XElement axbyElement = ffxPropertyEditorElement;
+                            if (str == "A19B7")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "19"), new XAttribute("TypeEnumB", "7"), 
+                                        new XElement("Section8s"), 
+                                        new XElement("Fields")
+                                        )
+                                    );
+                            }
+                            else if (str == "A35B11")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "35"), new XAttribute("TypeEnumB", "11"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields",
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                                        )
+                                    )
+                                );
+                            }
+                            else if (str == "A67B19")
+                            {
+                                if (AxBy == "A4163B35")
+                                {
+                                    axbyElement.Attribute("TypeEnumA").Value = "67";
+                                    axbyElement.Attribute("TypeEnumB").Value = "19";
+                                    _showFFXEditorProperties = false;
+                                    treeViewCurrentHighlighted = 0;
+                                    return;
+                                }
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "67"), new XAttribute("TypeEnumB", "19"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields",
+                                            // Stop Count Number
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
+                                            // Useless 2 RGBA Fields
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Stops Count Values
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
+                                            // First Stop RGBA Fields - No Color, Full Transparency
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Second Stop RGBA Fields - White, Full Opacity
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
+                                        )
+                                    )
+                                );
+                            }
+                            else if (str == "A99B27")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "99"), new XAttribute("TypeEnumB", "27"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields",
+                                            // Stop Count Number
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
+                                            // Useless 2 RGBA Fields
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Stops Count Values
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
+                                            // First Stop RGBA Fields - No Color, Full Transparency
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Second Stop RGBA Fields - White, Full Opacity
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            // Curve Memes
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                                        )
+                                    )
+                                );
+                            }
+                            else if (str == "A4163B35")
+                            {
+                                if (AxBy == "A67B19")
+                                {
+                                    axbyElement.Attribute("TypeEnumA").Value = "4163";
+                                    axbyElement.Attribute("TypeEnumB").Value = "35";
+                                    _showFFXEditorProperties = false;
+                                    treeViewCurrentHighlighted = 0;
+                                    return;
+                                }
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "4163"), new XAttribute("TypeEnumB", "35"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields",
+                                            // Stop Count Number
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
+                                            // Useless 2 RGBA Fields
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Stops Count Values
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
+                                            // First Stop RGBA Fields - No Color, Full Transparency
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Second Stop RGBA Fields - White, Full Opacity
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
+                                        )
+                                    )
+                                );
+                            }
+                            _showFFXEditorProperties = false;
+                            treeViewCurrentHighlighted = 0;
+                            return;
+                        }
+                    }
+                }
+                else if (AxByScalarArray.Contains(AxBy))
+                {
+
+                }
+                ImGui.EndCombo();
+            }
+        }
         public static void FFXEditor()
         {
             ImGui.BeginChild("TxtEdit");
+
             if (_showFFXEditorProperties)
             {
+                AxBySwapper();
+                ImGui.SameLine();
+                ImGui.Text(AxByToName(ffxPropertyEditorElement));
                 switch (AxBy)
                 {
+                    case "A19B7":
+                        break;
                     case "A35B11":
-                        ImGui.Text("FFX Property = A35B11");
                         FFXPropertyA35B11StaticColor(NodeListEditor);
                         break;
                     case "A67B19":
-                        ImGui.Text("FFX Property = A67B19");
                         FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
                         break;
                     case "A99B27":
-                        ImGui.Text("FFX Property = A99B27");
                         FFXPropertyA99B27ColorInterpolationWithCustomCurve(NodeListEditor);
                         break;
                     case "A4163B35":
-                        ImGui.Text("FFX Property = A4163B35");
                         FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
                         break;
                     default:
@@ -759,19 +968,6 @@ namespace DSFFXEditor
                 //ImGui.PopItemWidth();
             }
             ImGui.EndChild();
-            //
-            if (_axbyDebugger)
-            {
-                ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-                ImGui.Begin("axbxDebug", ref _axbyDebugger);
-                int integer = 0;
-                foreach (XElement node in XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent))
-                {
-                    ImGui.Text($"Index = '{integer} Node = '{node}')");
-                    integer++;
-                }
-                ImGui.End();
-            }
         }
         //FFXPropertyHandler Functions Below here
         public static void FFXPropertyA35B11StaticColor(IEnumerable<XElement> NodeListEditor)
