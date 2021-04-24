@@ -177,42 +177,13 @@ namespace ImGuiNETAddons
             return passThrough;
         }
 
-        public static unsafe bool TreeNodePlusoOld(string label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
-        {
-
-            Vector4 color = *ImGui.GetStyleColorVec4(ImGuiCol.ButtonHovered);
-            bool firstNotColoredLabelFound = false;
-            bool passThrough = false;
-            string[] splitID = label.Split("##");
-            foreach (string str in splitID[0].Split('%'))
-            {
-                if (str.Contains("'"))
-                {
-                    ImGui.SameLine();
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() - ImGui.CalcTextSize(" ").X);
-                    ImGui.TextColored(color, str.Trim("'".ToCharArray()[0]));
-                }
-                else if (!firstNotColoredLabelFound)
-                {
-                    firstNotColoredLabelFound = true;
-                    string id = "";
-                    if (splitID.Length > 1)
-                        id = splitID[1];
-                    passThrough = ImGui.TreeNodeEx(str + "##" + id, flags);
-                }
-                else if (firstNotColoredLabelFound)
-                {
-                    ImGui.SameLine();
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() - ImGui.CalcTextSize(" ").X);
-                    ImGui.Text(str);
-                }
-            }
-            return passThrough;
+        public static unsafe Vector4 GetStyleColorVec4Safe(ImGuiCol colorEnum) 
+        { 
+            return *ImGui.GetStyleColorVec4(colorEnum);
         }
-        public static unsafe bool TreeNodeTitleColored(string label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
+        public static bool TreeNodeTitleColored(string label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
         {
-
-            Vector4 color = *ImGui.GetStyleColorVec4(ImGuiCol.CheckMark);
+            Vector4 color = GetStyleColorVec4Safe(ImGuiCol.CheckMark);
             string[] splitID = label.Split("##");
             string[] textForLabelArray = splitID[0].Split("'");
 

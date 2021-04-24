@@ -48,7 +48,7 @@
 		</orientationSpecializedModes606>
 	</Enums>
 	<ActionIDs>
-		<ActionID ID="600">
+		<ActionID ID="600" name="Texture[Simple]">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="Scale*" />
 				<field type="[C]" arg="[P]" name="Color*" />
@@ -104,7 +104,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="601">
+		<ActionID ID="601" name="Line[Colored]">
 			<Properties1>
 				<field type="[S]" arg="[PG]" name="Lenght*" />
 				<field type="[C]" arg="[P]" name="Color*" />
@@ -160,7 +160,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="602">
+		<ActionID ID="602" name="Rectangle[Colored]">
 			<Properties1>
 				<field type="[S]" arg="[PG]" name="X Scale*" />
 				<field type="[S]" arg="[PG]" name="Y Scale*" />
@@ -218,7 +218,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="603">
+		<ActionID ID="603" name="Texture[Complex]">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Offset" wiki="X Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
 				<field type="[S]" arg="[P]" name="Y Offset" wiki="Y Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
@@ -305,7 +305,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="604">
+		<ActionID ID="604" name="Texture[3 Textures Blended]">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Offset" wiki="X Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
 				<field type="[S]" arg="[P]" name="Y Offset" wiki="Y Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
@@ -407,7 +407,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="605">
+		<ActionID ID="605" name="Mesh[Textured]">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Scale*" />
 				<field type="[S]" arg="[P]" name="Y Scale*" />
@@ -497,7 +497,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="606">
+		<ActionID ID="606" name="Trail[Simple]">
 			<Properties1>
 				<field type="[S]" arg="" name="Scale*" />
 				<field type="[S]" arg="" name="" />
@@ -574,7 +574,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="607">
+		<ActionID ID="607" name="Rectangle[Textured and Distorted]">
 			<Properties1>
 				<field type="[S]" arg="" name="" />
 				<field type="[S]" arg="" name="" />
@@ -650,7 +650,7 @@
 				<field name="" dataType=""/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="609">
+		<ActionID ID="609" name="Light[Source]">
 			<Properties1>
 				<field type="[C]" arg="" name="Light Color" />
 				<field type="[C]" arg="" name="Specular Color" />

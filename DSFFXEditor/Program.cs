@@ -31,27 +31,20 @@ namespace DSFFXEditor
         private static bool _keyboardInputGuide = false;
 
         // Config
-        private static string iniPath = "Config/EditorConfigs.ini";
+        private static readonly string iniPath = "Config/EditorConfigs.ini";
 
-        private static IniConfigFile _selectedTheme = new IniConfigFile("General", "Theme", "DarkRedClay", iniPath);
+        private static readonly IniConfigFile _selectedTheme = new IniConfigFile("General", "Theme", "DarkRedClay", iniPath);
         private static string _activeTheme = _selectedTheme.ReadConfigsIni();
 
-        private static IniConfigFile _selectedThemeIndex = new IniConfigFile("General", "ThemeIndex", 0, iniPath);
+        private static readonly IniConfigFile _selectedThemeIndex = new IniConfigFile("General", "ThemeIndex", 0, iniPath);
         public static int _themeSelectorSelectedItem = Int32.Parse(_selectedThemeIndex.ReadConfigsIni());
         // Supported FFX Arguments
-        private static string[] AxByColorArray = new string[] { "A19B7", "A35B11", "A67B19", "A99B27", "A4163B35" };
-        private static string[] AxByScalarArray = new string[] { "" };
+        private static readonly string[] _actionIDSupported = DefParser.SupportedActionIDs();
+        private static readonly string[] AxByColorArray = new string[] { "A19B7", "A35B11", "A67B19", "A99B27", "A4163B35" };
+        private static readonly string[] AxByScalarArray = new string[] { "" };
 
         // Save/Load Path
-        private static String _loadedFilePath = "";
-
-        //colorpicka
-        private static Vector3 _CPickerColor = new Vector3(0, 0, 0);
-
-        //checkbox
-
-        static bool[] s_opened = { true, true, true, true }; // Persistent user state
-
+        private static string _loadedFilePath = "";
         //Theme Selector
         readonly static String[] _themeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Light", "ImGui Classic" };
 
@@ -66,7 +59,7 @@ namespace DSFFXEditor
         public static IEnumerable<XElement> NodeListEditor;
         public static string AxBy;
         public static string[] Fields;
-        private static XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        private static readonly XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
         private static XElement ffxPropertyEditorElement;
 
         //FFX Workshop Tools
@@ -82,7 +75,7 @@ namespace DSFFXEditor
         // Color Editor
 
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             // Create window, GraphicsDevice, and all resources necessary for the demo.
@@ -97,6 +90,7 @@ namespace DSFFXEditor
                 _controller.WindowResized(_window.Width, _window.Height);
             };
             _cl = _gd.ResourceFactory.CreateCommandList();
+
             _controller = new ImGuiController(_gd, _window, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
 
             //Theme Selector
@@ -137,7 +131,6 @@ namespace DSFFXEditor
             _cl.Dispose();
             _gd.Dispose();
         }
-        static void SetThing(out float i, float val) { i = val; }
         private static unsafe void SubmitMainWindowUI()
         {
             if (ImGui.BeginMainMenuBar())
@@ -146,8 +139,10 @@ namespace DSFFXEditor
                 {
                     if (ImGui.MenuItem("Open FFX *XML"))
                     {
-                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
-                        ofd.Filter = "XML|*.xml";
+                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+                        {
+                            Filter = "XML|*.xml"
+                        };
                         if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         {
                             if (XMLOpen)
@@ -299,7 +294,7 @@ namespace DSFFXEditor
                 {
                     if (NodeListEditor != null)
                     {
-                        if (NodeListEditor.Count() > 0)
+                        if (NodeListEditor.Any())
                         {
                             ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
                             ImGui.Begin("axbxDebug", ref _axbyDebugger);
@@ -320,13 +315,12 @@ namespace DSFFXEditor
             if (root != null)
             {
                 ImGui.PushID($"TreeFunctionlayer = {root.Name} ChildIndex = {GetNodeIndexinParent(root)}");
-                string[] _actionIDsFilter = { "600", "601", "602", "603", "604", "605", "606", "607", "609", "10012" };
                 IEnumerable<XElement> localNodeList = XMLChildNodesValid(root);
                 if (root.Attribute(XName.Get("ActionID")) != null)
                 {
-                    if (_actionIDsFilter.Contains(root.Attribute("ActionID").Value) || _filtertoggle)
+                    if (_actionIDSupported.Contains(root.Attribute("ActionID").Value) || _filtertoggle)
                     {
-                        if (ImGuiAddons.TreeNodeTitleColored($"ActionID('{root.Attribute("ActionID").Value}')", ImGuiTreeNodeFlags.None))
+                        if (ImGuiAddons.TreeNodeTitleColored($"Action('{DefParser.ActionIDName(root.Attribute("ActionID").Value)}')"))
                         {
                             GetFFXProperties(root, "Properties1");
                             GetFFXProperties(root, "Properties2");
@@ -347,31 +341,17 @@ namespace DSFFXEditor
                 {
                     IEnumerable<XElement> tempnode = from node in root.Descendants()
                                                      where node.Name == "FFXActionCall" & node.Attribute("ActionID") != null
-                                                     where _filtertoggle || _actionIDsFilter.Contains(node.Attribute("ActionID").Value)
+                                                     where _filtertoggle || _actionIDSupported.Contains(node.Attribute("ActionID").Value)
                                                      select node;
-                    if (tempnode.Count() > 0)
+                    if (tempnode.Any())
                     {
-                        if (root.Name == "FFXEffectCallA")
+                        if (ImGuiAddons.TreeNodeTitleColored(EffectIDToName(root.Attribute("EffectID").Value), ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.TextDisabled)))
                         {
-                            if (ImGuiAddons.TreeNodeTitleColored($"FFX Container('{root.Attribute("EffectID").Value}')"))
+                            foreach (XElement node in localNodeList)
                             {
-                                foreach (XElement node in localNodeList)
-                                {
-                                    PopulateTree(node);
-                                }
-                                ImGui.TreePop();
+                                PopulateTree(node);
                             }
-                        }
-                        else if (root.Name == "FFXEffectCallB")
-                        {
-                            if (ImGui.TreeNodeEx($"FFX Call"))
-                            {
-                                foreach (XElement node in localNodeList)
-                                {
-                                    PopulateTree(node);
-                                }
-                                ImGui.TreePop();
-                            }
+                            ImGui.TreePop();
                         }
                     }
                     else
@@ -421,7 +401,7 @@ namespace DSFFXEditor
         {
             string localUID = toolTipUID + toolTipTitle;
             if (isToolTipObjectSpawned)
-                ImGui.TextColored(new Vector4(1f, 0f, 0f, 1f), "(?)");
+                ImGui.TextColored(ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark), "(?)");
             ImGui.OpenPopupOnItemClick(localUID, popupTriggerCond);
             if (ImGui.IsPopupOpen(localUID))
             {
@@ -450,7 +430,7 @@ namespace DSFFXEditor
             IEnumerable<XElement> localNodeList = from element0 in root.Elements(PropertyType)
                                                   from element1 in element0.Elements("FFXProperty")
                                                   select element1;
-            if (localNodeList.Count() > 0)
+            if (localNodeList.Any())
             {
                 if (ImGui.TreeNodeEx($"{PropertyType}"))
                 {
@@ -533,8 +513,7 @@ namespace DSFFXEditor
             string nodeValue = node.Attribute("Value").Value;
             if (ImGui.InputText(dataString, ref nodeValue, 10, ImGuiInputTextFlags.CharsDecimal))
             {
-                int intNodeValue;
-                if (Int32.TryParse(nodeValue, out intNodeValue))
+                if (Int32.TryParse(nodeValue, out int intNodeValue))
                 {
                     if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
                         node.Attribute(xsi + "type").Value = "FFXFieldInt";
@@ -557,8 +536,7 @@ namespace DSFFXEditor
             string nodeValue = node.Attribute("Value").Value;
             if (ImGui.InputText(dataString, ref nodeValue, 16, ImGuiInputTextFlags.CharsDecimal))
             {
-                float floatNodeValue;
-                if (float.TryParse(nodeValue, out floatNodeValue))
+                if (float.TryParse(nodeValue, out float floatNodeValue))
                 {
                     if (node.Attribute(xsi + "type").Value == "FFXFieldInt")
                         node.Attribute(xsi + "type").Value = "FFXFieldFloat";
@@ -569,7 +547,7 @@ namespace DSFFXEditor
         public static void BooleanIntInputDefaultNode(XElement node, string dataString)
         {
             int nodeValue = Int32.Parse(node.Attribute("Value").Value);
-            bool nodeValueBool = false;
+            bool nodeValueBool;
             if (nodeValue == 1)
                 nodeValueBool = true;
             else if (nodeValue == 0)
@@ -600,8 +578,7 @@ namespace DSFFXEditor
                 if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
                     node.Attribute(xsi + "type").Value = "FFXFieldInt";
                 string tempstring = entriesArrayValues[blendModeCurrent];
-                int tempint;
-                if (Int32.TryParse(tempstring, out tempint))
+                if (Int32.TryParse(tempstring, out int tempint))
                 {
                     node.Attribute("Value").Value = tempint.ToString();
                 }
@@ -634,8 +611,7 @@ namespace DSFFXEditor
                     {
                         if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
                             node.Attribute(xsi + "type").Value = "FFXFieldInt";
-                        int safetyNetInt;
-                        if (Int32.TryParse(XMLChildNodesValid(EnumEntries).ToArray()[i].Attribute("value").Value, out safetyNetInt))
+                        if (Int32.TryParse(XMLChildNodesValid(EnumEntries).ToArray()[i].Attribute("value").Value, out int safetyNetInt))
                         {
                             node.Attribute("Value").Value = safetyNetInt.ToString();
                         }
@@ -646,7 +622,7 @@ namespace DSFFXEditor
         }
         private static string AxByToName(string FFXPropertyAxBy)
         {
-            string outputName = FFXPropertyAxBy switch
+            return FFXPropertyAxBy switch
             {
                 "A0B0" => "Static 0",
                 "A16B4" => "Static 1",
@@ -661,7 +637,20 @@ namespace DSFFXEditor
                 "A4163B35" => "Loop Linear Interpolation",
                 _ => FFXPropertyAxBy,
             };
-            return outputName;
+        }
+        private static string EffectIDToName(string EffectID)
+        {
+            return EffectID switch
+            {
+                "1002" => "Thresholds<'LOD'>",
+                "1004" => "'Effect'()",
+                "2000" => "Root<>",
+                "2001" => "Reference<'FXR'>",
+                "2002" => "Container<'LOD'>",
+                "2200" => "Container<'Effect'>",
+                "2202" => "Container<'Effect+'>",
+                _ => EffectID,
+            };
         }
         public static void ShowToolTipWiki(string toolTipTitle, string[] localSlot)
         {
@@ -682,7 +671,7 @@ namespace DSFFXEditor
         private static void GetFFXFields(XElement root, string fieldType)
         {
             IEnumerable<XElement> NodeListProcessing = XMLChildNodesValid(root.Descendants(fieldType).First());
-            if (NodeListProcessing.Count() > 0)
+            if (NodeListProcessing.Any())
             {
                 uint IDStorage = ImGui.GetID(fieldType);
                 ImGuiStoragePtr storage = ImGui.GetStateStorage();
@@ -726,8 +715,8 @@ namespace DSFFXEditor
                             if (str == "A19B7")
                             {
                                 axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "19"), new XAttribute("TypeEnumB", "7"), 
-                                        new XElement("Section8s"), 
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "19"), new XAttribute("TypeEnumB", "7"),
+                                        new XElement("Section8s"),
                                         new XElement("Fields")
                                         )
                                     );

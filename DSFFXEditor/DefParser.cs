@@ -4,6 +4,7 @@ using System.Text;
 using ImGuiNET;
 using System.Numerics;
 using System.Collections;
+using System.Xml;
 using System.Xml.Linq;
 using System.Linq;
 
@@ -11,27 +12,28 @@ namespace DSFFXEditor
 {
     class DefParser
     {
-        private static XDocument FieldDef = XDocument.Load("Defs/DefActionID.xml");
-        private static XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        private static readonly XDocument FieldDef = XDocument.Load("Defs/DefActionID.xml");
+        private static XElement symbolsDefElements = FieldDef.Root.Element("symbolsDef");
+        private static XElement enumsElement = FieldDef.Root.Element("Enums");
+        private static readonly IEnumerable<XElement> actionIdElements = FieldDef.Root.Element("ActionIDs").Elements("ActionID");
+        private static readonly XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
         public static void DefXMLParser(IEnumerable<XElement> NodeListEditorIEnumerable, string actionID, string fieldType)
         {
             if (ImGui.BeginTable(actionID + fieldType, 3, ImGuiTableFlags.Resizable | ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV))
             {
                 XElement[] NodeListEditor = NodeListEditorIEnumerable.ToArray();
-                XElement localNodeenums = FieldDef.Descendants($"Enums").First();
                 ImGui.TableSetupColumn("dataType", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize);
                 ImGui.TableSetupColumn("Text");
                 ImGui.TableSetupColumn("Controls");
-                IEnumerable<XElement> LocalNodeIEnumerable = from element0 in FieldDef.Root.Elements("ActionIDs")
-                                                             from element1 in element0.Elements("ActionID")
-                                                             where element1.Attribute("ID").Value == actionID
-                                                             from element2 in element1.Elements(fieldType)
-                                                             from element3 in element2.Elements()
-                                                             select element3;
-                if (LocalNodeIEnumerable.Count() > 0)
+                IEnumerable<XElement> LocalNodeIEnumerable = from element0 in actionIdElements
+                                                             where element0.Attribute("ID").Value == actionID
+                                                             from element1 in element0.Elements(fieldType)
+                                                             from element2 in element1.Elements()
+                                                             select element2;
+                if (LocalNodeIEnumerable.Any())
                 {
                     XElement[] localNodeList = LocalNodeIEnumerable.ToArray();
-                    for (int i = 0; i < NodeListEditor.Count(); i++)
+                    for (int i = 0; i < NodeListEditor.Length; i++)
                     {
                         ImGui.TableNextRow();
                         ImGui.TableNextColumn();
@@ -69,8 +71,8 @@ namespace DSFFXEditor
                                 }
                                 else if (localLoopAttributeEnum != null)
                                 {
-                                    XElement localLoopEnum = localNodeenums.Descendants(localLoopAttributeEnum.Value).First();
-                                    if (localLoopEnum != null & localLoopEnum.Elements().Count() > 0)
+                                    XElement localLoopEnum = enumsElement.Element(localLoopAttributeEnum.Value);
+                                    if (localLoopEnum != null & localLoopEnum.Elements().Any())
                                     {
                                         ImGui.Text(dataType);
                                         ImGui.TableNextColumn();
@@ -134,7 +136,7 @@ namespace DSFFXEditor
                 }
                 else
                 {
-                    for (int i = 0; i < NodeListEditor.Count(); i++)
+                    for (int i = 0; i < NodeListEditor.Length; i++)
                     {
                         ImGui.TableNextRow();
                         ImGui.TableNextColumn();
@@ -164,12 +166,11 @@ namespace DSFFXEditor
         }
         public static string DefXMLSymbolParser(string symbol)
         {
-            IEnumerable<XAttribute> localSymbolIEnumerable = from element0 in FieldDef.Root.Elements($"symbolsDef")
-                                                             from element1 in element0.Elements("entry")
-                                                             where element1.Attribute("symbol").Value == symbol
-                                                             where element1.Attribute("def") != null
-                                                             select element1.Attribute("def");
-            if (localSymbolIEnumerable.Count() > 0)
+            IEnumerable<XAttribute> localSymbolIEnumerable = from element0 in symbolsDefElements.Elements()
+                                                             where element0.Attribute("symbol").Value == symbol
+                                                             where element0.Attribute("def") != null
+                                                             select element0.Attribute("def");
+            if (localSymbolIEnumerable.Any())
             {
                 return localSymbolIEnumerable.First().Value;
             }
@@ -181,16 +182,15 @@ namespace DSFFXEditor
             string defaultArg = "[u]";
             string defaultName = "Unk";
             string defaultwiki = null;
-            int localActionID = Int32.Parse(root.Parent.Parent.Attribute("ActionID").Value);
+            string localActionID = root.Parent.Parent.Attribute("ActionID").Value;
             int localPropertyIndex = DSFFXGUIMain.GetNodeIndexinParent(root);
-            IEnumerable<XElement> idk = from element0 in FieldDef.Root.Elements("ActionIDs")
-                                        from element1 in element0.Elements("ActionID")
-                                        where element1.Attribute("ID").Value == localActionID.ToString()
-                                        from element2 in element1.Elements(fieldType)
-                                        from element3 in element2.Elements()
-                                        select element3;
+            IEnumerable<XElement> idk = from element0 in actionIdElements
+                                        where element0.Attribute("ID").Value == localActionID
+                                        from element1 in element0.Elements(fieldType)
+                                        from element2 in element1.Elements()
+                                        select element2;
             ;
-            if (idk.Count() > 0)
+            if (idk.Any())
             {
                 if (idk.Count() - 1 >= localPropertyIndex)
                 {
@@ -243,6 +243,27 @@ namespace DSFFXEditor
                 }
             }
             return new string[] { "[u]", "[u]", "Unk" };
+        }
+        public static string[] SupportedActionIDs() 
+        {
+            List<string> ActionIDList = new List<string>();
+            foreach (XElement Element in actionIdElements)
+            {
+                XAttribute Attribute = Element.Attribute("ID");
+                if (Attribute != null)
+                {
+                    ActionIDList.Add(Attribute.Value);
+                }
+            }
+            return ActionIDList.ToArray();
+        }
+        public static string ActionIDName(string ActionID)
+        {
+            IEnumerable <XElement> actionIDsMatch = actionIdElements.Where(i => i.Attribute("ID").Value == ActionID);
+            if (actionIDsMatch.Any())
+                return actionIDsMatch.First().Attribute("name").Value;
+            else
+                return ActionID;
         }
     }
 }

@@ -29,7 +29,7 @@ namespace DSFFXEditor
                 ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0.5f, 0.39f, 0.39f, 1.00f)); // Scroll bar Grabby bit color
                 ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0.55f, 0.39f, 0.39f, 1.00f)); // Scroll bar grabby bit Hover
                 ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, new Vector4(0.60f, 0.39f, 0.39f, 1.00f)); // Scroll bar color when clicked
-                ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0.8f, 0.35f, 0.35f, 1.00f)); // Checkbox Sign Color
+                ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0.789f, 0.283f, 0.082f, 1.00f)); // Checkbox Sign Color
                 ImGui.PushStyleColor(ImGuiCol.SliderGrab, new Vector4(0.5f, 0.39f, 0.39f, 1.00f)); // Sliders grabby bit color
                 ImGui.PushStyleColor(ImGuiCol.SliderGrabActive, new Vector4(0.60f, 0.39f, 0.39f, 1.00f)); // Sliders grabby bit color when clicked
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.37f, 0.30f, 0.30f, 1.00f)); //Button Control Color Overrides
