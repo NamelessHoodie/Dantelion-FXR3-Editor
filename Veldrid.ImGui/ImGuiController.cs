@@ -22,7 +22,7 @@ namespace DSFFXEditor
     {
         private GraphicsDevice _gd;
         private readonly Sdl2Window _window;
-        private bool _frameBegun;
+        public bool _frameBegun;
 
         // Veldrid objects
         private DeviceBuffer _vertexBuffer;
@@ -146,9 +146,6 @@ namespace DSFFXEditor
 
             SetPerFrameImGuiData(1f / 60f);
             UpdateMonitors();
-
-            ImGui.NewFrame();
-            _frameBegun = true;
         }
 
         private void CreateWindow(ImGuiViewportPtr vp)

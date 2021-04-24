@@ -75,7 +75,7 @@ namespace DSFFXEditor
         // Color Editor
 
         [STAThread]
-        static void Main()
+        static unsafe void Main()
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             // Create window, GraphicsDevice, and all resources necessary for the demo.
@@ -93,7 +93,57 @@ namespace DSFFXEditor
 
             _controller = new ImGuiController(_gd, _window, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
 
+            var fonts = ImGui.GetIO().Fonts;
+            var fileJp = Path.Combine(AppContext.BaseDirectory, $@"Fonts\NotoSansCJKtc-Light.otf");
+            var fontJp = File.ReadAllBytes(fileJp);
+            var fileEn = Path.Combine(AppContext.BaseDirectory, $@"Fonts\RobotoMono-Light.ttf");
+            var fontEn = File.ReadAllBytes(fileEn);
+            var fileIcon = Path.Combine(AppContext.BaseDirectory, $@"Fonts\forkawesome-webfont.ttf");
+            var fontIcon = File.ReadAllBytes(fileIcon);
+            //fonts.AddFontFromFileTTF($@"Assets\Fonts\NotoSansCJKtc-Medium.otf", 20.0f, null, fonts.GetGlyphRangesJapanese());
+            fonts.Clear();
+            fixed (byte* p = fontEn)
+            {
+                var ptr = ImGuiNative.ImFontConfig_ImFontConfig();
+                var cfg = new ImFontConfigPtr(ptr);
+                cfg.GlyphMinAdvanceX = 5.0f;
+                cfg.OversampleH = 5;
+                cfg.OversampleV = 5;
+                var f = fonts.AddFontFromMemoryTTF((IntPtr)p, fontEn.Length, 14.0f, cfg, fonts.GetGlyphRangesDefault());
+            }
+            fixed (byte* p = fontJp)
+            {
+                var ptr = ImGuiNative.ImFontConfig_ImFontConfig();
+                var cfg = new ImFontConfigPtr(ptr);
+                cfg.MergeMode = true;
+                cfg.GlyphMinAdvanceX = 7.0f;
+                cfg.OversampleH = 5;
+                cfg.OversampleV = 5;
+                var f = fonts.AddFontFromMemoryTTF((IntPtr)p, fontJp.Length, 16.0f, cfg, fonts.GetGlyphRangesJapanese());
+            }
+            fixed (byte* p = fontIcon)
+            {
+                ushort[] ranges = { ForkAwesome.IconMin, ForkAwesome.IconMax, 0 };
+                var ptr = ImGuiNative.ImFontConfig_ImFontConfig();
+                var cfg = new ImFontConfigPtr(ptr);
+                cfg.MergeMode = true;
+                cfg.GlyphMinAdvanceX = 12.0f;
+                cfg.OversampleH = 5;
+                cfg.OversampleV = 5;
+                ImFontGlyphRangesBuilder b = new ImFontGlyphRangesBuilder();
+
+                fixed (ushort* r = ranges)
+                {
+                    var f = fonts.AddFontFromMemoryTTF((IntPtr)p, fontIcon.Length, 16.0f, cfg, (IntPtr)r);
+                }
+            }
+            fonts.Build();
+            _controller.RecreateFontDeviceTexture(_gd);
+
+            ImGui.NewFrame();
+            _controller._frameBegun = true;
             //Theme Selector
+
             DSFFXThemes.ThemesSelector(_activeTheme);
 
             // Main application loop
@@ -106,6 +156,9 @@ namespace DSFFXEditor
                 //SetupMainDockingSpace
                 ImGuiViewportPtr mainViewportPtr = ImGui.GetMainViewport();
                 mainViewPortDockSpaceID = ImGui.DockSpaceOverViewport(mainViewportPtr);
+
+                ImGui.ShowFontSelector("lol");
+                ImGui.Text("ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ");
 
                 if (_controller.GetWindowMinimized(mainViewportPtr) == 0)
                 {
