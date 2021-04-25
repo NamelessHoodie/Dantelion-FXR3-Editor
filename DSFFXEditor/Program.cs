@@ -77,7 +77,7 @@ namespace DSFFXEditor
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             // Create window, GraphicsDevice, and all resources necessary for the demo.
-            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "Dark Souls FFX Editor"),
+            VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "Dantelion FXR3 Editor"),
                 new GraphicsDeviceOptions(true, null, true, ResourceBindingModel.Improved, true, true),
                 GraphicsBackend.Direct3D11,
                 out _window,
