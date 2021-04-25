@@ -229,10 +229,10 @@ namespace ImGuiNETAddons
             }
             return passThrough;
         }
-        public static bool TreeNodeTitleColored(string label, Vector4 textColor, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
+        public static bool TreeNodeTitleColored(string label, Vector4 highlightColor, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
         {
 
-            Vector4 color = textColor;
+            Vector4 color = highlightColor;
             string[] splitID = label.Split("##");
             string[] textForLabelArray = splitID[0].Split("'");
 
@@ -274,6 +274,53 @@ namespace ImGuiNETAddons
                     else
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - whitespaceCharWidth);
                     ImGui.TextColored(color, textForLabelArray[i]);
+                }
+            }
+            return passThrough;
+        }
+        public static bool TreeNodeTitleColored(string label, Vector4 lowlightColor, Vector4 highlightColor, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
+        {
+            string[] splitID = label.Split("##");
+            string[] textForLabelArray = splitID[0].Split("'");
+
+            //SplitID and Text
+            string id = "";
+            if (splitID.Length > 1)
+                id = splitID[1];
+
+            //Create Padding String consisting of whitespaces
+            string paddingString = "";
+            for (int i = 0; i < textForLabelArray.Length; i++)
+            {
+                foreach (char chr in textForLabelArray[i])
+                {
+                    paddingString += " ";
+                }
+            }
+
+            //Calculate Width of white space and width of padding
+            float whitespaceCharWidth = ImGui.CalcTextSize(" ").X;
+            float paddingWidth = whitespaceCharWidth * paddingString.Length;
+
+            //Initialize TreeNode
+            bool passThrough = ImGui.TreeNodeEx(paddingString + "##" + id, flags);
+
+            for (int i = 0; i < textForLabelArray.Length; i++)
+            {
+                if (i % 2 == 1)
+                {
+                    ImGui.SameLine();
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() - whitespaceCharWidth);
+                    ImGui.TextColored(highlightColor, textForLabelArray[i]);
+                }
+                else
+                {
+                    ImGui.SameLine();
+                    if (i == 0)
+                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - paddingWidth - whitespaceCharWidth);
+                    else
+                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - whitespaceCharWidth);
+                    ImGui.TextColored(lowlightColor, textForLabelArray[i]);
                 }
             }
             return passThrough;

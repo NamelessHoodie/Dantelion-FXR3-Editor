@@ -33,11 +33,9 @@ namespace DSFFXEditor
         // Config
         private static readonly string iniPath = "Config/EditorConfigs.ini";
 
-        private static readonly IniConfigFile _selectedTheme = new IniConfigFile("General", "Theme", "DarkRedClay", iniPath);
+        private static readonly IniConfigFile _selectedTheme = new IniConfigFile("General", "Theme", "Red Clay", iniPath);
         private static string _activeTheme = _selectedTheme.ReadConfigsIni();
 
-        private static readonly IniConfigFile _selectedThemeIndex = new IniConfigFile("General", "ThemeIndex", 0, iniPath);
-        public static int _themeSelectorSelectedItem = Int32.Parse(_selectedThemeIndex.ReadConfigsIni());
         // Supported FFX Arguments
         private static readonly string[] _actionIDSupported = DefParser.SupportedActionIDs();
         private static readonly string[] AxByColorArray = new string[] { "A19B7", "A35B11", "A67B19", "A99B27", "A4163B35" };
@@ -46,7 +44,7 @@ namespace DSFFXEditor
         // Save/Load Path
         private static string _loadedFilePath = "";
         //Theme Selector
-        readonly static String[] _themeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Light", "ImGui Classic" };
+        readonly static String[] _themeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Classic" };
 
         //XML
         private static XDocument xDocLinq;
@@ -168,28 +166,21 @@ namespace DSFFXEditor
                 }
                 if (ImGui.BeginMenu("Themes"))
                 {
-                    if (ImGui.Combo("Theme Selector", ref _themeSelectorSelectedItem, _themeSelectorEntriesArray, _themeSelectorEntriesArray.Length))
+                    if (ImGui.BeginCombo("Theme Selector", _activeTheme))
                     {
-                        switch (_themeSelectorSelectedItem)
+                        foreach(string str in _themeSelectorEntriesArray)
                         {
-                            case 0:
-                                _activeTheme = "DarkRedClay";
-                                break;
-                            case 1:
-                                _activeTheme = "ImGuiDark";
-                                break;
-                            case 2:
-                                _activeTheme = "ImGuiLight";
-                                break;
-                            case 3:
-                                _activeTheme = "ImGuiClassic";
-                                break;
-                            default:
-                                break;
+                            bool selected = false;
+                            if (str == _activeTheme)
+                                selected = true;
+                            if (ImGui.Selectable(str, selected))
+                            {
+                                _activeTheme = str;
+                                DSFFXThemes.ThemesSelector(_activeTheme);
+                                _selectedTheme.WriteConfigsIni(_activeTheme);
+                            }
                         }
-                        DSFFXThemes.ThemesSelector(_activeTheme);
-                        _selectedTheme.WriteConfigsIni(_activeTheme);
-                        _selectedThemeIndex.WriteConfigsIni(_themeSelectorSelectedItem);
+                        ImGui.EndCombo();
                     }
                     ImGui.EndMenu();
                 }
@@ -320,7 +311,7 @@ namespace DSFFXEditor
                 {
                     if (_actionIDSupported.Contains(root.Attribute("ActionID").Value) || _filtertoggle)
                     {
-                        if (ImGuiAddons.TreeNodeTitleColored($"Action('{DefParser.ActionIDName(root.Attribute("ActionID").Value)}')"))
+                        if (ImGuiAddons.TreeNodeTitleColored($"Action('{DefParser.ActionIDName(root.Attribute("ActionID").Value)}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
                         {
                             GetFFXProperties(root, "Properties1");
                             GetFFXProperties(root, "Properties2");
@@ -643,7 +634,7 @@ namespace DSFFXEditor
             return EffectID switch
             {
                 "1002" => "Thresholds<'LOD'>",
-                "1004" => "'Effect'()",
+                "1004" => "Effect()",
                 "2000" => "Root<>",
                 "2001" => "Reference<'FXR'>",
                 "2002" => "Container<'LOD'>",

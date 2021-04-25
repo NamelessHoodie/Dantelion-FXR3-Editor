@@ -10,7 +10,7 @@ namespace DSFFXEditor
     {
         public static void ThemesSelector(String themeName)
         {
-            if (themeName == "DarkRedClay")
+            if (themeName == "Red Clay")
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.00f, 1.00f)); //Pretty Self explanatory
                 ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.5f, 0.5f, 0.5f, 1f)); //Disabled Text Duh
@@ -29,7 +29,7 @@ namespace DSFFXEditor
                 ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0.5f, 0.39f, 0.39f, 1.00f)); // Scroll bar Grabby bit color
                 ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0.55f, 0.39f, 0.39f, 1.00f)); // Scroll bar grabby bit Hover
                 ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, new Vector4(0.60f, 0.39f, 0.39f, 1.00f)); // Scroll bar color when clicked
-                ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0.789f, 0.283f, 0.082f, 1.00f)); // Checkbox Sign Color
+                ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0.690f, 0.385f, 0.385f, 1.00f)); // Checkbox Sign Color
                 ImGui.PushStyleColor(ImGuiCol.SliderGrab, new Vector4(0.5f, 0.39f, 0.39f, 1.00f)); // Sliders grabby bit color
                 ImGui.PushStyleColor(ImGuiCol.SliderGrabActive, new Vector4(0.60f, 0.39f, 0.39f, 1.00f)); // Sliders grabby bit color when clicked
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.37f, 0.30f, 0.30f, 1.00f)); //Button Control Color Overrides
@@ -58,17 +58,20 @@ namespace DSFFXEditor
                 ImGui.PushStyleColor(ImGuiCol.TableBorderStrong, new Vector4(0.31f, 0.31f, 0.31f, 1.00f));
                 ImGui.PushStyleColor(ImGuiCol.TableHeaderBg, new Vector4(0.36f, 0.26f, 0.26f, 1.00f));
             }
-            else if (themeName == "ImGuiDark")
+            else if (themeName == "ImGui Dark")
             {
                 ImGui.StyleColorsDark();
             }
-            else if (themeName == "ImGuiLight")
+            else if (themeName == "ImGui Light")
             {
                 ImGui.StyleColorsLight();
+                ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.5f, 0.5f, 0.5f, 1f)); //Disabled Text Duh
             }
-            else if (themeName == "ImGuiClassic")
+            else if (themeName == "ImGui Classic")
             {
                 ImGui.StyleColorsClassic();
+                ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.5f, 0.5f, 0.5f, 1f)); //Disabled Text Duh
+                ImGui.PushStyleColor(ImGuiCol.CheckMark, ImGuiNETAddons.ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.HeaderActive)); // Checkbox Sign Color
             }
         }
     }
