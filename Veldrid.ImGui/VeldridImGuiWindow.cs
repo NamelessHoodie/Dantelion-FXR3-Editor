@@ -5,7 +5,7 @@ using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 
-namespace DSFFXEditor
+namespace DFXR3Editor
 {
     public class VeldridImGuiWindow : IDisposable
     {

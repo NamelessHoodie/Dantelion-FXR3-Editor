@@ -8,7 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Linq;
 
-namespace DSFFXEditor
+namespace DFXR3Editor
 {
     class DefParser
     {
@@ -67,7 +67,7 @@ namespace DSFFXEditor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    DSFFXGUIMain.BooleanIntInputDefaultNode(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.BooleanIntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                                 else if (localLoopAttributeEnum != null)
                                 {
@@ -78,7 +78,7 @@ namespace DSFFXEditor
                                         ImGui.TableNextColumn();
                                         ImGui.Text(name);
                                         ImGui.TableNextColumn();
-                                        DSFFXGUIMain.IntComboNotLinearDefaultNode(NodeListEditor[i], "##" + index, localLoopEnum);
+                                        MainUserInterface.IntComboNotLinearDefaultNode(NodeListEditor[i], "##" + index, localLoopEnum);
                                     }
                                     else
                                     {
@@ -91,7 +91,7 @@ namespace DSFFXEditor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    DSFFXGUIMain.IntInputDefaultNode(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                             }
                             else if (dataType == "f32")
@@ -100,7 +100,7 @@ namespace DSFFXEditor
                                 ImGui.TableNextColumn();
                                 ImGui.Text(name);
                                 ImGui.TableNextColumn();
-                                DSFFXGUIMain.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
+                                MainUserInterface.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                             }
                             else
                             {
@@ -111,7 +111,7 @@ namespace DSFFXEditor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    DSFFXGUIMain.IntInputDefaultNode(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                                 else if (unkdataType == "FFXFieldFloat")
                                 {
@@ -119,13 +119,13 @@ namespace DSFFXEditor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    DSFFXGUIMain.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                             }
                             if (localLoopAttributeWiki != null)
                             {
                                 ImGui.SameLine();
-                                DSFFXGUIMain.ShowToolTipSimple(i.ToString(), $"{fieldType}: ToolTip:", localLoopAttributeWiki.Value, true, ImGuiPopupFlags.MouseButtonRight);
+                                MainUserInterface.ShowToolTipSimple(i.ToString(), $"{fieldType}: ToolTip:", localLoopAttributeWiki.Value, true, ImGuiPopupFlags.MouseButtonRight);
                             }
                         }
                         else
@@ -149,7 +149,7 @@ namespace DSFFXEditor
                             ImGui.TableNextColumn();
                             ImGui.Text(name);
                             ImGui.TableNextColumn();
-                            DSFFXGUIMain.IntInputDefaultNode(NodeListEditor[i], "##" + index);
+                            MainUserInterface.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                         }
                         else if (unkdataType == "FFXFieldFloat")
                         {
@@ -157,7 +157,7 @@ namespace DSFFXEditor
                             ImGui.TableNextColumn();
                             ImGui.Text(name);
                             ImGui.TableNextColumn();
-                            DSFFXGUIMain.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
+                            MainUserInterface.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                         }
                     }
                 }
@@ -183,7 +183,7 @@ namespace DSFFXEditor
             string defaultName = "Unk";
             string defaultwiki = null;
             string localActionID = root.Parent.Parent.Attribute("ActionID").Value;
-            int localPropertyIndex = DSFFXGUIMain.GetNodeIndexinParent(root);
+            int localPropertyIndex = MainUserInterface.GetNodeIndexinParent(root);
             IEnumerable<XElement> idk = from element0 in actionIdElements
                                         where element0.Attribute("ID").Value == localActionID
                                         from element1 in element0.Elements(fieldType)

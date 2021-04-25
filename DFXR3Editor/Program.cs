@@ -16,9 +16,9 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Threading;
 
-namespace DSFFXEditor
+namespace DFXR3Editor
 {
-    class DSFFXGUIMain
+    class MainUserInterface
     {
         private static Sdl2Window _window;
         private static GraphicsDevice _gd;
@@ -92,7 +92,7 @@ namespace DSFFXEditor
             _controller = new ImGuiController(_gd, _window, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
 
             //Theme Selector
-            DSFFXThemes.ThemesSelector(_activeTheme);
+            Themes.ThemesSelector(_activeTheme);
 
             // Main application loop
             while (_window.Exists)
@@ -176,7 +176,7 @@ namespace DSFFXEditor
                             if (ImGui.Selectable(str, selected))
                             {
                                 _activeTheme = str;
-                                DSFFXThemes.ThemesSelector(_activeTheme);
+                                Themes.ThemesSelector(_activeTheme);
                                 _selectedTheme.WriteConfigsIni(_activeTheme);
                             }
                         }

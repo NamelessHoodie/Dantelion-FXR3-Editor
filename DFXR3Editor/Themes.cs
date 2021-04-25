@@ -4,9 +4,9 @@ using System.Text;
 using System.Numerics;
 using ImGuiNET;
 
-namespace DSFFXEditor
+namespace DFXR3Editor
 {
-    class DSFFXThemes
+    class Themes
     {
         public static void ThemesSelector(String themeName)
         {

@@ -12,7 +12,7 @@ using imnodesNET;
 using ImGuizmoNET;
 using ImPlotNET;
 
-namespace DSFFXEditor
+namespace DFXR3Editor
 {
     /// <summary>
     /// A modified version of Veldrid.ImGui's ImGuiRenderer.

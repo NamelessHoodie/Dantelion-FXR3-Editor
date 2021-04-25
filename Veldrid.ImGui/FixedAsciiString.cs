@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DSFFXEditor
+namespace DFXR3Editor
 {
     public class FixedAsciiString : IDisposable
     {

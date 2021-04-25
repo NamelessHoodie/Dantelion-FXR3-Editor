@@ -4,12 +4,13 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <PackageId>Dark Souls FFX Studio</PackageId>
+    <PackageId>Dantelion FXR3 Editor</PackageId>
     <Authors>NamelessHoodie</Authors>
-    <Company></Company>
-    <Product>Dark Souls FFX Studio</Product>
+    <Company>Hoodie Corps</Company>
+    <Product>Dantelion FXR3 Editor</Product>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <Version>0.0.4.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

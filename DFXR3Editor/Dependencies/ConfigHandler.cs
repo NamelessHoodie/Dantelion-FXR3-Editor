@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DSFFXEditor
+namespace DFXR3Editor
 {
     class IniConfigFile
     {
