@@ -8,10 +8,12 @@ namespace DFXR3Editor
 {
     class Themes
     {
-        public static void ThemesSelector(String themeName)
+        private static string lastTheme = "";
+        public static void ThemesSelectorPush(String themeName)
         {
             if (themeName == "Red Clay")
             {
+                ThemesSelectorPop(themeName);
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.00f, 1.00f)); //Pretty Self explanatory
                 ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.5f, 0.5f, 0.5f, 1f)); //Disabled Text Duh
                 ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.17f, 0.16f, 0.16f, 1.0f)); //Window Background
@@ -57,22 +59,54 @@ namespace DFXR3Editor
                 ImGui.PushStyleColor(ImGuiCol.TableBorderLight, new Vector4(0.31f, 0.31f, 0.31f, 0.70f));
                 ImGui.PushStyleColor(ImGuiCol.TableBorderStrong, new Vector4(0.31f, 0.31f, 0.31f, 1.00f));
                 ImGui.PushStyleColor(ImGuiCol.TableHeaderBg, new Vector4(0.36f, 0.26f, 0.26f, 1.00f));
+
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 5f);
             }
             else if (themeName == "ImGui Dark")
             {
+                ThemesSelectorPop(themeName);
                 ImGui.StyleColorsDark();
             }
             else if (themeName == "ImGui Light")
             {
+                ThemesSelectorPop(themeName);
                 ImGui.StyleColorsLight();
                 ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.5f, 0.5f, 0.5f, 1f)); //Disabled Text Duh
             }
             else if (themeName == "ImGui Classic")
             {
+                ThemesSelectorPop(themeName);
                 ImGui.StyleColorsClassic();
                 ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(0.5f, 0.5f, 0.5f, 1f)); //Disabled Text Duh
                 ImGui.PushStyleColor(ImGuiCol.CheckMark, ImGuiNETAddons.ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.HeaderActive)); // Checkbox Sign Color
             }
+        }
+
+        private static void ThemesSelectorPop(string newTheme)
+        {
+            int PopStyleColorCount = lastTheme switch
+            {
+                "Red Clay" => 38,
+                "ImGui Dark" => 0,
+                "ImGui Light" => 1,
+                "ImGui Classic" => 2,
+                _ => 0,
+            };
+            int PopStyleVarCount = lastTheme switch
+            {
+                "Red Clay" => 1,
+                "ImGui Dark" => 0,
+                "ImGui Light" => 0,
+                "ImGui Classic" => 0,
+                _ => 0,
+            };
+
+            if (PopStyleColorCount != 0)
+                ImGui.PopStyleColor(PopStyleColorCount);
+            if (PopStyleVarCount != 0)
+                ImGui.PopStyleVar(PopStyleVarCount);
+
+            lastTheme = newTheme;
         }
     }
 }

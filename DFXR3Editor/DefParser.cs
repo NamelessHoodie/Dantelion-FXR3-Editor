@@ -125,7 +125,7 @@ namespace DFXR3Editor
                             if (localLoopAttributeWiki != null)
                             {
                                 ImGui.SameLine();
-                                MainUserInterface.ShowToolTipSimple(i.ToString(), $"{fieldType}: ToolTip:", localLoopAttributeWiki.Value, true, ImGuiPopupFlags.MouseButtonRight);
+                                MainUserInterface.ShowToolTipSimple(i.ToString(), $"{fieldType}: ToolTip:", localLoopAttributeWiki.Value, true, ImGuiPopupFlags.MouseButtonLeft);
                             }
                         }
                         else

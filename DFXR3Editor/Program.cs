@@ -24,6 +24,7 @@ namespace DFXR3Editor
         private static GraphicsDevice _gd;
         private static CommandList _cl;
         private static ImGuiController _controller;
+        private static float FrameRateForDelta = 58.82352941176471f;
 
         // UI state
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
@@ -92,14 +93,14 @@ namespace DFXR3Editor
             _controller = new ImGuiController(_gd, _window, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
 
             //Theme Selector
-            Themes.ThemesSelector(_activeTheme);
+            Themes.ThemesSelectorPush(_activeTheme);
 
             // Main application loop
             while (_window.Exists)
             {
                 InputSnapshot snapshot = _window.PumpEvents();
                 if (!_window.Exists) { break; }
-                _controller.Update(1f / 58.82352941176471f, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
+                _controller.Update(1f / FrameRateForDelta, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
 
                 //SetupMainDockingSpace
                 ImGuiViewportPtr mainViewportPtr = ImGui.GetMainViewport();
@@ -168,7 +169,7 @@ namespace DFXR3Editor
                 {
                     if (ImGui.BeginCombo("Theme Selector", _activeTheme))
                     {
-                        foreach(string str in _themeSelectorEntriesArray)
+                        foreach (string str in _themeSelectorEntriesArray)
                         {
                             bool selected = false;
                             if (str == _activeTheme)
@@ -176,7 +177,7 @@ namespace DFXR3Editor
                             if (ImGui.Selectable(str, selected))
                             {
                                 _activeTheme = str;
-                                Themes.ThemesSelector(_activeTheme);
+                                Themes.ThemesSelectorPush(_activeTheme);
                                 _selectedTheme.WriteConfigsIni(_activeTheme);
                             }
                         }
@@ -281,16 +282,16 @@ namespace DFXR3Editor
                     ImGui.ShowUserGuide();
                     ImGui.End();
                 }
-                if (_axbyDebugger & (_showFFXEditorFields || _showFFXEditorProperties))
+                if (_axbyDebugger)
                 {
+                    ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
+                    ImGui.Begin("axbxDebug", ref _axbyDebugger);
                     if (NodeListEditor != null)
                     {
-                        if (NodeListEditor.Any())
+                        if (NodeListEditor.Any() & (_showFFXEditorFields || _showFFXEditorProperties))
                         {
-                            ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-                            ImGui.Begin("axbxDebug", ref _axbyDebugger);
                             int integer = 0;
-                            foreach (XElement node in XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent))
+                            foreach (XNode node in NodeListEditor.ElementAt(0).Parent.Nodes())
                             {
                                 ImGui.Text($"Index = '{integer} Node = '{node}')");
                                 integer++;
@@ -305,20 +306,33 @@ namespace DFXR3Editor
         {
             if (root != null)
             {
-                ImGui.PushID($"TreeFunctionlayer = {root.Name} ChildIndex = {GetNodeIndexinParent(root)}");
+                int rootIndexInParent = GetNodeIndexinParent(root);
+                IEnumerable<XNode> CommentsList = root.Nodes().Where(n => n.NodeType == XmlNodeType.Comment);
+                XComment RootCommentNode = null;
+                string RootComment = "";
+                if (CommentsList.Any())
+                {
+                    RootCommentNode = (XComment)CommentsList.First();
+                    RootComment = RootCommentNode.Value;
+                }
+                ImGui.PushID($"TreeFunctionlayer = {root.Name} ChildIndex = {rootIndexInParent}");
                 IEnumerable<XElement> localNodeList = XMLChildNodesValid(root);
                 if (root.Attribute(XName.Get("ActionID")) != null)
                 {
                     if (_actionIDSupported.Contains(root.Attribute("ActionID").Value) || _filtertoggle)
                     {
+                        uint commentSize = 30;
                         if (ImGuiAddons.TreeNodeTitleColored($"Action('{DefParser.ActionIDName(root.Attribute("ActionID").Value)}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
                         {
+                            TreeViewContextMenu(root, RootCommentNode, RootComment);
                             GetFFXProperties(root, "Properties1");
                             GetFFXProperties(root, "Properties2");
                             GetFFXFields(root, "Fields1");
                             GetFFXFields(root, "Fields2");
                             ImGui.TreePop();
                         }
+                        else
+                            TreeViewContextMenu(root, RootCommentNode, RootComment);
                     }
                 }
                 else if (root.Name == "EffectAs" || root.Name == "EffectBs" || root.Name == "RootEffectCall" || root.Name == "Actions")
@@ -336,14 +350,18 @@ namespace DFXR3Editor
                                                      select node;
                     if (tempnode.Any())
                     {
+                        //XCommentInputStyled(root, RootCommentNode, RootComment);
                         if (ImGuiAddons.TreeNodeTitleColored(EffectIDToName(root.Attribute("EffectID").Value), ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.TextDisabled)))
                         {
+                            TreeViewContextMenu(root, RootCommentNode, RootComment);
                             foreach (XElement node in localNodeList)
                             {
                                 PopulateTree(node);
                             }
                             ImGui.TreePop();
                         }
+                        else
+                            TreeViewContextMenu(root, RootCommentNode, RootComment);
                     }
                     else
                     {
@@ -368,6 +386,114 @@ namespace DFXR3Editor
                 ImGui.PopID();
             }
         }
+        public static void TreeViewContextMenu(XElement Node, XComment RootCommentNode, string RootComment)
+        {
+            bool isComment = false;
+            if (RootCommentNode != null)
+                isComment = true;
+
+            string popupName = "Treeview Context Menu";
+            ImGui.OpenPopupOnItemClick(popupName, ImGuiPopupFlags.MouseButtonRight);
+            if (ImGui.IsPopupOpen(popupName))
+            {
+                if (ImGui.BeginPopupContextWindow(popupName))
+                {
+                    if (!isComment)
+                    {
+                        if (ImGui.Selectable("Add Comment"))
+                        {
+                            Node.Add(new XComment(RootComment));
+                        }
+                        if (ImGuiAddons.isItemHoveredForTime(500, FrameRateForDelta, "HoverTimer"))
+                        {
+                            ImGui.Indent();
+                            ImGui.Text("Adds a comment to the selected node.");
+                            ImGui.Text("Remember to left click to modify!");
+                            ImGui.Unindent();
+                        }
+                    }
+                    ImGui.EndPopup();
+                }
+            }
+
+            if (isComment)
+            {
+                XCommentInputStyled(Node, RootCommentNode, RootComment);
+            }
+        }
+        public static void XCommentInputStyled(XElement Node, XComment RootCommentNode, string RootComment)
+        {
+            ImGui.SameLine();
+            string textCommentLabel;
+            if (RootComment != "")
+                textCommentLabel = RootComment;
+            else
+                textCommentLabel = "*";
+
+            Vector2 avalaibleContentSpace = ImGui.GetContentRegionAvail();
+            uint IDStorage = ImGui.GetID("CommentInput");
+            ImGuiStoragePtr storage = ImGui.GetStateStorage();
+            bool open = storage.GetBool(IDStorage);
+            Vector2 sizeText = ImGui.CalcTextSize(textCommentLabel);
+            Vector2 imguiCursorPos = ImGui.GetCursorPos();
+            ImGui.SetCursorPosX(imguiCursorPos.X + 13f);
+            ImDrawListPtr draw_list = ImGuiNET.ImGui.GetWindowDrawList();
+            Vector2 screenCursorPos = ImGuiNET.ImGui.GetCursorScreenPos();
+            Vector2 p = new Vector2(screenCursorPos.X - 10f / 2f, screenCursorPos.Y - 5f / 2f);
+            float commentBoxHeightTemp = sizeText.Y + 5f;
+            float commentBoxWidthTemp = sizeText.X + 10f;
+            Vector2 commentBoxSize = new Vector2(p.X + commentBoxWidthTemp, p.Y + commentBoxHeightTemp);
+            draw_list.AddRectFilled(p, commentBoxSize, ImGui.GetColorU32(ImGuiCol.FrameBg), 5f);
+            draw_list.AddRect(p, commentBoxSize, ImGui.GetColorU32(ImGuiCol.BorderShadow), 5f);
+            if (open)
+            {
+                avalaibleContentSpace = ImGui.GetContentRegionAvail();
+                imguiCursorPos = ImGui.GetCursorPos();
+                ImGui.SetCursorPos(new Vector2(imguiCursorPos.X - 2f, imguiCursorPos.Y - 3f));
+                float inputBoxWidth = sizeText.X + 4f;
+                if (inputBoxWidth > avalaibleContentSpace.X)
+                    inputBoxWidth = avalaibleContentSpace.X;
+                ImGui.SetNextItemWidth(inputBoxWidth);
+                if (ImGui.InputText("##InputBox", ref RootComment, 256))
+                {
+                    RootCommentNode.Value = RootComment;
+                }
+                if ((!ImGui.IsItemHovered() & ImGui.IsMouseClicked(ImGuiMouseButton.COUNT)) || ImGui.IsItemDeactivated())
+                {
+                    open = false;
+                    storage.SetBool(IDStorage, false);
+                }
+            }
+            else
+            {
+                ImGui.Text(textCommentLabel);
+                if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+                {
+                    open = true;
+                    storage.SetBool(IDStorage, true);
+                }
+                string popupName = "Comment Context Menu";
+                ImGui.OpenPopupOnItemClick(popupName, ImGuiPopupFlags.MouseButtonRight);
+                if (ImGui.IsPopupOpen(popupName))
+                {
+                    if (ImGui.BeginPopupContextWindow(popupName))
+                    {
+                        if (ImGui.Selectable("Remove Comment"))
+                        {
+                            RootCommentNode.Remove();
+                        }
+                        if (ImGuiAddons.isItemHoveredForTime(500, FrameRateForDelta, "HoverTimer"))
+                        {
+                            ImGui.Indent();
+                            ImGui.Text("Removes the comment from the selected node.");
+                            ImGui.Text("Remember to left click to modify!");
+                            ImGui.Unindent();
+                        }
+                        ImGui.EndPopup();
+                    }
+                }
+            }
+        }
         public static IEnumerable<XElement> XMLChildNodesValid(XElement Node)
         {
             //return from element in Node.Elements()
@@ -388,23 +514,44 @@ namespace DFXR3Editor
             _showFFXEditorFields = false;
             _showFFXEditorProperties = false;
         }
-        public static void ShowToolTipSimple(string toolTipUID, string toolTipTitle, string toolTipText, bool isToolTipObjectSpawned, ImGuiPopupFlags popupTriggerCond)
+        public static void ShowToolTipSimple(string toolTipUID, string toolTipTitle, string toolTipText, bool isToolTipObjectSpawned, ImGuiPopupFlags clickButton)
         {
+            float frameHeight = ImGui.GetFrameHeight();
             string localUID = toolTipUID + toolTipTitle;
             if (isToolTipObjectSpawned)
-                ImGui.TextColored(ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark), "(?)");
-            ImGui.OpenPopupOnItemClick(localUID, popupTriggerCond);
+            {
+                float cursorPosX = ImGui.GetCursorPosX();
+                Vector2 screenCursorPos = ImGui.GetCursorScreenPos();
+                ImDrawListPtr draw_list = ImGui.GetWindowDrawList();
+
+                string text = "?";
+                Vector2 sizeText = ImGui.CalcTextSize(text);
+
+                float radius = frameHeight * 0.4f;
+
+                ImGui.InvisibleButton(toolTipUID + "Invisible Button", sizeText);
+                uint circleColor = 0;
+                if (ImGui.IsItemHovered())
+                    circleColor = ImGui.GetColorU32(ImGuiCol.CheckMark);
+                else
+                    circleColor = ImGui.GetColorU32(ImGuiCol.TitleBgActive);
+                Vector2 p = new Vector2(screenCursorPos.X + (sizeText.X / 2f), screenCursorPos.Y + (frameHeight / 2f));
+
+                draw_list.AddCircle(new Vector2(p.X, p.Y), radius, ImGui.GetColorU32(ImGuiCol.BorderShadow));
+                draw_list.AddCircleFilled(new Vector2(p.X, p.Y), radius, circleColor);
+
+                ImGui.SameLine();
+                ImGui.SetCursorPosX(cursorPosX);
+                ImGui.Text(text);
+            }
+            ImGui.OpenPopupOnItemClick(localUID, clickButton);
             if (ImGui.IsPopupOpen(localUID))
             {
                 Vector2 mousePos = ImGui.GetMousePos();
                 Vector2 localTextSize = ImGui.CalcTextSize(toolTipText);
                 float maxToolTipWidth = (float)_window.Width * 0.4f;
-                float windowWidth;
                 Vector2 windowSize = new Vector2(maxToolTipWidth, localTextSize.Y);
-                if (mousePos.X > (float)(_window.Width / 2))
-                    windowWidth = mousePos.X - maxToolTipWidth;
-                else
-                    windowWidth = mousePos.X;
+                float windowWidth = mousePos.X;
                 ImGui.SetNextWindowPos(new Vector2(windowWidth, mousePos.Y), ImGuiCond.Appearing);
                 ImGui.SetNextWindowSize(windowSize, ImGuiCond.Appearing);
                 if (ImGui.BeginPopupContextItem(localUID))
@@ -413,6 +560,54 @@ namespace DFXR3Editor
                     ImGui.NewLine();
                     ImGui.TextWrapped(toolTipText);
                     ImGui.EndPopup();
+                }
+            }
+        }
+        public static void ShowToolTipSimple(string toolTipUID, string toolTipTitle, string toolTipText, bool isToolTipObjectSpawned, float hoveredMsForTooltip)
+        {
+            float frameHeight = ImGui.GetFrameHeight();
+            string localUID = toolTipUID + toolTipTitle;
+            if (isToolTipObjectSpawned)
+            {
+                float cursorPosX = ImGui.GetCursorPosX();
+                Vector2 screenCursorPos = ImGui.GetCursorScreenPos();
+                ImDrawListPtr draw_list = ImGui.GetWindowDrawList();
+
+                string text = "?";
+                Vector2 sizeText = ImGui.CalcTextSize(text);
+
+                float radius = frameHeight * 0.4f;
+
+                ImGui.InvisibleButton(toolTipUID + "Invisible Button", sizeText);
+                uint circleColor = 0;
+                if (ImGui.IsItemHovered())
+                    circleColor = ImGui.GetColorU32(ImGuiCol.CheckMark);
+                else
+                    circleColor = ImGui.GetColorU32(ImGuiCol.TitleBgActive);
+                Vector2 p = new Vector2(screenCursorPos.X + (sizeText.X / 2f), screenCursorPos.Y + (frameHeight / 2f));
+
+                draw_list.AddCircle(new Vector2(p.X, p.Y), radius, ImGui.GetColorU32(ImGuiCol.BorderShadow));
+                draw_list.AddCircleFilled(new Vector2(p.X, p.Y), radius, circleColor);
+
+                ImGui.SameLine();
+                ImGui.SetCursorPosX(cursorPosX);
+                ImGui.Text(text);
+            }
+            if (ImGuiAddons.isItemHoveredForTime(hoveredMsForTooltip, FrameRateForDelta, toolTipUID + "Hovered") & !ImGui.IsPopupOpen(localUID))
+            {
+                Vector2 mousePos = ImGui.GetMousePos();
+                Vector2 localTextSize = ImGui.CalcTextSize(toolTipText);
+                float maxToolTipWidth = (float)_window.Width * 0.4f;
+                Vector2 windowSize = new Vector2(maxToolTipWidth, localTextSize.Y);
+                float windowWidth = mousePos.X;
+                ImGui.SetNextWindowPos(new Vector2(windowWidth, mousePos.Y + frameHeight), ImGuiCond.Appearing);
+                ImGui.SetNextWindowSize(windowSize, ImGuiCond.Appearing);
+                if (ImGui.Begin(localUID, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar))
+                {
+                    ImGui.Text(toolTipTitle);
+                    ImGui.NewLine();
+                    ImGui.TextWrapped(toolTipText);
+                    ImGui.End();
                 }
             }
         }
@@ -657,7 +852,7 @@ namespace DFXR3Editor
             }
             fullToolTip += $"Type = {localSlot[0]}: {archetypeWiki}.\n\n";
             fullToolTip += $"Arg = {localSlot[1]}: {argumentsWiki}.";
-            ShowToolTipSimple("", toolTipTitle, fullToolTip, false, ImGuiPopupFlags.MouseButtonRight);
+            ShowToolTipSimple("", toolTipTitle, fullToolTip, false, 1000f);
         }
         private static void GetFFXFields(XElement root, string fieldType)
         {
@@ -923,9 +1118,7 @@ namespace DFXR3Editor
             }
             else if (_showFFXEditorFields)
             {
-                //ImGui.PushItemWidth(ImGui.GetColumnWidth() * 0.4f);
                 DefParser.DefXMLParser(NodeListEditor, Fields[1], Fields[0]);
-                //ImGui.PopItemWidth();
             }
             ImGui.EndChild();
         }

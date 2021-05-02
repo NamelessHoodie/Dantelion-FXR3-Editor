@@ -176,7 +176,6 @@ namespace ImGuiNETAddons
             ImGui.TextColored(color, tempLabelColored);
             return passThrough;
         }
-
         public static unsafe Vector4 GetStyleColorVec4Safe(ImGuiCol colorEnum) 
         { 
             return *ImGui.GetStyleColorVec4(colorEnum);
@@ -194,7 +193,7 @@ namespace ImGuiNETAddons
 
             //Create Padding String consisting of whitespaces
             string paddingString = "";
-            for (int i = 1; i < textForLabelArray.Length; i++)
+            for (int i = 0; i < textForLabelArray.Length; i++)
             {
                 foreach (char chr in textForLabelArray[i])
                 {
@@ -207,26 +206,29 @@ namespace ImGuiNETAddons
             float paddingWidth = whitespaceCharWidth * paddingString.Length;
 
             //Initialize TreeNode
-            bool passThrough = ImGui.TreeNodeEx(textForLabelArray[0] + paddingString + "##" + id, flags);
+            bool passThrough = ImGui.TreeNodeEx(paddingString + "##" + id, flags);
 
-            for (int i = 1; i < textForLabelArray.Length; i++)
+            for (int i = 0; i < textForLabelArray.Length; i++)
             {
-                if (i % 2 == 0)
+                if (i % 2 == 1)
                 {
                     ImGui.SameLine();
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() - whitespaceCharWidth);
-                    ImGui.Text(textForLabelArray[i]);
+                    ImGui.TextColored(color, textForLabelArray[i]);
                 }
                 else
                 {
                     ImGui.SameLine();
-                    if (i == 1)
+                    if (i == 0)
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - paddingWidth - whitespaceCharWidth);
                     else
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - whitespaceCharWidth);
-                    ImGui.TextColored(color, textForLabelArray[i]);
+                    ImGui.Text(textForLabelArray[i]);
                 }
             }
+            ImGui.SameLine();
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - paddingWidth - (whitespaceCharWidth * 5 - 6f));
+            ImGui.Text(paddingString + "     ");
             return passThrough;
         }
         public static bool TreeNodeTitleColored(string label, Vector4 highlightColor, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
@@ -243,7 +245,7 @@ namespace ImGuiNETAddons
 
             //Create Padding String consisting of whitespaces
             string paddingString = "";
-            for (int i = 1; i < textForLabelArray.Length; i++)
+            for (int i = 0; i < textForLabelArray.Length; i++)
             {
                 foreach (char chr in textForLabelArray[i])
                 {
@@ -256,26 +258,29 @@ namespace ImGuiNETAddons
             float paddingWidth = whitespaceCharWidth * paddingString.Length;
 
             //Initialize TreeNode
-            bool passThrough = ImGui.TreeNodeEx(textForLabelArray[0] + paddingString + "##" + id, flags);
+            bool passThrough = ImGui.TreeNodeEx(paddingString + "##" + id, flags);
 
-            for (int i = 1; i < textForLabelArray.Length; i++)
+            for (int i = 0; i < textForLabelArray.Length; i++)
             {
-                if (i % 2 == 0)
+                if (i % 2 == 1)
                 {
                     ImGui.SameLine();
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() - whitespaceCharWidth);
-                    ImGui.Text(textForLabelArray[i]);
+                    ImGui.TextColored(color, textForLabelArray[i]);
                 }
                 else
                 {
                     ImGui.SameLine();
-                    if (i == 1)
+                    if (i == 0)
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - paddingWidth - whitespaceCharWidth);
                     else
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - whitespaceCharWidth);
-                    ImGui.TextColored(color, textForLabelArray[i]);
+                    ImGui.Text(textForLabelArray[i]);
                 }
             }
+            ImGui.SameLine();
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - paddingWidth - (whitespaceCharWidth * 5 - 6f));
+            ImGui.Text(paddingString + "     ");
             return passThrough;
         }
         public static bool TreeNodeTitleColored(string label, Vector4 lowlightColor, Vector4 highlightColor, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
@@ -323,7 +328,33 @@ namespace ImGuiNETAddons
                     ImGui.TextColored(lowlightColor, textForLabelArray[i]);
                 }
             }
+            ImGui.SameLine();
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - paddingWidth - (whitespaceCharWidth * 5 - 6f));
+            ImGui.Text(paddingString + "     ");
             return passThrough;
+        }
+        public static bool isItemHoveredForTime(float timeMs, float frameRate, string hoveredStringID)
+        {
+            bool hovered = ImGui.IsItemHovered();
+            uint IDStorage = ImGui.GetID(hoveredStringID);
+            ImGuiStoragePtr storage = ImGui.GetStateStorage();
+            int frameCounter = storage.GetInt(IDStorage);
+
+            int framesHoveredGoal = Convert.ToInt32((frameRate / 1000f) * timeMs);
+
+            if (hovered & frameCounter < framesHoveredGoal)
+                storage.SetInt(IDStorage, frameCounter + 1);
+            else if (!hovered & frameCounter > 0)
+                storage.SetInt(IDStorage, 0);
+
+            if (frameCounter >= framesHoveredGoal)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
