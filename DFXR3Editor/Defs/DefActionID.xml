@@ -48,6 +48,22 @@
 		</orientationSpecializedModes606>
 	</Enums>
 	<ActionIDs>
+		<ActionID ID="131" name="EffectModifier()">
+			<Properties1>
+				<field type="[S]" arg="" name="" wiki="On one effect, this seemed to control the vertical speed of the particles it spawned, but on another it seemed to not do anything, so this is probably linked to some other property or field somewhere in some way" />
+				<field type="[S]" arg="[E]" name="X Scale Multiplier" />
+				<field type="[S]" arg="[E]" name="Y Scale Multiplier" />
+				<field type="[S]" arg="[E]" name="Z Scale Multiplier?" wiki="Probably Z scale multiplier? Just haven't tested it yet." />
+				<field type="[C]" arg="[E]" name="Color Multiplier" />
+			</Properties1>
+			<Properties2>
+			</Properties2>
+			<Fields1>
+				<Field name="Keep aspect ratio" dataType="s32" isBool="" wiki="When set to 0, you can scale the particles in each direction individually using the scale multipliers in this action's properties When set to 1, the X scale multiplier will apply to the Y and Z axes as well, so the particles will maintain their aspect ratio. I think the two(?) other scale multipliers do nothing when this is set to 1."/>
+			</Fields1>
+			<Fields2>
+			</Fields2>
+		</ActionID>
 		<ActionID ID="600" name="TextureStatic()">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="Scale*" />

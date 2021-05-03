@@ -40,7 +40,7 @@ namespace DFXR3Editor
         // Supported FFX Arguments
         private static readonly string[] _actionIDSupported = DefParser.SupportedActionIDs();
         private static readonly string[] AxByColorArray = new string[] { "A19B7", "A35B11", "A67B19", "A99B27", "A4163B35" };
-        private static readonly string[] AxByScalarArray = new string[] { "" };
+        private static readonly string[] AxByScalarArray = new string[] { "A0B0", "A16B4", "A32B8", "A64B16", "A96B24", "A4160B32" };
 
         // Save/Load Path
         private static string _loadedFilePath = "";
@@ -620,7 +620,7 @@ namespace DFXR3Editor
             {
                 if (ImGui.TreeNodeEx($"{PropertyType}"))
                 {
-                    if (ImGui.BeginTable("##table2", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
+                    if (ImGui.BeginTable("##table2", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
                     {
                         ImGui.TableSetupColumn("Type");
                         ImGui.TableSetupColumn("Arg");
@@ -648,10 +648,7 @@ namespace DFXR3Editor
                                     storage.SetBool(IDStorage, false);
                                     selected = false;
                                 }
-                                Vector2 cursorPos = ImGui.GetCursorPos();
-                                ImGui.BulletText($"{localSlot[0]}");
-                                ImGui.SetCursorPos(cursorPos);
-                                ImGui.Selectable($"###{localLabel}", selected, ImGuiSelectableFlags.SpanAllColumns);
+                                ImGui.Selectable($"{localSlot[0]}###{localLabel}", selected, ImGuiSelectableFlags.SpanAllColumns);
                                 if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
                                 {
                                     treeViewCurrentHighlighted = IDStorage;
@@ -1065,7 +1062,120 @@ namespace DFXR3Editor
                 }
                 else if (AxByScalarArray.Contains(AxBy))
                 {
-
+                    foreach (string str in AxByScalarArray)
+                    {
+                        bool selected = false;
+                        if (AxBy == str)
+                            selected = true;
+                        if (ImGui.Selectable(AxByToName(str), selected) & str != AxBy)
+                        {
+                            XElement axbyElement = ffxPropertyEditorElement;
+                            if (str == "A0B0")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "0"), new XAttribute("TypeEnumB", "0"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields")
+                                        )
+                                    );
+                            }
+                            else if (str == "A16B4")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "16"), new XAttribute("TypeEnumB", "4"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields")
+                                        )
+                                    );
+                            }
+                            else if (str == "A32B8")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "32"), new XAttribute("TypeEnumB", "8"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields",
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                                        )
+                                    )
+                                );
+                            }
+                            else if (str == "A64B16")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "64"), new XAttribute("TypeEnumB", "16"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields",
+                                            // Stop Count Number
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
+                                            // Useless 2 Fields
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
+                                            // Stops Count Values
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
+                                            // First Stop Field - 0 
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Second Stop Field - 1 
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
+                                        )
+                                    )
+                                );
+                            }
+                            else if (str == "A96B24")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "96"), new XAttribute("TypeEnumB", "24"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields",
+                                            // Stop Count Number
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
+                                            // Useless 2 Fields
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
+                                            // Stops Count Values
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
+                                            // First Stop Field - 0 
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Second Stop Field - 1 
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
+                                            // Curve Memes
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                                        )
+                                    )
+                                );
+                            }
+                            else if (str == "A4160B32")
+                            {
+                                axbyElement.ReplaceWith(
+                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "4160"), new XAttribute("TypeEnumB", "32"),
+                                        new XElement("Section8s"),
+                                        new XElement("Fields",
+                                            // Stop Count Number
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
+                                            // Useless 2 Fields
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
+                                            // Stops Count Values
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
+                                            // First Stop Field - 0 
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                                            // Second Stop Field - 1 
+                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
+                                        )
+                                    )
+                                );
+                            }
+                            _showFFXEditorProperties = false;
+                            treeViewCurrentHighlighted = 0;
+                            _cPickerIsEnable = false;
+                            return;
+                        }
+                    }
                 }
                 else
                 {
@@ -1077,20 +1187,36 @@ namespace DFXR3Editor
         public static void FFXEditor()
         {
             ImGui.BeginChild("TxtEdit");
+            //var meme = ImGui.GetWindowDrawList();
 
+            //var meme1 = ImGui.GetCursorScreenPos();
+            //meme.AddRectFilled(meme1 , meme1 + ImGui.GetWindowSize(), ImGui.GetColorU32(ImGuiCol.ButtonHovered));
             if (_showFFXEditorProperties)
             {
                 AxBySwapper();
                 ImGui.NewLine();
                 switch (AxBy)
                 {
+                    case "A0B0":
+                        break;
+                    case "A16B4":
+                        break;
                     case "A19B7":
+                        break;
+                    case "A32B8":
+                        FFXPropertyA32B8StaticScalar(NodeListEditor);
                         break;
                     case "A35B11":
                         FFXPropertyA35B11StaticColor(NodeListEditor);
                         break;
+                    case "A64B16":
+                        FFXPropertyA64B16ScalarInterpolationLinear(NodeListEditor);
+                        break;
                     case "A67B19":
                         FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
+                        break;
+                    case "A96B24":
+                        FFXPropertyA96B24ScalarInterpolationWithCustomCurve(NodeListEditor);
                         break;
                     case "A99B27":
                         FFXPropertyA99B27ColorInterpolationWithCustomCurve(NodeListEditor);
@@ -1098,19 +1224,23 @@ namespace DFXR3Editor
                     case "A4163B35":
                         FFXPropertyA67B19ColorInterpolationLinear(NodeListEditor);
                         break;
+                    case "A4160B32":
+                        FFXPropertyA64B16ScalarInterpolationLinear(NodeListEditor);
+                        break;
                     default:
                         ImGui.Text("ERROR: FFX Property Handler not found, using Default Handler.");
                         foreach (XElement node in NodeListEditor)
                         {
                             string dataType = node.Attribute(xsi + "type").Value;
                             string Name = node.Name.ToString();
+                            int nodeIndex = GetNodeIndexinParent(node);
                             if (dataType == "FFXFieldFloat")
                             {
-                                FloatInputDefaultNode(node, Name);
+                                FloatInputDefaultNode(node, dataType + "##" + nodeIndex.ToString());
                             }
                             else if (dataType == "FFXFieldInt")
                             {
-                                IntInputDefaultNode(node, Name);
+                                IntInputDefaultNode(node, dataType + "##" + nodeIndex.ToString());
                             }
                         }
                         break;
@@ -1123,6 +1253,15 @@ namespace DFXR3Editor
             ImGui.EndChild();
         }
         //FFXPropertyHandler Functions Below here
+        public static void FFXPropertyA32B8StaticScalar(IEnumerable<XElement> NodeListEditor)
+        {
+            ImGui.BulletText("Single Static Scale Value:");
+            ImGui.Indent();
+            ImGui.Indent();
+            FloatInputDefaultNode(NodeListEditor.ElementAt(0), "##Single Scalar Field");
+            ImGui.Unindent();
+            ImGui.Unindent();
+        }
         public static void FFXPropertyA35B11StaticColor(IEnumerable<XElement> NodeListEditor)
         {
             ImGui.BulletText("Single Static Color:");
@@ -1140,6 +1279,69 @@ namespace DFXR3Editor
             }
             ImGui.Unindent();
             ImGui.Unindent();
+        }
+        public static void FFXPropertyA64B16ScalarInterpolationLinear(IEnumerable<XElement> NodeListEditor)
+        {
+            int StopsCount = Int32.Parse(NodeListEditor.ElementAt(0).Attribute("Value").Value);
+
+            int Pos = 2;
+            if (ImGui.TreeNodeEx($"Scalar Stages: Total number of stages = {StopsCount}", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
+                {
+                    IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
+
+                    tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2)).Remove();
+
+                    tempXElementIEnumerable.ElementAt(Pos + StopsCount).Remove();
+
+                    tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount - 1).ToString();
+
+                    StopsCount--;
+
+                    NodeListEditor = tempXElementIEnumerable;
+                }
+                ImGui.SameLine();
+                if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
+                {
+                    IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
+
+                    tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2)).AddAfterSelf(
+                        new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                        );
+
+                    tempXElementIEnumerable.ElementAt(Pos + StopsCount).AddAfterSelf(
+                        new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                        );
+
+                    tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount + 1).ToString();
+
+                    StopsCount++;
+
+                    NodeListEditor = tempXElementIEnumerable;
+                }
+                for (int i = 0; i != StopsCount; i++)
+                {
+                    ImGui.Separator();
+                    ImGui.NewLine();
+                    { // Slider Stuff
+                        ImGui.BulletText($"Stage {i + 1}: Position in time");
+                        FloatSliderDefaultNode(NodeListEditor.ElementAt(i + 3), $"###Stage{i + 1}Slider1", 0.0f, 2.0f);
+                    }
+
+                    { // Scale Slider
+                        ImGui.Indent();
+                        int PositionOffset = Pos + StopsCount + (i + 1);
+                        ImGui.Text($"Stage's Scale:");
+                        ImGui.SameLine();
+                        FloatSliderDefaultNode(NodeListEditor.ElementAt(PositionOffset), $"###Stage{i + 1}Slider2", 0.0f, 5.0f);
+                        ImGui.Unindent();
+                    }
+                    ImGui.NewLine();
+                }
+                ImGui.Separator();
+                ImGui.TreePop();
+            }
         }
         public static void FFXPropertyA67B19ColorInterpolationLinear(IEnumerable<XElement> NodeListEditor)
         {
@@ -1215,6 +1417,87 @@ namespace DFXR3Editor
                             ImGui.SetWindowFocus("FFX Color Picker");
                         }
                         LocalColorOffset += 5;
+                        ImGui.Unindent();
+                    }
+                    ImGui.NewLine();
+                }
+                ImGui.Separator();
+                ImGui.TreePop();
+            }
+        }
+        public static void FFXPropertyA96B24ScalarInterpolationWithCustomCurve(IEnumerable<XElement> NodeListEditor)
+        {
+            int StopsCount = Int32.Parse(NodeListEditor.ElementAt(0).Attribute("Value").Value);
+
+            int Pos = 2;
+            if (ImGui.TreeNodeEx($"Scalar Stages: Total number of stages = {StopsCount}", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
+                {
+                    IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2) + (StopsCount * 2) - 1).Remove();
+                    }
+
+                    tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2)).Remove();
+
+                    tempXElementIEnumerable.ElementAt(Pos + StopsCount).Remove();
+
+                    tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount - 1).ToString();
+
+                    StopsCount--;
+
+                    NodeListEditor = tempXElementIEnumerable;
+                }
+                ImGui.SameLine();
+                if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
+                {
+                    IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
+                    tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2) + (StopsCount * 2)).AddAfterSelf(
+                        new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
+                        new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                        );
+
+                    tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2)).AddAfterSelf(
+                        new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                        );
+
+                    tempXElementIEnumerable.ElementAt(Pos + StopsCount).AddAfterSelf(
+                        new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                        );
+
+                    tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount + 1).ToString();
+
+                    StopsCount++;
+
+                    NodeListEditor = tempXElementIEnumerable;
+                }
+                for (int i = 0; i != StopsCount; i++)
+                {
+                    ImGui.Separator();
+                    ImGui.NewLine();
+                    { // Slider Stuff
+                        ImGui.BulletText($"Stage {i + 1}: Position in time");
+                        FloatSliderDefaultNode(NodeListEditor.ElementAt(i + 3), $"###Stage{i + 1}Slider1", 0.0f, 2.0f);
+                    }
+
+                    { // Scale Slider
+                        ImGui.Indent();
+                        int PositionOffset = Pos + StopsCount + (i + 1);
+                        ImGui.Text($"Stage's Scale:");
+                        ImGui.SameLine();
+                        FloatSliderDefaultNode(NodeListEditor.ElementAt(PositionOffset), $"###Stage{i + 1}Slider2", 0.0f, 5.0f);
+                        ImGui.Unindent();
+                    }
+
+                    { // Curve Slider
+                        ImGui.Indent();
+                        int PositionOffset = Pos + (StopsCount * 2) + ((i + 1) * 2 - 1);
+                        ImGui.Text($"Stage's Curve Angle:");
+                        ImGui.SameLine();
+                        FloatSliderDefaultNode(NodeListEditor.ElementAt(PositionOffset), $"###Stage{i + 1}Slider3", 0.0f, 5.0f);
                         ImGui.Unindent();
                     }
                     ImGui.NewLine();
