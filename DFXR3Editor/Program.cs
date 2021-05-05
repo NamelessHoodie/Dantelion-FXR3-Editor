@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Threading;
 using FXR3XMLR;
+using SoulsFormats;
 
 namespace DFXR3Editor
 {
@@ -137,7 +138,7 @@ namespace DFXR3Editor
             {
                 if (ImGui.BeginMenu("File"))
                 {
-                    if (ImGui.MenuItem("Open FFX *XML"))
+                    if (ImGui.MenuItem("Load FFX *XML"))
                     {
                         System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
                         {
@@ -153,16 +154,40 @@ namespace DFXR3Editor
 
                         }
                     }
+                    if (ImGui.MenuItem("Load FFX *FXR"))
+                    {
+                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+                        {
+                            Filter = "FXR|*.fxr"
+                        };
+                        if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            if (XMLOpen)
+                                CloseOpenFFXWithoutSaving();
+                            _loadedFilePath = ofd.FileName;
+                            XMLOpen = true;
+                            xDocLinq = FXR3XMLRMain.FXR3ToXML(FXR3.Read(ofd.FileName));
+                        }
+                    }
                     if (_loadedFilePath != "" & XMLOpen)
                     {
-                        if (ImGui.MenuItem("Save Open FFX *XML"))
+                        if (ImGui.MenuItem("Save Open FFX"))
                         {
-                            xDocLinq.Save(_loadedFilePath);
+                            if (_loadedFilePath.EndsWith(".xml"))
+                            {
+                                xDocLinq.Save(_loadedFilePath);
+                                FXR3XMLRMain.XMLToFXR3(xDocLinq).Write(_loadedFilePath.Substring(0, _loadedFilePath.Length - 4));
+                            }
+                            else if(_loadedFilePath.EndsWith(".fxr"))
+                            {
+                                xDocLinq.Save(_loadedFilePath + ".xml");
+                                FXR3XMLRMain.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
+                            }
                         }
                     }
                     else
                     {
-                        ImGui.TextDisabled("Save Open FFX *XML");
+                        ImGui.TextDisabled("Save Open FFX");
                     }
                     ImGui.EndMenu();
                 }
