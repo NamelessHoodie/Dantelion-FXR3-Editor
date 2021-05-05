@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImNodes.NET", "ImNodes.NET\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Veldrid.ImGui", "Veldrid.ImGui\Veldrid.ImGui.csproj", "{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FXR3-XMLR", "FXR3-XMLR-Hoodieforked\FXR3-XMLR\FXR3-XMLR.csproj", "{2143BE65-6793-476F-9DD7-ADB82E5BB0C1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoulsFormats", "FXR3-XMLR-Hoodieforked\SoulsFormats\SoulsFormats.csproj", "{DE1A2D41-16B7-4534-B5C3-8CE6A8A43E7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F186DA96-0B9E-4946-BD1F-87AF5F19D6FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2143BE65-6793-476F-9DD7-ADB82E5BB0C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2143BE65-6793-476F-9DD7-ADB82E5BB0C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2143BE65-6793-476F-9DD7-ADB82E5BB0C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2143BE65-6793-476F-9DD7-ADB82E5BB0C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE1A2D41-16B7-4534-B5C3-8CE6A8A43E7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE1A2D41-16B7-4534-B5C3-8CE6A8A43E7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE1A2D41-16B7-4534-B5C3-8CE6A8A43E7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE1A2D41-16B7-4534-B5C3-8CE6A8A43E7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

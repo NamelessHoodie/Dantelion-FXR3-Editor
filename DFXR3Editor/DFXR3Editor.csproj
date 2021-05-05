@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FXR3-XMLR-Hoodieforked\FXR3-XMLR\FXR3-XMLR.csproj" />
     <ProjectReference Include="..\ImGui.NET\ImGui.NET.csproj" />
     <ProjectReference Include="..\ImGuizmo.NET\ImGuizmo.NET.csproj" />
     <ProjectReference Include="..\ImNodes.NET\ImNodes.NET.csproj" />

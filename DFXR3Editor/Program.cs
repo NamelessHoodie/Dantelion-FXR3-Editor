@@ -15,6 +15,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Xml;
 using System.Threading;
+using FXR3XMLR;
 
 namespace DFXR3Editor
 {
