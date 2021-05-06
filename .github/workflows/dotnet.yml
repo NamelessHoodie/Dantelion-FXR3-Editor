@@ -25,9 +25,3 @@ jobs:
 
       - name: Publish
         run: dotnet publish --configuration Release --framework netcoreapp3.1 --output deploy
-        
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: 'Dantelion-FXR3-Editor-SHA${{ github.sha }}'
-          path: '${{ runner.workspace }}/Dantelion-FXR3-Editor/deploy'
