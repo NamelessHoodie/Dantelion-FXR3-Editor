@@ -26,4 +26,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: 'Dantelion-FXR3-Editor-SHA${{ github.sha }}'
-          path: '${{ runner.workspace }}/Dantelion-FXR3-Editor/DFXR3Editor/bin/Release/netcoreapp3.1'
+          path: '${{ runner.workspace }}/Dantelion-FXR3-Editor/DFXR3Editor/bin/Release/netcoreapp3.1/publish'
