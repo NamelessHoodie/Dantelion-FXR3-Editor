@@ -178,7 +178,7 @@ namespace DFXR3Editor
                                 xDocLinq.Save(_loadedFilePath);
                                 FXR3XMLRMain.XMLToFXR3(xDocLinq).Write(_loadedFilePath.Substring(0, _loadedFilePath.Length - 4));
                             }
-                            else if(_loadedFilePath.EndsWith(".fxr"))
+                            else if (_loadedFilePath.EndsWith(".fxr"))
                             {
                                 xDocLinq.Save(_loadedFilePath + ".xml");
                                 FXR3XMLRMain.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
@@ -1619,88 +1619,60 @@ namespace DFXR3Editor
                         int LocalPos = 8;
                         int readpos = (LocalPos + StopsCount + 1) + 8 + 4 + (4 * (StopsCount - 3));
                         int localproperfieldpos = readpos + (i * 8);
-                        if (ImGui.TreeNodeEx($"Custom Curve Settngs###{i + 1}CurveSettings"))
+                        ImGui.Indent();
+                        if (ImGui.TreeNodeEx($"Custom Curve Settngs###{i + 1}CurveSettingsNode"))
                         {
-                            if (ImGui.TreeNodeEx("Red: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
+                            if (ImGui.BeginTable($"Custom Curve Settngs###{i + 1}CurveSettingsTable", 3))
                             {
-                                ImGui.Indent();
+                                ImGui.TableSetupColumn("Color", ImGuiTableColumnFlags.WidthFixed);
+                                ImGui.TableSetupColumn("Text", ImGuiTableColumnFlags.WidthFixed);
+                                ImGui.TableSetupColumn("Control");
                                 {
+                                    ImGui.TableNextRow();
+                                    ImGui.TableNextColumn();
                                     int localint = 0;
-                                    ImGui.Text("Curve Point 0 = ");
-                                    ImGui.SameLine();
+                                    ImGui.Text("Red:");
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text("Stage's Curve Angle");
+                                    ImGui.TableNextColumn();
                                     FloatSliderDefaultNode(NodeListEditor.ElementAt(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
-                                    int localint = 1;
-                                    ImGui.Text("Curve Point 1 = ");
-                                    ImGui.SameLine();
-                                    FloatSliderDefaultNode(NodeListEditor.ElementAt(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
-                                }
-                                ImGui.Unindent();
-                                ImGui.TreePop();
-                            }
-
-                            if (ImGui.TreeNodeEx("Green: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
-                            {
-                                ImGui.Indent();
-                                {
+                                    ImGui.TableNextRow();
+                                    ImGui.TableNextColumn();
                                     int localint = 2;
-                                    ImGui.Text("Curve Point 0 = ");
-                                    ImGui.SameLine();
+                                    ImGui.Text("Green:");
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text("Stage's Curve Angle");
+                                    ImGui.TableNextColumn();
                                     FloatSliderDefaultNode(NodeListEditor.ElementAt(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
-                                    int localint = 3;
-                                    ImGui.Text("Curve Point 1 = ");
-                                    ImGui.SameLine();
-                                    FloatSliderDefaultNode(NodeListEditor.ElementAt(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
-                                }
-                                ImGui.Unindent();
-                                ImGui.TreePop();
-                            }
-
-                            if (ImGui.TreeNodeEx("Blue: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
-                            {
-                                ImGui.Indent();
-                                {
+                                    ImGui.TableNextRow();
+                                    ImGui.TableNextColumn();
                                     int localint = 4;
-                                    ImGui.Text("Curve Point 0 = ");
-                                    ImGui.SameLine();
+                                    ImGui.Text("Blue:");
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text("Stage's Curve Angle");
+                                    ImGui.TableNextColumn();
                                     FloatSliderDefaultNode(NodeListEditor.ElementAt(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
                                 {
-                                    int localint = 5;
-                                    ImGui.Text("Curve Point 1 = ");
-                                    ImGui.SameLine();
-                                    FloatSliderDefaultNode(NodeListEditor.ElementAt(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
-                                }
-                                ImGui.Unindent();
-                                ImGui.TreePop();
-                            }
-
-                            if (ImGui.TreeNodeEx("Alpha: Curve Points", ImGuiTreeNodeFlags.DefaultOpen))
-                            {
-                                ImGui.Indent();
-                                {
+                                    ImGui.TableNextRow();
+                                    ImGui.TableNextColumn();
                                     int localint = 6;
-                                    ImGui.Text("Curve Point 0 = ");
-                                    ImGui.SameLine();
+                                    ImGui.Text("Alpha:");
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text("Stage's Curve Angle");
+                                    ImGui.TableNextColumn();
                                     FloatSliderDefaultNode(NodeListEditor.ElementAt(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
                                 }
-
-                                {
-                                    int localint = 7;
-                                    ImGui.Text("Curve Point 0 = ");
-                                    ImGui.SameLine();
-                                    FloatSliderDefaultNode(NodeListEditor.ElementAt(localproperfieldpos + localint), $"###Curve{localint}Stage{i + 1}FloatInput", 0.0f, 2.0f);
-                                }
-                                ImGui.Unindent();
-                                ImGui.TreePop();
+                                ImGui.EndTable();
                             }
                             ImGui.TreePop();
                         }
+                        ImGui.Unindent();
                     }
-
                     ImGui.NewLine();
                 }
                 ImGui.Separator();
