@@ -26,7 +26,7 @@ namespace DFXR3Editor
         private static GraphicsDevice _gd;
         private static CommandList _cl;
         private static ImGuiController _controller;
-        private static float FrameRateForDelta = 58.82352941176471f;
+        private static readonly float FrameRateForDelta = 58.82352941176471f;
 
         // UI state
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
@@ -347,7 +347,6 @@ namespace DFXR3Editor
                 {
                     if (_actionIDSupported.Contains(root.Attribute("ActionID").Value) || _filtertoggle)
                     {
-                        uint commentSize = 30;
                         if (ImGuiAddons.TreeNodeTitleColored($"Action('{DefParser.ActionIDName(root.Attribute("ActionID").Value)}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
                         {
                             TreeViewContextMenu(root, RootCommentNode, RootComment);
@@ -456,7 +455,6 @@ namespace DFXR3Editor
             else
                 textCommentLabel = "*";
 
-            Vector2 avalaibleContentSpace = ImGui.GetContentRegionAvail();
             uint IDStorage = ImGui.GetID("CommentInput");
             ImGuiStoragePtr storage = ImGui.GetStateStorage();
             bool open = storage.GetBool(IDStorage);
@@ -473,7 +471,7 @@ namespace DFXR3Editor
             draw_list.AddRect(p, commentBoxSize, ImGui.GetColorU32(ImGuiCol.BorderShadow), 5f);
             if (open)
             {
-                avalaibleContentSpace = ImGui.GetContentRegionAvail();
+                Vector2 avalaibleContentSpace = ImGui.GetContentRegionAvail();
                 imguiCursorPos = ImGui.GetCursorPos();
                 ImGui.SetCursorPos(new Vector2(imguiCursorPos.X - 2f, imguiCursorPos.Y - 3f));
                 float inputBoxWidth = sizeText.X + 4f;
@@ -486,7 +484,6 @@ namespace DFXR3Editor
                 }
                 if ((!ImGui.IsItemHovered() & ImGui.IsMouseClicked(ImGuiMouseButton.COUNT)) || ImGui.IsItemDeactivated())
                 {
-                    open = false;
                     storage.SetBool(IDStorage, false);
                 }
             }
@@ -495,7 +492,6 @@ namespace DFXR3Editor
                 ImGui.Text(textCommentLabel);
                 if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
                 {
-                    open = true;
                     storage.SetBool(IDStorage, true);
                 }
                 string popupName = "Comment Context Menu";
@@ -556,7 +552,7 @@ namespace DFXR3Editor
                 float radius = frameHeight * 0.4f;
 
                 ImGui.InvisibleButton(toolTipUID + "Invisible Button", sizeText);
-                uint circleColor = 0;
+                uint circleColor;
                 if (ImGui.IsItemHovered())
                     circleColor = ImGui.GetColorU32(ImGuiCol.CheckMark);
                 else
@@ -605,7 +601,7 @@ namespace DFXR3Editor
                 float radius = frameHeight * 0.4f;
 
                 ImGui.InvisibleButton(toolTipUID + "Invisible Button", sizeText);
-                uint circleColor = 0;
+                uint circleColor;
                 if (ImGui.IsItemHovered())
                     circleColor = ImGui.GetColorU32(ImGuiCol.CheckMark);
                 else
@@ -1258,7 +1254,6 @@ namespace DFXR3Editor
                         foreach (XElement node in NodeListEditor)
                         {
                             string dataType = node.Attribute(xsi + "type").Value;
-                            string Name = node.Name.ToString();
                             int nodeIndex = GetNodeIndexinParent(node);
                             if (dataType == "FFXFieldFloat")
                             {
