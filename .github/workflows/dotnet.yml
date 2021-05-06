@@ -24,7 +24,7 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish --configuration Release --framework netcoreapp3.1 --output deply
+        run: dotnet publish --configuration Release --framework netcoreapp3.1 --output deploy
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
