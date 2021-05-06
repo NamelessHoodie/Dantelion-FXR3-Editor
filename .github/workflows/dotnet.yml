@@ -20,10 +20,8 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
-      - name: Publish
-        run: dotnet publish --configuration Release --framework netcoreapp3.1
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: 'Dantelion-FXR3-Editor-SHA${{ github.sha }}'
-          path: '${{ runner.workspace }}/Dantelion-FXR3-Editor/DFXR3Editor/bin/Release/netcoreapp3.1/publish'
+          path: '${{ runner.workspace }}/Dantelion-FXR3-Editor/DFXR3Editor/bin/Release/netcoreapp3.1'
