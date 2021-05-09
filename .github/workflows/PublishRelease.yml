@@ -9,14 +9,11 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: [Windows-x64, Windows-x86]
+        kind: ['Windows-x64']
         include:
-          - kind: windows
+          - kind: Windows-x64
             os: windows-latest
             target: win-x64
-          - kind: windows
-            os: windows-latest
-            target: win-x86
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
