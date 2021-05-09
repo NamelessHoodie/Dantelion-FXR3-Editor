@@ -59,6 +59,7 @@ namespace DFXR3Editor
                 ImGui.PushStyleColor(ImGuiCol.TableBorderLight, new Vector4(0.31f, 0.31f, 0.31f, 0.70f));
                 ImGui.PushStyleColor(ImGuiCol.TableBorderStrong, new Vector4(0.31f, 0.31f, 0.31f, 1.00f));
                 ImGui.PushStyleColor(ImGuiCol.TableHeaderBg, new Vector4(0.36f, 0.26f, 0.26f, 1.00f));
+                ImGui.PushStyleColor(ImGuiCol.ModalWindowDimBg, new Vector4(0.3f, 0.2f, 0.3f, 0.20f));
 
                 ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 5f);
             }
@@ -66,6 +67,7 @@ namespace DFXR3Editor
             {
                 ThemesSelectorPop(themeName);
                 ImGui.StyleColorsDark();
+                ImGui.PushStyleColor(ImGuiCol.ModalWindowDimBg, new Vector4(0.2f, 0.2f, 0.3f, 0.30f));
             }
             else if (themeName == "ImGui Light")
             {
@@ -86,8 +88,8 @@ namespace DFXR3Editor
         {
             int PopStyleColorCount = lastTheme switch
             {
-                "Red Clay" => 38,
-                "ImGui Dark" => 0,
+                "Red Clay" => 39,
+                "ImGui Dark" => 1,
                 "ImGui Light" => 1,
                 "ImGui Classic" => 2,
                 _ => 0,

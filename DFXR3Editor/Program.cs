@@ -33,6 +33,11 @@ namespace DFXR3Editor
         private static uint mainViewPortDockSpaceID;
         private static bool _keyboardInputGuide = false;
 
+        // Exception Handler
+        private static bool _exceptionPopupOPen = false;
+        private static string _exceptionTitleString = "";
+        private static string _exceptionContentString = "";
+
         // Config
         private static readonly string iniPath = "Config/EditorConfigs.ini";
 
@@ -140,49 +145,79 @@ namespace DFXR3Editor
                 {
                     if (ImGui.MenuItem("Load FFX *XML"))
                     {
-                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+                        try
                         {
-                            Filter = "XML|*.xml"
-                        };
-                        if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                        {
-                            if (XMLOpen)
-                                CloseOpenFFXWithoutSaving();
-                            _loadedFilePath = ofd.FileName;
-                            XMLOpen = true;
-                            xDocLinq = XDocument.Load(ofd.FileName);
+                            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+                            {
+                                Filter = "XML|*.xml"
+                            };
+                            if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            {
+                                if (XMLOpen)
+                                    CloseOpenFFXWithoutSaving();
+                                _loadedFilePath = ofd.FileName;
+                                XMLOpen = true;
+                                xDocLinq = XDocument.Load(ofd.FileName);
 
+                                if (xDocLinq.Element("FXR3") == null || xDocLinq.Element("RootEffectCall") == null)
+                                {
+                                    throw new Exception("This xml file is not a valid FFX, it does not contain the FXR3 node or the RootEffectCall node.");
+                                }
+
+                            }
+
+                        }
+                        catch (Exception exception)
+                        {
+                            CloseOpenFFXWithoutSaving();
+                            ShowExceptionPopup("ERROR: *.xml loading failed", exception);
                         }
                     }
                     if (ImGui.MenuItem("Load FFX *FXR"))
                     {
-                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+                        try
                         {
-                            Filter = "FXR|*.fxr"
-                        };
-                        if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+                            {
+                                Filter = "FXR|*.fxr"
+                            };
+                            if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            {
+                                if (XMLOpen)
+                                    CloseOpenFFXWithoutSaving();
+                                _loadedFilePath = ofd.FileName;
+                                XMLOpen = true;
+                                xDocLinq = FXR3XMLRMain.FXR3ToXML(FXR3.Read(ofd.FileName));
+                            }
+                        }
+                        catch (Exception exception)
                         {
-                            if (XMLOpen)
-                                CloseOpenFFXWithoutSaving();
-                            _loadedFilePath = ofd.FileName;
-                            XMLOpen = true;
-                            xDocLinq = FXR3XMLRMain.FXR3ToXML(FXR3.Read(ofd.FileName));
+                            CloseOpenFFXWithoutSaving();
+                            ShowExceptionPopup("ERROR: *.fxr loading failed", exception);
                         }
                     }
                     if (_loadedFilePath != "" & XMLOpen)
                     {
-                        if (ImGui.MenuItem("Save Open FFX"))
+                        try
                         {
-                            if (_loadedFilePath.EndsWith(".xml"))
+                            if (ImGui.MenuItem("Save Open FFX"))
                             {
-                                xDocLinq.Save(_loadedFilePath);
-                                FXR3XMLRMain.XMLToFXR3(xDocLinq).Write(_loadedFilePath.Substring(0, _loadedFilePath.Length - 4));
+                                if (_loadedFilePath.EndsWith(".xml"))
+                                {
+                                    xDocLinq.Save(_loadedFilePath);
+                                    FXR3XMLRMain.XMLToFXR3(xDocLinq).Write(_loadedFilePath.Substring(0, _loadedFilePath.Length - 4));
+                                }
+                                else if (_loadedFilePath.EndsWith(".fxr"))
+                                {
+                                    xDocLinq.Save(_loadedFilePath + ".xml");
+                                    FXR3XMLRMain.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
+                                }
                             }
-                            else if (_loadedFilePath.EndsWith(".fxr"))
-                            {
-                                xDocLinq.Save(_loadedFilePath + ".xml");
-                                FXR3XMLRMain.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
-                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            CloseOpenFFXWithoutSaving();
+                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
                         }
                     }
                     else
@@ -326,7 +361,35 @@ namespace DFXR3Editor
                     }
                     ImGui.End();
                 }
+                if (_exceptionPopupOPen)
+                {
+                    if (!ImGui.IsPopupOpen(_exceptionTitleString))
+                    {
+                        ImGui.OpenPopup(_exceptionTitleString);
+                    }
+                    if (ImGui.IsPopupOpen(_exceptionTitleString))
+                    {
+                        ImGuiViewportPtr mainViewport = ImGui.GetMainViewport();
+                        Vector2 textInputSize = new Vector2(mainViewport.Size.X * 0.8f, mainViewport.Size.Y * 0.8f);
+                        ImGui.SetNextWindowPos(new Vector2(mainViewport.Pos.X + mainViewport.Size.X * 0.5f, mainViewport.Pos.Y + mainViewport.Size.Y * 0.5f), ImGuiCond.Always, new Vector2(0.5f, 0.5f));
+                        if (ImGui.BeginPopupModal(_exceptionTitleString, ref _exceptionPopupOPen, ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize))
+                        {
+                            ImGui.InputTextMultiline("TextInput", ref _exceptionContentString, 1024, textInputSize, ImGuiInputTextFlags.ReadOnly);
+                            if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
+                            {
+                                _exceptionPopupOPen = false;
+                            }
+                            ImGui.EndPopup();
+                        }
+                    }
+                }
             }
+        }
+        private static void ShowExceptionPopup(string exceptionTitle, Exception exceptionToDisplay)
+        {
+            _exceptionPopupOPen = true;
+            _exceptionTitleString = exceptionTitle;
+            _exceptionContentString = exceptionToDisplay.ToString();
         }
         private static void PopulateTree(XElement root)
         {
@@ -531,7 +594,9 @@ namespace DFXR3Editor
         }
         private static void CloseOpenFFXWithoutSaving()
         {
+            _loadedFilePath = "";
             XMLOpen = false;
+            xDocLinq = null;
             _cPickerIsEnable = false;
             _showFFXEditorFields = false;
             _showFFXEditorProperties = false;
