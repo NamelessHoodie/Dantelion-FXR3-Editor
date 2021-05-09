@@ -9,7 +9,7 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['Windows x64', 'Windows x86']
+        kind: [Windows-x64, Windows-x86]
         include:
           - kind: windows
             os: windows-latest
