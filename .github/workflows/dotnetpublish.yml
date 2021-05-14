@@ -1,0 +1,29 @@
+name: .NETPublish
+
+on: [push]
+jobs:
+  build:
+    runs-on: windows-latest
+    name: "Build"
+    steps:
+      - uses: actions/checkout@main
+        with:
+          submodules: true
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+        
+      - name: Restore
+        run: dotnet restore
+        
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish '${{ runner.workspace }}/Dantelion-FXR3-Editor/DFXR3Editor/DFXR3Editor.csproj' --configuration Release -o deploy
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: 'paramtools-${{ github.sha }}'
+          path: '${{ runner.workspace }}/Dantelion-FXR3-Editor/deploy'
