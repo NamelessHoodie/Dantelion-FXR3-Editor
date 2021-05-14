@@ -50,12 +50,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FXR3-XMLR-Hoodieforked\FXR3-XMLR\FXR3-XMLR.csproj" />
-    <ProjectReference Include="..\ImGui.NET\ImGui.NET.csproj" />
-    <ProjectReference Include="..\ImGuizmo.NET\ImGuizmo.NET.csproj" />
-    <ProjectReference Include="..\ImNodes.NET\ImNodes.NET.csproj" />
-    <ProjectReference Include="..\ImPlot.NET\ImPlot.NET.csproj" />
-    <ProjectReference Include="..\Veldrid.ImGui\Veldrid.ImGui.csproj" />
+    <ProjectReference Include="..\FXR3-XMLR-Hoodieforked\FXR3-XMLR\FXR3-XMLR.csproj" SetTargetFramework="TargetFramework=netcoreapp3.1" />
+    <ProjectReference Include="..\ImGui.NET\ImGui.NET.csproj" SetTargetFramework="TargetFramework=netcoreapp3.1" />
+    <ProjectReference Include="..\ImGuizmo.NET\ImGuizmo.NET.csproj" SetTargetFramework="TargetFramework=netcoreapp3.1" />
+    <ProjectReference Include="..\ImNodes.NET\ImNodes.NET.csproj" SetTargetFramework="TargetFramework=netcoreapp3.1" />
+    <ProjectReference Include="..\ImPlot.NET\ImPlot.NET.csproj" SetTargetFramework="TargetFramework=netcoreapp3.1" />
+    <ProjectReference Include="..\Veldrid.ImGui\Veldrid.ImGui.csproj" SetTargetFramework="TargetFramework=netcoreapp3.1" />
   </ItemGroup>
 
   <ItemGroup>
