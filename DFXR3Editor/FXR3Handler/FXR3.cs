@@ -4,30 +4,30 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using SoulsFormats;
 
-namespace FXR3Handler
+namespace FXR3_XMLR
 {
     /// <summary>
     /// An SFX definition file used in DS3 and Sekiro. Extension: .fxr
     /// </summary>
-    public class FXR3Enhanced : SoulsFile<FXR3Enhanced>
+    public class FXR3 : SoulsFile<FXR3>
     {
-        public FXR3Enhanced.FXRVersion Version { get; set; }
+        public FXR3.FXRVersion Version { get; set; }
 
         public int ID { get; set; }
 
-        public FXR3Enhanced.FFXStateMachine RootStateMachine { get; set; }
+        public FXR3.FFXStateMachine RootStateMachine { get; set; }
 
-        public FXR3Enhanced.FFXEffectCallA RootEffectCall { get; set; }
+        public FXR3.FFXEffectCallA RootEffectCall { get; set; }
 
         public List<int> Section12s { get; set; }
 
         public List<int> Section13s { get; set; }
 
-        public FXR3Enhanced()
+        public FXR3()
         {
-            this.Version = FXR3Enhanced.FXRVersion.DarkSouls3;
-            this.RootStateMachine = new FXR3Enhanced.FFXStateMachine();
-            this.RootEffectCall = new FXR3Enhanced.FFXEffectCallA();
+            this.Version = FXR3.FXRVersion.DarkSouls3;
+            this.RootStateMachine = new FXR3.FFXStateMachine();
+            this.RootEffectCall = new FXR3.FFXEffectCallA();
             this.Section12s = new List<int>();
             this.Section13s = new List<int>();
         }
@@ -46,7 +46,7 @@ namespace FXR3Handler
             br.BigEndian = false;
             br.AssertASCII("FXR\0");
             int num1 = (int)br.AssertInt16(new short[1]);
-            this.Version = br.ReadEnum16<FXR3Enhanced.FXRVersion>();
+            this.Version = br.ReadEnum16<FXR3.FXRVersion>();
             br.AssertInt32(1);
             this.ID = br.ReadInt32();
             int num2 = br.ReadInt32();
@@ -73,7 +73,7 @@ namespace FXR3Handler
             br.ReadInt32();
             br.AssertInt32(1);
             br.AssertInt32(new int[1]);
-            if (this.Version == FXR3Enhanced.FXRVersion.Sekiro)
+            if (this.Version == FXR3.FXRVersion.Sekiro)
             {
                 int num4 = br.ReadInt32();
                 int count1 = br.ReadInt32();
@@ -92,9 +92,9 @@ namespace FXR3Handler
                 this.Section13s = new List<int>();
             }
             br.Position = (long)num2;
-            this.RootStateMachine = new FXR3Enhanced.FFXStateMachine(br);
+            this.RootStateMachine = new FXR3.FFXStateMachine(br);
             br.Position = (long)num3;
-            this.RootEffectCall = new FXR3Enhanced.FFXEffectCallA(br);
+            this.RootEffectCall = new FXR3.FFXEffectCallA(br);
         }
 
         protected override void Write(BinaryWriterEx bw)
@@ -128,7 +128,7 @@ namespace FXR3Handler
             bw.ReserveInt32("Section11Count");
             bw.WriteInt32(1);
             bw.WriteInt32(0);
-            if (this.Version == FXR3Enhanced.FXRVersion.Sekiro)
+            if (this.Version == FXR3.FXRVersion.Sekiro)
             {
                 bw.ReserveInt32("Section12Offset");
                 bw.WriteInt32(this.Section12s.Count);
@@ -146,14 +146,14 @@ namespace FXR3Handler
             this.RootStateMachine.WriteSection2s(bw);
             bw.Pad(16);
             bw.FillInt32("Section3Offset", (int)bw.Position);
-            List<FXR3Enhanced.FFXState> states = this.RootStateMachine.States;
-            List<FXR3Enhanced.FFXTransition> section3s = new List<FXR3Enhanced.FFXTransition>();
+            List<FXR3.FFXState> states = this.RootStateMachine.States;
+            List<FXR3.FFXTransition> section3s = new List<FXR3.FFXTransition>();
             for (int index = 0; index < states.Count; ++index)
                 states[index].WriteSection3s(bw, index, section3s);
             bw.FillInt32("Section3Count", section3s.Count);
             bw.Pad(16);
             bw.FillInt32("Section4Offset", (int)bw.Position);
-            List<FXR3Enhanced.FFXEffectCallA> section4s = new List<FXR3Enhanced.FFXEffectCallA>();
+            List<FXR3.FFXEffectCallA> section4s = new List<FXR3.FFXEffectCallA>();
             this.RootEffectCall.Write(bw, section4s);
             this.RootEffectCall.WriteSection4s(bw, section4s);
             bw.FillInt32("Section4Count", section4s.Count);
@@ -166,31 +166,31 @@ namespace FXR3Handler
             bw.Pad(16);
             bw.FillInt32("Section6Offset", (int)bw.Position);
             section5Count = 0;
-            List<FXR3Enhanced.FFXActionCall> section6s = new List<FXR3Enhanced.FFXActionCall>();
+            List<FXR3.FFXActionCall> section6s = new List<FXR3.FFXActionCall>();
             for (int index = 0; index < section4s.Count; ++index)
                 section4s[index].WriteSection6s(bw, index, ref section5Count, section6s);
             bw.FillInt32("Section6Count", section6s.Count);
             bw.Pad(16);
             bw.FillInt32("Section7Offset", (int)bw.Position);
-            List<FXR3Enhanced.FFXProperty> section7s = new List<FXR3Enhanced.FFXProperty>();
+            List<FXR3.FFXProperty> section7s = new List<FXR3.FFXProperty>();
             for (int index = 0; index < section6s.Count; ++index)
                 section6s[index].WriteSection7s(bw, index, section7s);
             bw.FillInt32("Section7Count", section7s.Count);
             bw.Pad(16);
             bw.FillInt32("Section8Offset", (int)bw.Position);
-            List<FXR3Enhanced.Section8> section8s = new List<FXR3Enhanced.Section8>();
+            List<FXR3.Section8> section8s = new List<FXR3.Section8>();
             for (int index = 0; index < section7s.Count; ++index)
                 section7s[index].WriteSection8s(bw, index, section8s);
             bw.FillInt32("Section8Count", section8s.Count);
             bw.Pad(16);
             bw.FillInt32("Section9Offset", (int)bw.Position);
-            List<FXR3Enhanced.Section9> section9s = new List<FXR3Enhanced.Section9>();
+            List<FXR3.Section9> section9s = new List<FXR3.Section9>();
             for (int index = 0; index < section8s.Count; ++index)
                 section8s[index].WriteSection9s(bw, index, section9s);
             bw.FillInt32("Section9Count", section9s.Count);
             bw.Pad(16);
             bw.FillInt32("Section10Offset", (int)bw.Position);
-            List<FXR3Enhanced.Section10> section10s = new List<FXR3Enhanced.Section10>();
+            List<FXR3.Section10> section10s = new List<FXR3.Section10>();
             for (int index = 0; index < section6s.Count; ++index)
                 section6s[index].WriteSection10s(bw, index, section10s);
             bw.FillInt32("Section10Count", section10s.Count);
@@ -211,7 +211,7 @@ namespace FXR3Handler
                 section10s[index].WriteSection11s(bw, index, ref section11Count);
             bw.FillInt32("Section11Count", section11Count);
             bw.Pad(16);
-            if (this.Version != FXR3Enhanced.FXRVersion.Sekiro)
+            if (this.Version != FXR3.FXRVersion.Sekiro)
                 return;
             bw.FillInt32("Section12Offset", (int)bw.Position);
             bw.WriteInt32s((IList<int>)this.Section12s);
@@ -230,9 +230,9 @@ namespace FXR3Handler
 
         public class FFXStateMachine
         {
-            public List<FXR3Enhanced.FFXState> States { get; set; }
+            public List<FXR3.FFXState> States { get; set; }
 
-            public FFXStateMachine() => this.States = new List<FXR3Enhanced.FFXState>();
+            public FFXStateMachine() => this.States = new List<FXR3.FFXState>();
 
             internal FFXStateMachine(BinaryReaderEx br)
             {
@@ -241,9 +241,9 @@ namespace FXR3Handler
                 int num = br.ReadInt32();
                 br.AssertInt32(new int[1]);
                 br.StepIn((long)num);
-                this.States = new List<FXR3Enhanced.FFXState>(capacity);
+                this.States = new List<FXR3.FFXState>(capacity);
                 for (int index = 0; index < capacity; ++index)
-                    this.States.Add(new FXR3Enhanced.FFXState(br));
+                    this.States.Add(new FXR3.FFXState(br));
                 br.StepOut();
             }
 
@@ -265,9 +265,9 @@ namespace FXR3Handler
 
         public class FFXState
         {
-            public List<FXR3Enhanced.FFXTransition> Transitions { get; set; }
+            public List<FXR3.FFXTransition> Transitions { get; set; }
 
-            public FFXState() => this.Transitions = new List<FXR3Enhanced.FFXTransition>();
+            public FFXState() => this.Transitions = new List<FXR3.FFXTransition>();
 
             internal FFXState(BinaryReaderEx br)
             {
@@ -276,9 +276,9 @@ namespace FXR3Handler
                 int num = br.ReadInt32();
                 br.AssertInt32(new int[1]);
                 br.StepIn((long)num);
-                this.Transitions = new List<FXR3Enhanced.FFXTransition>(capacity);
+                this.Transitions = new List<FXR3.FFXTransition>(capacity);
                 for (int index = 0; index < capacity; ++index)
-                    this.Transitions.Add(new FXR3Enhanced.FFXTransition(br));
+                    this.Transitions.Add(new FXR3.FFXTransition(br));
                 br.StepOut();
             }
 
@@ -293,10 +293,10 @@ namespace FXR3Handler
             internal void WriteSection3s(
               BinaryWriterEx bw,
               int index,
-              List<FXR3Enhanced.FFXTransition> section3s)
+              List<FXR3.FFXTransition> section3s)
             {
                 bw.FillInt32(string.Format("Section2Section3sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.FFXTransition transition in this.Transitions)
+                foreach (FXR3.FFXTransition transition in this.Transitions)
                     transition.Write(bw, section3s);
             }
         }
@@ -350,7 +350,7 @@ namespace FXR3Handler
                 this.Section11Data2 = br.GetInt32((long)num5);
             }
 
-            internal void Write(BinaryWriterEx bw, List<FXR3Enhanced.FFXTransition> section3s)
+            internal void Write(BinaryWriterEx bw, List<FXR3.FFXTransition> section3s)
             {
                 int count = section3s.Count;
                 bw.WriteInt16((short)11);
@@ -397,17 +397,17 @@ namespace FXR3Handler
             [XmlAttribute]
             public short EffectID { get; set; }
 
-            public List<FXR3Enhanced.FFXEffectCallA> EffectAs { get; set; }
+            public List<FXR3.FFXEffectCallA> EffectAs { get; set; }
 
-            public List<FXR3Enhanced.FFXEffectCallB> EffectBs { get; set; }
+            public List<FXR3.FFXEffectCallB> EffectBs { get; set; }
 
-            public List<FXR3Enhanced.FFXActionCall> Actions { get; set; }
+            public List<FXR3.FFXActionCall> Actions { get; set; }
 
             public FFXEffectCallA()
             {
-                this.EffectAs = new List<FXR3Enhanced.FFXEffectCallA>();
-                this.EffectBs = new List<FXR3Enhanced.FFXEffectCallB>();
-                this.Actions = new List<FXR3Enhanced.FFXActionCall>();
+                this.EffectAs = new List<FXR3.FFXEffectCallA>();
+                this.EffectBs = new List<FXR3.FFXEffectCallB>();
+                this.Actions = new List<FXR3.FFXActionCall>();
             }
 
             internal FFXEffectCallA(BinaryReaderEx br)
@@ -427,23 +427,23 @@ namespace FXR3Handler
                 int num5 = br.ReadInt32();
                 br.AssertInt32(new int[1]);
                 br.StepIn((long)num5);
-                this.EffectAs = new List<FXR3Enhanced.FFXEffectCallA>(capacity3);
+                this.EffectAs = new List<FXR3.FFXEffectCallA>(capacity3);
                 for (int index = 0; index < capacity3; ++index)
-                    this.EffectAs.Add(new FXR3Enhanced.FFXEffectCallA(br));
+                    this.EffectAs.Add(new FXR3.FFXEffectCallA(br));
                 br.StepOut();
                 br.StepIn((long)num3);
-                this.EffectBs = new List<FXR3Enhanced.FFXEffectCallB>(capacity1);
+                this.EffectBs = new List<FXR3.FFXEffectCallB>(capacity1);
                 for (int index = 0; index < capacity1; ++index)
-                    this.EffectBs.Add(new FXR3Enhanced.FFXEffectCallB(br));
+                    this.EffectBs.Add(new FXR3.FFXEffectCallB(br));
                 br.StepOut();
                 br.StepIn((long)num4);
-                this.Actions = new List<FXR3Enhanced.FFXActionCall>(capacity2);
+                this.Actions = new List<FXR3.FFXActionCall>(capacity2);
                 for (int index = 0; index < capacity2; ++index)
-                    this.Actions.Add(new FXR3Enhanced.FFXActionCall(br));
+                    this.Actions.Add(new FXR3.FFXActionCall(br));
                 br.StepOut();
             }
 
-            internal void Write(BinaryWriterEx bw, List<FXR3Enhanced.FFXEffectCallA> section4s)
+            internal void Write(BinaryWriterEx bw, List<FXR3.FFXEffectCallA> section4s)
             {
                 int count = section4s.Count;
                 bw.WriteInt16(this.EffectID);
@@ -463,7 +463,7 @@ namespace FXR3Handler
                 section4s.Add(this);
             }
 
-            internal void WriteSection4s(BinaryWriterEx bw, List<FXR3Enhanced.FFXEffectCallA> section4s)
+            internal void WriteSection4s(BinaryWriterEx bw, List<FXR3.FFXEffectCallA> section4s)
             {
                 int num = section4s.IndexOf(this);
                 if (this.EffectAs.Count == 0)
@@ -473,9 +473,9 @@ namespace FXR3Handler
                 else
                 {
                     bw.FillInt32(string.Format("Section4Section4sOffset[{0}]", (object)num), (int)bw.Position);
-                    foreach (FXR3Enhanced.FFXEffectCallA effectA in this.EffectAs)
+                    foreach (FXR3.FFXEffectCallA effectA in this.EffectAs)
                         effectA.Write(bw, section4s);
-                    foreach (FXR3Enhanced.FFXEffectCallA effectA in this.EffectAs)
+                    foreach (FXR3.FFXEffectCallA effectA in this.EffectAs)
                         effectA.WriteSection4s(bw, section4s);
                 }
             }
@@ -499,10 +499,10 @@ namespace FXR3Handler
               BinaryWriterEx bw,
               int index,
               ref int section5Count,
-              List<FXR3Enhanced.FFXActionCall> section6s)
+              List<FXR3.FFXActionCall> section6s)
             {
                 bw.FillInt32(string.Format("Section4Section6sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.FFXActionCall action in this.Actions)
+                foreach (FXR3.FFXActionCall action in this.Actions)
                     action.Write(bw, section6s);
                 for (int index1 = 0; index1 < this.EffectBs.Count; ++index1)
                     this.EffectBs[index1].WriteSection6s(bw, section5Count + index1, section6s);
@@ -515,9 +515,9 @@ namespace FXR3Handler
             [XmlAttribute]
             public short EffectID { get; set; }
 
-            public List<FXR3Enhanced.FFXActionCall> Actions { get; set; }
+            public List<FXR3.FFXActionCall> Actions { get; set; }
 
-            public FFXEffectCallB() => this.Actions = new List<FXR3Enhanced.FFXActionCall>();
+            public FFXEffectCallB() => this.Actions = new List<FXR3.FFXActionCall>();
 
             internal FFXEffectCallB(BinaryReaderEx br)
             {
@@ -532,9 +532,9 @@ namespace FXR3Handler
                 int num3 = br.ReadInt32();
                 br.AssertInt32(new int[1]);
                 br.StepIn((long)num3);
-                this.Actions = new List<FXR3Enhanced.FFXActionCall>(capacity);
+                this.Actions = new List<FXR3.FFXActionCall>(capacity);
                 for (int index = 0; index < capacity; ++index)
-                    this.Actions.Add(new FXR3Enhanced.FFXActionCall(br));
+                    this.Actions.Add(new FXR3.FFXActionCall(br));
                 br.StepOut();
             }
 
@@ -555,10 +555,10 @@ namespace FXR3Handler
             internal void WriteSection6s(
               BinaryWriterEx bw,
               int index,
-              List<FXR3Enhanced.FFXActionCall> section6s)
+              List<FXR3.FFXActionCall> section6s)
             {
                 bw.FillInt32(string.Format("Section5Section6sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.FFXActionCall action in this.Actions)
+                foreach (FXR3.FFXActionCall action in this.Actions)
                     action.Write(bw, section6s);
             }
         }
@@ -574,23 +574,23 @@ namespace FXR3Handler
 
             public int Unk04 { get; set; }
 
-            public List<FXR3Enhanced.FFXProperty> Properties1 { get; set; }
+            public List<FXR3.FFXProperty> Properties1 { get; set; }
 
-            public List<FXR3Enhanced.FFXProperty> Properties2 { get; set; }
+            public List<FXR3.FFXProperty> Properties2 { get; set; }
 
-            public List<FXR3Enhanced.Section10> Section10s { get; set; }
+            public List<FXR3.Section10> Section10s { get; set; }
 
-            public List<FXR3Enhanced.FFXField> Fields1 { get; set; }
+            public List<FXR3.FFXField> Fields1 { get; set; }
 
-            public List<FXR3Enhanced.FFXField> Fields2 { get; set; }
+            public List<FXR3.FFXField> Fields2 { get; set; }
 
             public FFXActionCall()
             {
-                this.Properties1 = new List<FXR3Enhanced.FFXProperty>();
-                this.Properties2 = new List<FXR3Enhanced.FFXProperty>();
-                this.Section10s = new List<FXR3Enhanced.Section10>();
-                this.Fields1 = new List<FXR3Enhanced.FFXField>();
-                this.Fields2 = new List<FXR3Enhanced.FFXField>();
+                this.Properties1 = new List<FXR3.FFXProperty>();
+                this.Properties2 = new List<FXR3.FFXProperty>();
+                this.Section10s = new List<FXR3.Section10>();
+                this.Fields1 = new List<FXR3.FFXField>();
+                this.Fields2 = new List<FXR3.FFXField>();
             }
 
             internal FFXActionCall(BinaryReaderEx br)
@@ -614,25 +614,25 @@ namespace FXR3Handler
                 br.AssertInt32(new int[1]);
                 br.AssertInt32(new int[1]);
                 br.StepIn((long)num3);
-                this.Properties1 = new List<FXR3Enhanced.FFXProperty>(capacity2);
+                this.Properties1 = new List<FXR3.FFXProperty>(capacity2);
                 for (int index = 0; index < capacity2; ++index)
-                    this.Properties1.Add(new FXR3Enhanced.FFXProperty(br));
-                this.Properties2 = new List<FXR3Enhanced.FFXProperty>(capacity3);
+                    this.Properties1.Add(new FXR3.FFXProperty(br));
+                this.Properties2 = new List<FXR3.FFXProperty>(capacity3);
                 for (int index = 0; index < capacity3; ++index)
-                    this.Properties2.Add(new FXR3Enhanced.FFXProperty(br));
+                    this.Properties2.Add(new FXR3.FFXProperty(br));
                 br.StepOut();
                 br.StepIn((long)num2);
-                this.Section10s = new List<FXR3Enhanced.Section10>(capacity1);
+                this.Section10s = new List<FXR3.Section10>(capacity1);
                 for (int index = 0; index < capacity1; ++index)
-                    this.Section10s.Add(new FXR3Enhanced.Section10(br));
+                    this.Section10s.Add(new FXR3.Section10(br));
                 br.StepOut();
                 br.StepIn((long)num1);
-                this.Fields1 = FXR3Enhanced.FFXField.ReadMany(br, count1);
-                this.Fields2 = FXR3Enhanced.FFXField.ReadMany(br, count2);
+                this.Fields1 = FXR3.FFXField.ReadMany(br, count1);
+                this.Fields2 = FXR3.FFXField.ReadMany(br, count2);
                 br.StepOut();
             }
 
-            internal void Write(BinaryWriterEx bw, List<FXR3Enhanced.FFXActionCall> section6s)
+            internal void Write(BinaryWriterEx bw, List<FXR3.FFXActionCall> section6s)
             {
                 int count = section6s.Count;
                 bw.WriteInt16(this.ActionID);
@@ -656,19 +656,19 @@ namespace FXR3Handler
                 section6s.Add(this);
             }
 
-            internal void WriteSection7s(BinaryWriterEx bw, int index, List<FXR3Enhanced.FFXProperty> section7s)
+            internal void WriteSection7s(BinaryWriterEx bw, int index, List<FXR3.FFXProperty> section7s)
             {
                 bw.FillInt32(string.Format("Section6Section7sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.FFXProperty ffxProperty in this.Properties1)
+                foreach (FXR3.FFXProperty ffxProperty in this.Properties1)
                     ffxProperty.Write(bw, section7s);
-                foreach (FXR3Enhanced.FFXProperty ffxProperty in this.Properties2)
+                foreach (FXR3.FFXProperty ffxProperty in this.Properties2)
                     ffxProperty.Write(bw, section7s);
             }
 
-            internal void WriteSection10s(BinaryWriterEx bw, int index, List<FXR3Enhanced.Section10> section10s)
+            internal void WriteSection10s(BinaryWriterEx bw, int index, List<FXR3.Section10> section10s)
             {
                 bw.FillInt32(string.Format("Section6Section10sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.Section10 section10 in this.Section10s)
+                foreach (FXR3.Section10 section10 in this.Section10s)
                     section10.Write(bw, section10s);
             }
 
@@ -681,30 +681,30 @@ namespace FXR3Handler
                 else
                 {
                     bw.FillInt32(string.Format("Section6Section11sOffset[{0}]", (object)index), (int)bw.Position);
-                    foreach (FXR3Enhanced.FFXField ffxField in this.Fields1)
+                    foreach (FXR3.FFXField ffxField in this.Fields1)
                         ffxField.Write(bw);
-                    foreach (FXR3Enhanced.FFXField ffxField in this.Fields2)
+                    foreach (FXR3.FFXField ffxField in this.Fields2)
                         ffxField.Write(bw);
                     section11Count += this.Fields1.Count + this.Fields2.Count;
                 }
             }
         }
 
-        [XmlInclude(typeof(FXR3Enhanced.FFXField.FFXFieldFloat))]
-        [XmlInclude(typeof(FXR3Enhanced.FFXField.FFXFieldInt))]
+        [XmlInclude(typeof(FXR3.FFXField.FFXFieldFloat))]
+        [XmlInclude(typeof(FXR3.FFXField.FFXFieldInt))]
         public abstract class FFXField
         {
-            public static FXR3Enhanced.FFXField Read(BinaryReaderEx br)
+            public static FXR3.FFXField Read(BinaryReaderEx br)
             {
                 float single = br.GetSingle(br.Position);
-                FXR3Enhanced.FFXField ffxField;
+                FXR3.FFXField ffxField;
                 if ((double)single >= 9.99999974737875E-05 && (double)single < 1000000.0 || (double)single <= -9.99999974737875E-05 && (double)single > -1000000.0)
-                    ffxField = (FXR3Enhanced.FFXField)new FXR3Enhanced.FFXField.FFXFieldFloat()
+                    ffxField = (FXR3.FFXField)new FXR3.FFXField.FFXFieldFloat()
                     {
                         Value = single
                     };
                 else
-                    ffxField = (FXR3Enhanced.FFXField)new FXR3Enhanced.FFXField.FFXFieldInt()
+                    ffxField = (FXR3.FFXField)new FXR3.FFXField.FFXFieldInt()
                     {
                         Value = br.GetInt32(br.Position)
                     };
@@ -712,28 +712,28 @@ namespace FXR3Handler
                 return ffxField;
             }
 
-            public static List<FXR3Enhanced.FFXField> ReadMany(BinaryReaderEx br, int count)
+            public static List<FXR3.FFXField> ReadMany(BinaryReaderEx br, int count)
             {
-                List<FXR3Enhanced.FFXField> ffxFieldList = new List<FXR3Enhanced.FFXField>();
+                List<FXR3.FFXField> ffxFieldList = new List<FXR3.FFXField>();
                 for (int index = 0; index < count; ++index)
-                    ffxFieldList.Add(FXR3Enhanced.FFXField.Read(br));
+                    ffxFieldList.Add(FXR3.FFXField.Read(br));
                 return ffxFieldList;
             }
 
-            public static List<FXR3Enhanced.FFXField> ReadManyAt(
+            public static List<FXR3.FFXField> ReadManyAt(
               BinaryReaderEx br,
               int offset,
               int count)
             {
                 br.StepIn((long)offset);
-                List<FXR3Enhanced.FFXField> ffxFieldList = FXR3Enhanced.FFXField.ReadMany(br, count);
+                List<FXR3.FFXField> ffxFieldList = FXR3.FFXField.ReadMany(br, count);
                 br.StepOut();
                 return ffxFieldList;
             }
 
             public abstract void Write(BinaryWriterEx bw);
 
-            public class FFXFieldFloat : FXR3Enhanced.FFXField
+            public class FFXFieldFloat : FXR3.FFXField
             {
                 [XmlAttribute]
                 public float Value;
@@ -741,7 +741,7 @@ namespace FXR3Handler
                 public override void Write(BinaryWriterEx bw) => bw.WriteSingle(this.Value);
             }
 
-            public class FFXFieldInt : FXR3Enhanced.FFXField
+            public class FFXFieldInt : FXR3.FFXField
             {
                 [XmlAttribute]
                 public int Value;
@@ -758,14 +758,14 @@ namespace FXR3Handler
             [XmlAttribute]
             public int TypeEnumB { get; set; }
 
-            public List<FXR3Enhanced.Section8> Section8s { get; set; }
+            public List<FXR3.Section8> Section8s { get; set; }
 
-            public List<FXR3Enhanced.FFXField> Fields { get; set; }
+            public List<FXR3.FFXField> Fields { get; set; }
 
             public FFXProperty()
             {
-                this.Section8s = new List<FXR3Enhanced.Section8>();
-                this.Fields = new List<FXR3Enhanced.FFXField>();
+                this.Section8s = new List<FXR3.Section8>();
+                this.Fields = new List<FXR3.FFXField>();
             }
 
             internal FFXProperty(BinaryReaderEx br)
@@ -783,15 +783,15 @@ namespace FXR3Handler
                 int capacity = br.ReadInt32();
                 br.AssertInt32(new int[1]);
                 br.StepIn((long)num3);
-                this.Section8s = new List<FXR3Enhanced.Section8>(capacity);
+                this.Section8s = new List<FXR3.Section8>(capacity);
                 for (int index = 0; index < capacity; ++index)
-                    this.Section8s.Add(new FXR3Enhanced.Section8(br));
+                    this.Section8s.Add(new FXR3.Section8(br));
                 br.StepOut();
-                this.Fields = new List<FXR3Enhanced.FFXField>();
-                this.Fields = FXR3Enhanced.FFXField.ReadManyAt(br, offset, count);
+                this.Fields = new List<FXR3.FFXField>();
+                this.Fields = FXR3.FFXField.ReadManyAt(br, offset, count);
             }
 
-            internal void Write(BinaryWriterEx bw, List<FXR3Enhanced.FFXProperty> section7s)
+            internal void Write(BinaryWriterEx bw, List<FXR3.FFXProperty> section7s)
             {
                 int count = section7s.Count;
                 bw.WriteInt16(this.TypeEnumA);
@@ -809,10 +809,10 @@ namespace FXR3Handler
                 section7s.Add(this);
             }
 
-            internal void WriteSection8s(BinaryWriterEx bw, int index, List<FXR3Enhanced.Section8> section8s)
+            internal void WriteSection8s(BinaryWriterEx bw, int index, List<FXR3.Section8> section8s)
             {
                 bw.FillInt32(string.Format("Section7Section8sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.Section8 section8 in this.Section8s)
+                foreach (FXR3.Section8 section8 in this.Section8s)
                     section8.Write(bw, section8s);
             }
 
@@ -825,7 +825,7 @@ namespace FXR3Handler
                 else
                 {
                     bw.FillInt32(string.Format("Section7Section11sOffset[{0}]", (object)index), (int)bw.Position);
-                    foreach (FXR3Enhanced.FFXField field in this.Fields)
+                    foreach (FXR3.FFXField field in this.Fields)
                         field.Write(bw);
                     section11Count += this.Fields.Count;
                 }
@@ -839,14 +839,14 @@ namespace FXR3Handler
 
             public int Unk04 { get; set; }
 
-            public List<FXR3Enhanced.Section9> Section9s { get; set; }
+            public List<FXR3.Section9> Section9s { get; set; }
 
-            public List<FXR3Enhanced.FFXField> Fields { get; set; }
+            public List<FXR3.FFXField> Fields { get; set; }
 
             public Section8()
             {
-                this.Section9s = new List<FXR3Enhanced.Section9>();
-                this.Fields = new List<FXR3Enhanced.FFXField>();
+                this.Section9s = new List<FXR3.Section9>();
+                this.Fields = new List<FXR3.FFXField>();
             }
 
             internal Section8(BinaryReaderEx br)
@@ -862,14 +862,14 @@ namespace FXR3Handler
                 int num3 = br.ReadInt32();
                 br.AssertInt32(new int[1]);
                 br.StepIn((long)num3);
-                this.Section9s = new List<FXR3Enhanced.Section9>(capacity);
+                this.Section9s = new List<FXR3.Section9>(capacity);
                 for (int index = 0; index < capacity; ++index)
-                    this.Section9s.Add(new FXR3Enhanced.Section9(br));
+                    this.Section9s.Add(new FXR3.Section9(br));
                 br.StepOut();
-                this.Fields = FXR3Enhanced.FFXField.ReadManyAt(br, offset, count);
+                this.Fields = FXR3.FFXField.ReadManyAt(br, offset, count);
             }
 
-            internal void Write(BinaryWriterEx bw, List<FXR3Enhanced.Section8> section8s)
+            internal void Write(BinaryWriterEx bw, List<FXR3.Section8> section8s)
             {
                 int count = section8s.Count;
                 bw.WriteUInt16(this.Unk00);
@@ -885,17 +885,17 @@ namespace FXR3Handler
                 section8s.Add(this);
             }
 
-            internal void WriteSection9s(BinaryWriterEx bw, int index, List<FXR3Enhanced.Section9> section9s)
+            internal void WriteSection9s(BinaryWriterEx bw, int index, List<FXR3.Section9> section9s)
             {
                 bw.FillInt32(string.Format("Section8Section9sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.Section9 section9 in this.Section9s)
+                foreach (FXR3.Section9 section9 in this.Section9s)
                     section9.Write(bw, section9s);
             }
 
             internal void WriteSection11s(BinaryWriterEx bw, int index, ref int section11Count)
             {
                 bw.FillInt32(string.Format("Section8Section11sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.FFXField field in this.Fields)
+                foreach (FXR3.FFXField field in this.Fields)
                     field.Write(bw);
                 section11Count += this.Fields.Count;
             }
@@ -905,9 +905,9 @@ namespace FXR3Handler
         {
             public int Unk04 { get; set; }
 
-            public List<FXR3Enhanced.FFXField> Fields { get; set; }
+            public List<FXR3.FFXField> Fields { get; set; }
 
-            public Section9() => this.Fields = new List<FXR3Enhanced.FFXField>();
+            public Section9() => this.Fields = new List<FXR3.FFXField>();
 
             internal Section9(BinaryReaderEx br)
             {
@@ -919,10 +919,10 @@ namespace FXR3Handler
                 br.AssertInt32(new int[1]);
                 int offset = br.ReadInt32();
                 br.AssertInt32(new int[1]);
-                this.Fields = FXR3Enhanced.FFXField.ReadManyAt(br, offset, count);
+                this.Fields = FXR3.FFXField.ReadManyAt(br, offset, count);
             }
 
-            internal void Write(BinaryWriterEx bw, List<FXR3Enhanced.Section9> section9s)
+            internal void Write(BinaryWriterEx bw, List<FXR3.Section9> section9s)
             {
                 int count = section9s.Count;
                 bw.WriteInt16((short)48);
@@ -939,7 +939,7 @@ namespace FXR3Handler
             internal void WriteSection11s(BinaryWriterEx bw, int index, ref int section11Count)
             {
                 bw.FillInt32(string.Format("Section9Section11sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.FFXField field in this.Fields)
+                foreach (FXR3.FFXField field in this.Fields)
                     field.Write(bw);
                 section11Count += this.Fields.Count;
             }
@@ -947,9 +947,9 @@ namespace FXR3Handler
 
         public class Section10
         {
-            public List<FXR3Enhanced.FFXField> Fields { get; set; }
+            public List<FXR3.FFXField> Fields { get; set; }
 
-            public Section10() => this.Fields = new List<FXR3Enhanced.FFXField>();
+            public Section10() => this.Fields = new List<FXR3.FFXField>();
 
             internal Section10(BinaryReaderEx br)
             {
@@ -957,10 +957,10 @@ namespace FXR3Handler
                 br.AssertInt32(new int[1]);
                 int count = br.ReadInt32();
                 br.AssertInt32(new int[1]);
-                this.Fields = FXR3Enhanced.FFXField.ReadManyAt(br, offset, count);
+                this.Fields = FXR3.FFXField.ReadManyAt(br, offset, count);
             }
 
-            internal void Write(BinaryWriterEx bw, List<FXR3Enhanced.Section10> section10s)
+            internal void Write(BinaryWriterEx bw, List<FXR3.Section10> section10s)
             {
                 int count = section10s.Count;
                 bw.ReserveInt32(string.Format("Section10Section11sOffset[{0}]", (object)count));
@@ -973,7 +973,7 @@ namespace FXR3Handler
             internal void WriteSection11s(BinaryWriterEx bw, int index, ref int section11Count)
             {
                 bw.FillInt32(string.Format("Section10Section11sOffset[{0}]", (object)index), (int)bw.Position);
-                foreach (FXR3Enhanced.FFXField field in this.Fields)
+                foreach (FXR3.FFXField field in this.Fields)
                     field.Write(bw);
                 section11Count += this.Fields.Count;
             }
@@ -981,20 +981,20 @@ namespace FXR3Handler
     }
     public class FXR3EnhancedSerialization
     {
-        public static FXR3Enhanced XMLToFXR3(XDocument XML)
+        public static FXR3 XMLToFXR3(XDocument XML)
         {
-            XmlSerializer test = new XmlSerializer(typeof(FXR3Enhanced));
+            XmlSerializer test = new XmlSerializer(typeof(FXR3));
             XmlReader xmlReader = XML.CreateReader();
 
-            return (FXR3Enhanced)test.Deserialize(xmlReader);
+            return (FXR3)test.Deserialize(xmlReader);
         }
-        public static XDocument FXR3ToXML(FXR3Enhanced fxr)
+        public static XDocument FXR3ToXML(FXR3 fxr)
         {
             XDocument XDoc = new XDocument();
 
             using (var xmlWriter = XDoc.CreateWriter())
             {
-                var thing = new XmlSerializer(typeof(FXR3Enhanced));
+                var thing = new XmlSerializer(typeof(FXR3));
                 thing.Serialize(xmlWriter, fxr);
             }
 

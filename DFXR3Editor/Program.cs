@@ -15,7 +15,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Xml;
 using System.Threading;
-using FXR3Handler;
 using SoulsFormats;
 
 namespace DFXR3Editor
@@ -187,7 +186,7 @@ namespace DFXR3Editor
                                     CloseOpenFFXWithoutSaving();
                                 _loadedFilePath = ofd.FileName;
                                 XMLOpen = true;
-                                xDocLinq = FXR3EnhancedSerialization.FXR3ToXML(FXR3Enhanced.Read(ofd.FileName));
+                                xDocLinq = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(FXR3_XMLR.FXR3.Read(ofd.FileName));
                             }
                         }
                         catch (Exception exception)
@@ -205,12 +204,12 @@ namespace DFXR3Editor
                                 if (_loadedFilePath.EndsWith(".xml"))
                                 {
                                     xDocLinq.Save(_loadedFilePath);
-                                    FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath.Substring(0, _loadedFilePath.Length - 4));
+                                    FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath.Substring(0, _loadedFilePath.Length - 4));
                                 }
                                 else if (_loadedFilePath.EndsWith(".fxr"))
                                 {
                                     xDocLinq.Save(_loadedFilePath + ".xml");
-                                    FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
+                                    FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
                                 }
                             }
                         }
