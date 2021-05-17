@@ -77,6 +77,7 @@ namespace DFXR3Editor
         public static XElement _cPickerAlpha;
         public static Vector4 _cPicker = new Vector4();
         public static float _colorOverload = 1.0f;
+        public static ActionManager actionManager = new ActionManager();
         // Color Editor
 
         [STAThread]
@@ -117,6 +118,7 @@ namespace DFXR3Editor
                     SubmitMainWindowUI();
                 }
                 SubmitDockableUI();
+                HotkeyListener();
 
                 _cl.Begin();
                 _cl.SetFramebuffer(_gd.MainSwapchain.Framebuffer);
@@ -135,6 +137,15 @@ namespace DFXR3Editor
             _controller.Dispose();
             _cl.Dispose();
             _gd.Dispose();
+        }
+        private static void HotkeyListener()
+        {
+            { //Undo-Redo
+                if (ImGui.GetIO().KeyCtrl & ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Z)) & actionManager.CanUndo())
+                    actionManager.UndoAction();
+                if (ImGui.GetIO().KeyCtrl & ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Y)) & actionManager.CanRedo())
+                    actionManager.RedoAction();
+            }
         }
         private static unsafe void SubmitMainWindowUI()
         {
@@ -197,9 +208,9 @@ namespace DFXR3Editor
                     }
                     if (_loadedFilePath != "" & XMLOpen)
                     {
-                        try
+                        if (ImGui.MenuItem("Save Open FFX"))
                         {
-                            if (ImGui.MenuItem("Save Open FFX"))
+                            try
                             {
                                 if (_loadedFilePath.EndsWith(".xml"))
                                 {
@@ -212,16 +223,38 @@ namespace DFXR3Editor
                                     FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
                                 }
                             }
-                        }
-                        catch (Exception exception)
-                        {
-                            CloseOpenFFXWithoutSaving();
-                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
+                            catch (Exception exception)
+                            {
+                                CloseOpenFFXWithoutSaving();
+                                ShowExceptionPopup("ERROR: FFX saving failed", exception);
+                            }
                         }
                     }
                     else
                     {
                         ImGui.TextDisabled("Save Open FFX");
+                    }
+                    if (actionManager.CanUndo())
+                    {
+                        if (ImGui.MenuItem("Undo"))
+                        {
+                            actionManager.UndoAction();
+                        }
+                    }
+                    else
+                    {
+                        ImGui.TextDisabled("Undo");
+                    }
+                    if (actionManager.CanRedo())
+                    {
+                        if (ImGui.MenuItem("Redo"))
+                        {
+                            actionManager.RedoAction();
+                        }
+                    }
+                    else
+                    {
+                        ImGui.TextDisabled("Redo");
                     }
                     ImGui.EndMenu();
                 }
@@ -299,26 +332,30 @@ namespace DFXR3Editor
                     ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
                     if (ImGui.Begin("FFX Color Picker", ref _cPickerIsEnable))
                     {
-                        if (ImGuiAddons.ButtonGradient("Commit Color Change"))
-                        {
-                            if (_cPickerRed.Attribute(xsi + "type").Value == "FFXFieldInt" || _cPickerGreen.Attribute(xsi + "type").Value == "FFXFieldInt" || _cPickerBlue.Attribute(xsi + "type").Value == "FFXFieldInt" || _cPickerAlpha.Attribute(xsi + "type").Value == "FFXFieldInt")
-                            {
-                                _cPickerRed.Attribute(xsi + "type").Value = "FFXFieldFloat";
-                                _cPickerGreen.Attribute(xsi + "type").Value = "FFXFieldFloat";
-                                _cPickerBlue.Attribute(xsi + "type").Value = "FFXFieldFloat";
-                                _cPickerAlpha.Attribute(xsi + "type").Value = "FFXFieldFloat";
-                            }
-                            _cPickerRed.Attribute("Value").Value = _cPicker.X.ToString("0.####");
-                            _cPickerGreen.Attribute("Value").Value = _cPicker.Y.ToString("0.####");
-                            _cPickerBlue.Attribute("Value").Value = _cPicker.Z.ToString("0.####");
-                            _cPickerAlpha.Attribute("Value").Value = _cPicker.W.ToString("0.####");
-                        }
                         Vector2 mEME = ImGui.GetWindowSize();
                         if (mEME.X > mEME.Y)
                         {
                             ImGui.SetNextItemWidth(mEME.Y * 0.80f);
                         }
                         ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.NoTooltip);
+                        if (ImGui.IsItemDeactivatedAfterEdit())
+                        {
+                            var actionList = new List<Action>();
+
+                            if (_cPickerRed.Attribute(xsi + "type").Value == "FFXFieldInt" || _cPickerGreen.Attribute(xsi + "type").Value == "FFXFieldInt" || _cPickerBlue.Attribute(xsi + "type").Value == "FFXFieldInt" || _cPickerAlpha.Attribute(xsi + "type").Value == "FFXFieldInt")
+                            {
+                                actionList.Add(new ModifyXAttributeString(_cPickerRed.Attribute(xsi + "type"), "FFXFieldFloat"));
+                                actionList.Add(new ModifyXAttributeString(_cPickerGreen.Attribute(xsi + "type"), "FFXFieldFloat"));
+                                actionList.Add(new ModifyXAttributeString(_cPickerBlue.Attribute(xsi + "type"), "FFXFieldFloat"));
+                                actionList.Add(new ModifyXAttributeString(_cPickerAlpha.Attribute(xsi + "type"), "FFXFieldFloat"));
+                            }
+                            actionList.Add(new ModifyXAttributeFloat(_cPickerRed.Attribute("Value"), _cPicker.X));
+                            actionList.Add(new ModifyXAttributeFloat(_cPickerGreen.Attribute("Value"), _cPicker.Y));
+                            actionList.Add(new ModifyXAttributeFloat(_cPickerBlue.Attribute("Value"), _cPicker.Z));
+                            actionList.Add(new ModifyXAttributeFloat(_cPickerAlpha.Attribute("Value"), _cPicker.W));
+
+                            actionManager.ExecuteAction(new CompoundAction(actionList));
+                        }
                         ImGui.Separator();
                         ImGui.Text("Brightness Multiplier");
                         ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, -10f, 10f);
@@ -780,13 +817,18 @@ namespace DFXR3Editor
         public static void IntInputDefaultNode(XElement node, string dataString)
         {
             string nodeValue = node.Attribute("Value").Value;
-            if (ImGui.InputText(dataString, ref nodeValue, 10, ImGuiInputTextFlags.CharsDecimal))
+            ImGui.InputText(dataString, ref nodeValue, 10, ImGuiInputTextFlags.CharsDecimal);
+            if (ImGui.IsItemDeactivatedAfterEdit())
             {
                 if (Int32.TryParse(nodeValue, out int intNodeValue))
                 {
+                    var actionList = new List<Action>();
+
                     if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
-                        node.Attribute(xsi + "type").Value = "FFXFieldInt";
-                    node.Attribute("Value").Value = intNodeValue.ToString();
+                        actionList.Add(new ModifyXAttributeString(node.Attribute(xsi + "type"), "FFXFieldInt"));
+                    actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), intNodeValue));
+
+                    actionManager.ExecuteAction(new CompoundAction(actionList));
                 }
             }
         }
@@ -795,21 +837,33 @@ namespace DFXR3Editor
             float nodeValue = float.Parse(node.Attribute("Value").Value);
             if (ImGui.SliderFloat(dataString, ref nodeValue, minimumValue, maximumValue))
             {
-                if (node.Attribute(xsi + "type").Value == "FFXFieldInt")
-                    node.Attribute(xsi + "type").Value = "FFXFieldFloat";
-                node.Attribute("Value").Value = nodeValue.ToString("0.####");
+                if (ImGui.IsItemEdited())
+                {
+                    var actionList = new List<Action>();
+
+                    if (node.Attribute(xsi + "type").Value == "FFXFieldInt")
+                        actionList.Add(new ModifyXAttributeString(node.Attribute(xsi + "type"), "FFXFieldFloat"));
+                    actionList.Add(new ModifyXAttributeFloat(node.Attribute("Value"), nodeValue));
+
+                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                }
             }
         }
         public static void FloatInputDefaultNode(XElement node, string dataString)
         {
             string nodeValue = node.Attribute("Value").Value;
-            if (ImGui.InputText(dataString, ref nodeValue, 16, ImGuiInputTextFlags.CharsDecimal))
+            ImGui.InputText(dataString, ref nodeValue, 16, ImGuiInputTextFlags.CharsDecimal);
+            if (ImGui.IsItemDeactivatedAfterEdit())
             {
                 if (float.TryParse(nodeValue, out float floatNodeValue))
                 {
+                    var actionList = new List<Action>();
+
                     if (node.Attribute(xsi + "type").Value == "FFXFieldInt")
-                        node.Attribute(xsi + "type").Value = "FFXFieldFloat";
-                    node.Attribute("Value").Value = floatNodeValue.ToString("0.####");
+                        actionList.Add(new ModifyXAttributeString(node.Attribute(xsi + "type"), "FFXFieldFloat"));
+                    actionList.Add(new ModifyXAttributeFloat(node.Attribute("Value"), floatNodeValue));
+
+                    actionManager.ExecuteAction(new CompoundAction(actionList));
                 }
             }
         }
@@ -826,17 +880,25 @@ namespace DFXR3Editor
                 ImGui.Text("Error: Bool Invalid, current value is: " + nodeValue.ToString());
                 if (ImGui.Button("Set Bool to False"))
                 {
+                    var actionList = new List<Action>();
+
                     if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
-                        node.Attribute(xsi + "type").Value = "FFXFieldInt";
-                    node.Attribute("Value").Value = 0.ToString();
+                        actionList.Add(new ModifyXAttributeString(node.Attribute(xsi + "type"), "FFXFieldInt"));
+                    actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), 0));
+
+                    actionManager.ExecuteAction(new CompoundAction(actionList));
                 }
                 return;
             }
             if (ImGui.Checkbox(dataString, ref nodeValueBool))
             {
+                var actionList = new List<Action>();
+
                 if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
-                    node.Attribute(xsi + "type").Value = "FFXFieldInt";
-                node.Attribute("Value").Value = (nodeValueBool ? 1 : 0).ToString();
+                    actionList.Add(new ModifyXAttributeString(node.Attribute(xsi + "type"), "FFXFieldInt"));
+                actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), (nodeValueBool ? 1 : 0)));
+
+                actionManager.ExecuteAction(new CompoundAction(actionList));
             }
         }
         public static void IntComboDefaultNode(XElement node, string comboTitle, string[] entriesArrayValues, string[] entriesArrayNames)
@@ -844,12 +906,16 @@ namespace DFXR3Editor
             int blendModeCurrent = Int32.Parse(node.Attribute("Value").Value);
             if (ImGui.Combo(comboTitle, ref blendModeCurrent, entriesArrayNames, entriesArrayNames.Length))
             {
-                if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
-                    node.Attribute(xsi + "type").Value = "FFXFieldInt";
                 string tempstring = entriesArrayValues[blendModeCurrent];
                 if (Int32.TryParse(tempstring, out int tempint))
                 {
-                    node.Attribute("Value").Value = tempint.ToString();
+                    var actionList = new List<Action>();
+
+                    if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
+                        actionList.Add(new ModifyXAttributeString(node.Attribute(xsi + "type"), "FFXFieldInt"));
+                    actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), tempint));
+
+                    actionManager.ExecuteAction(new CompoundAction(actionList));
                 }
             }
         }
@@ -878,11 +944,15 @@ namespace DFXR3Editor
                 {
                     if (ImGui.Selectable(localArray[i]))
                     {
-                        if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
-                            node.Attribute(xsi + "type").Value = "FFXFieldInt";
                         if (Int32.TryParse(XMLChildNodesValid(EnumEntries).ToArray()[i].Attribute("value").Value, out int safetyNetInt))
                         {
-                            node.Attribute("Value").Value = safetyNetInt.ToString();
+                            var actionList = new List<Action>();
+
+                            if (node.Attribute(xsi + "type").Value == "FFXFieldFloat")
+                                actionList.Add(new ModifyXAttributeString(node.Attribute(xsi + "type"), "FFXFieldInt"));
+                            actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), safetyNetInt));
+
+                            actionManager.ExecuteAction(new CompoundAction(actionList));
                         }
                     }
                 }
@@ -983,39 +1053,68 @@ namespace DFXR3Editor
                             XElement axbyElement = ffxPropertyEditorElement;
                             if (str == "A19B7")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "19"), new XAttribute("TypeEnumB", "7"),
-                                        new XElement("Section8s"),
-                                        new XElement("Fields")
-                                        )
-                                    );
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "19"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "7"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+
+                                    new XElement("PlaceHolder",
+                                            new XElement("Section8s"),
+                                            new XElement("Fields")
+                                            )
+                                        ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A35B11")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "35"), new XAttribute("TypeEnumB", "11"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "35"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "11"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields",
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
+                                            )
                                         )
-                                    )
-                                );
+                                    ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A67B19")
                             {
                                 if (AxBy == "A4163B35")
                                 {
-                                    axbyElement.Attribute("TypeEnumA").Value = "67";
-                                    axbyElement.Attribute("TypeEnumB").Value = "19";
-                                    _showFFXEditorProperties = false;
-                                    treeViewCurrentHighlighted = 0;
+                                    var actionListQuick = new List<Action>();
+
+                                    actionListQuick.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "67"));
+                                    actionListQuick.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "19"));
+
+                                    actionListQuick.Add(new ResetEditorSelection());
+
+                                    actionManager.ExecuteAction(new CompoundAction(actionListQuick));
                                     return;
                                 }
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "67"), new XAttribute("TypeEnumB", "19"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "67"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "19"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields",
                                             // Stop Count Number
@@ -1044,12 +1143,21 @@ namespace DFXR3Editor
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
                                         )
                                     )
-                                );
+                                ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A99B27")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "99"), new XAttribute("TypeEnumB", "27"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "99"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "27"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields",
                                             // Stop Count Number
@@ -1095,20 +1203,33 @@ namespace DFXR3Editor
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
                                         )
                                     )
-                                );
+                                ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A4163B35")
                             {
                                 if (AxBy == "A67B19")
                                 {
-                                    axbyElement.Attribute("TypeEnumA").Value = "4163";
-                                    axbyElement.Attribute("TypeEnumB").Value = "35";
-                                    _showFFXEditorProperties = false;
-                                    treeViewCurrentHighlighted = 0;
+                                    var actionListQuick = new List<Action>();
+
+                                    actionListQuick.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "4163"));
+                                    actionListQuick.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "35"));
+
+                                    actionListQuick.Add(new ResetEditorSelection());
+
+                                    actionManager.ExecuteAction(new CompoundAction(actionListQuick));
                                     return;
                                 }
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "4163"), new XAttribute("TypeEnumB", "35"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "4163"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "35"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields",
                                             // Stop Count Number
@@ -1137,11 +1258,12 @@ namespace DFXR3Editor
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
                                         )
                                     )
-                                );
+                                ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
-                            _showFFXEditorProperties = false;
-                            treeViewCurrentHighlighted = 0;
-                            _cPickerIsEnable = false;
                             return;
                         }
                     }
@@ -1158,37 +1280,69 @@ namespace DFXR3Editor
                             XElement axbyElement = ffxPropertyEditorElement;
                             if (str == "A0B0")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "0"), new XAttribute("TypeEnumB", "0"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "0"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "0"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields")
                                         )
-                                    );
+                                    ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A16B4")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "16"), new XAttribute("TypeEnumB", "4"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "16"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "4"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields")
                                         )
-                                    );
+                                    ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A32B8")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "32"), new XAttribute("TypeEnumB", "8"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "32"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "8"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields",
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
                                         )
                                     )
-                                );
+                                ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A64B16")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "64"), new XAttribute("TypeEnumB", "16"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "64"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "16"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields",
                                             // Stop Count Number
@@ -1205,12 +1359,21 @@ namespace DFXR3Editor
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
                                         )
                                     )
-                                );
+                                ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A96B24")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "96"), new XAttribute("TypeEnumB", "24"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "96"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "24"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("PlaceHolder",
                                         new XElement("Section8s"),
                                         new XElement("Fields",
                                             // Stop Count Number
@@ -1232,12 +1395,21 @@ namespace DFXR3Editor
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
                                         )
                                     )
-                                );
+                                ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
                             else if (str == "A4160B32")
                             {
-                                axbyElement.ReplaceWith(
-                                    new XElement("FFXProperty", new XAttribute("TypeEnumA", "4160"), new XAttribute("TypeEnumB", "32"),
+                                var actionList = new List<Action>();
+
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "4160"));
+                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "32"));
+
+                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    new XElement("FFXProperty",
                                         new XElement("Section8s"),
                                         new XElement("Fields",
                                             // Stop Count Number
@@ -1254,11 +1426,12 @@ namespace DFXR3Editor
                                             new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
                                         )
                                     )
-                                );
+                                ));
+
+                                actionList.Add(new ResetEditorSelection());
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
                             }
-                            _showFFXEditorProperties = false;
-                            treeViewCurrentHighlighted = 0;
-                            _cPickerIsEnable = false;
                             return;
                         }
                     }
@@ -1269,6 +1442,12 @@ namespace DFXR3Editor
                 }
                 ImGui.EndCombo();
             }
+        }
+        public static void ResetEditorSelection() 
+        {
+            _showFFXEditorProperties = false;
+            treeViewCurrentHighlighted = 0;
+            _cPickerIsEnable = false;
         }
         public static void FFXEditor()
         {
@@ -1374,13 +1553,19 @@ namespace DFXR3Editor
             {
                 if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
                 {
-                    IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
+                    var nodeFresh = NodeListEditor.ElementAt(0).Parent;
+
+                    var nodeBackup = new XElement(nodeFresh);
+
+                    IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(nodeFresh);
 
                     tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2)).Remove();
 
                     tempXElementIEnumerable.ElementAt(Pos + StopsCount).Remove();
 
                     tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount - 1).ToString();
+
+                    actionManager.ExecuteAction(new XElementReplaceChildrenWithSnapshot(nodeFresh, nodeBackup));
 
                     StopsCount--;
 
@@ -1389,6 +1574,10 @@ namespace DFXR3Editor
                 ImGui.SameLine();
                 if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
                 {
+                    var nodeFresh = NodeListEditor.ElementAt(0).Parent;
+
+                    var nodeBackup = new XElement(nodeFresh);
+
                     IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
 
                     tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2)).AddAfterSelf(
@@ -1400,6 +1589,8 @@ namespace DFXR3Editor
                         );
 
                     tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount + 1).ToString();
+
+                    actionManager.ExecuteAction(new XElementReplaceChildrenWithSnapshot(nodeFresh, nodeBackup));
 
                     StopsCount++;
 
@@ -1439,6 +1630,10 @@ namespace DFXR3Editor
             {
                 if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
                 {
+                    var nodeFresh = NodeListEditor.ElementAt(0).Parent;
+
+                    var nodeBackup = new XElement(nodeFresh);
+
                     IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
                     int LocalPos = 8;
                     for (int i = 0; i != 4; i++)
@@ -1448,6 +1643,9 @@ namespace DFXR3Editor
                     tempXElementIEnumerable.ElementAt(LocalPos + StopsCount).Remove();
 
                     tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount - 1).ToString();
+
+                    actionManager.ExecuteAction(new XElementReplaceChildrenWithSnapshot(nodeFresh, nodeBackup));
+
                     StopsCount--;
 
                     NodeListEditor = tempXElementIEnumerable;
@@ -1455,6 +1653,10 @@ namespace DFXR3Editor
                 ImGui.SameLine();
                 if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
                 {
+                    var nodeFresh = NodeListEditor.ElementAt(0).Parent;
+
+                    var nodeBackup = new XElement(nodeFresh);
+
                     IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
 
                     int LocalPos = 8;
@@ -1471,8 +1673,10 @@ namespace DFXR3Editor
                         );
                     }
                     tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount + 1).ToString();
-                    StopsCount++;
 
+                    actionManager.ExecuteAction(new XElementReplaceChildrenWithSnapshot(nodeFresh, nodeBackup));
+
+                    StopsCount++;
 
                     NodeListEditor = tempXElementIEnumerable;
                 }
@@ -1519,6 +1723,10 @@ namespace DFXR3Editor
             {
                 if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
                 {
+                    var nodeFresh = NodeListEditor.ElementAt(0).Parent;
+
+                    var nodeBackup = new XElement(nodeFresh);
+
                     IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
 
                     for (int i = 0; i < 2; i++)
@@ -1532,6 +1740,8 @@ namespace DFXR3Editor
 
                     tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount - 1).ToString();
 
+                    actionManager.ExecuteAction(new XElementReplaceChildrenWithSnapshot(nodeFresh, nodeBackup));
+
                     StopsCount--;
 
                     NodeListEditor = tempXElementIEnumerable;
@@ -1539,6 +1749,10 @@ namespace DFXR3Editor
                 ImGui.SameLine();
                 if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
                 {
+                    var nodeFresh = NodeListEditor.ElementAt(0).Parent;
+
+                    var nodeBackup = new XElement(nodeFresh);
+
                     IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
                     tempXElementIEnumerable.ElementAt(Pos + (StopsCount * 2) + (StopsCount * 2)).AddAfterSelf(
                         new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
@@ -1554,6 +1768,8 @@ namespace DFXR3Editor
                         );
 
                     tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount + 1).ToString();
+
+                    actionManager.ExecuteAction(new XElementReplaceChildrenWithSnapshot(nodeFresh, nodeBackup));
 
                     StopsCount++;
 
@@ -1601,6 +1817,10 @@ namespace DFXR3Editor
             {
                 if (ImGuiAddons.ButtonGradient("Decrease Stops Count") & StopsCount > 2)
                 {
+                    var nodeFresh = NodeListEditor.ElementAt(0).Parent;
+
+                    var nodeBackup = new XElement(nodeFresh);
+
                     IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
                     int LocalPos = 8;
 
@@ -1614,6 +1834,9 @@ namespace DFXR3Editor
                     }
                     tempXElementIEnumerable.ElementAt(LocalPos + StopsCount).Remove();
                     tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount - 1).ToString();
+
+                    actionManager.ExecuteAction(new XElementReplaceChildrenWithSnapshot(nodeFresh, nodeBackup));
+
                     StopsCount--;
 
                     NodeListEditor = tempXElementIEnumerable;
@@ -1621,6 +1844,10 @@ namespace DFXR3Editor
                 ImGui.SameLine();
                 if (ImGuiAddons.ButtonGradient("Increase Stops Count") & StopsCount < 8)
                 {
+                    var nodeFresh = NodeListEditor.ElementAt(0).Parent;
+
+                    var nodeBackup = new XElement(nodeFresh);
+
                     IEnumerable<XElement> tempXElementIEnumerable = XMLChildNodesValid(NodeListEditor.ElementAt(0).Parent);
                     int LocalPos = 8;
 
@@ -1641,6 +1868,9 @@ namespace DFXR3Editor
                         }
                     }
                     tempXElementIEnumerable.ElementAt(0).Attribute("Value").Value = (StopsCount + 1).ToString();
+
+                    actionManager.ExecuteAction(new XElementReplaceChildrenWithSnapshot(nodeFresh, nodeBackup));
+
                     StopsCount++;
 
                     NodeListEditor = tempXElementIEnumerable;

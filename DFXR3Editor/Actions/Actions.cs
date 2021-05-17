@@ -1,0 +1,236 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Xml;
+using System.Xml.Linq;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Reflection;
+using SoulsFormats;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+
+namespace DFXR3Editor
+{
+    /// <summary>
+    /// An action that can be performed by the user in the editor that represents
+    /// a single atomic editor action that affects the state of the map. Each action
+    /// should have enough information to apply the action AND undo the action, as
+    /// these actions get pushed to a stack for undo/redo
+    /// </summary>
+    public abstract class Action
+    {
+        abstract public ActionEvent Execute();
+        abstract public ActionEvent Undo();
+    }
+
+    public class ModifyXAttributeInt : Action
+    {
+        private XAttribute editedAttribute;
+        private string oldValue;
+        private string newValue;
+
+        public ModifyXAttributeInt(XAttribute attributeToEdit, int newValue)
+        {
+            this.editedAttribute = attributeToEdit;
+            this.oldValue = attributeToEdit.Value;
+            this.newValue = newValue.ToString();
+        }
+
+        public override ActionEvent Execute()
+        {
+            editedAttribute.Value = newValue;
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            editedAttribute.Value = oldValue;
+            return ActionEvent.NoEvent;
+        }
+    }
+    public class ModifyXAttributeFloat : Action
+    {
+        private XAttribute editedAttribute;
+        private string oldValue;
+        private string newValue;
+
+        public ModifyXAttributeFloat(XAttribute attributeToEdit, float newValue)
+        {
+            this.editedAttribute = attributeToEdit;
+            this.oldValue = attributeToEdit.Value;
+            this.newValue = newValue.ToString("0.####");
+        }
+
+        public override ActionEvent Execute()
+        {
+            editedAttribute.Value = newValue;
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            editedAttribute.Value = oldValue;
+            return ActionEvent.NoEvent;
+        }
+    }
+    public class ModifyXAttributeString : Action
+    {
+        private XAttribute editedAttribute;
+        private string oldValue;
+        private string newValue;
+
+        public ModifyXAttributeString(XAttribute attributeToEdit, string newValue)
+        {
+            this.editedAttribute = attributeToEdit;
+            this.oldValue = attributeToEdit.Value;
+            this.newValue = newValue;
+        }
+
+        public override ActionEvent Execute()
+        {
+            editedAttribute.Value = newValue;
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            editedAttribute.Value = oldValue;
+            return ActionEvent.NoEvent;
+        }
+    }
+    public class XElementReplaceChildren : Action
+    {
+        private XElement objXElement;
+        private XElement originalXElement;
+        private XElement newXElement;
+
+        public XElementReplaceChildren(XElement node, XElement newXElement)
+        {
+            this.objXElement = node;
+            this.originalXElement = new XElement(node);
+            this.newXElement = new XElement(newXElement);
+        }
+
+        public override ActionEvent Execute()
+        {
+            if (objXElement != null)
+            {
+                objXElement.RemoveNodes();
+                objXElement.Add(newXElement.Elements());
+            }
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            if (objXElement != null)
+            {
+                objXElement.RemoveNodes();
+                objXElement.Add(originalXElement.Elements());
+            }
+            return ActionEvent.NoEvent;
+        }
+    }
+    public class XElementReplaceChildrenWithSnapshot : Action
+    {
+        private XElement objXElement;
+        private XElement originalXElement;
+        private XElement newXElement;
+
+        public XElementReplaceChildrenWithSnapshot(XElement node, XElement oldXelement)
+        {
+            this.objXElement = node;
+            this.originalXElement = new XElement(oldXelement);
+            this.newXElement = new XElement(node);
+        }
+
+        public override ActionEvent Execute()
+        {
+            if (objXElement != null)
+            {
+                objXElement.RemoveNodes();
+                objXElement.Add(newXElement.Elements());
+            }
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            if (objXElement != null)
+            {
+                objXElement.RemoveNodes();
+                objXElement.Add(originalXElement.Elements());
+            }
+            return ActionEvent.NoEvent;
+        }
+    }
+    public class ResetEditorSelection : Action
+    {
+        public ResetEditorSelection()
+        {
+        }
+
+        public override ActionEvent Execute()
+        {
+            MainUserInterface.ResetEditorSelection();
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            MainUserInterface.ResetEditorSelection();
+            return ActionEvent.NoEvent;
+        }
+    }
+    public class CompoundAction : Action
+    {
+        private List<Action> Actions;
+
+        private Action<bool> PostExecutionAction = null;
+
+        public CompoundAction(List<Action> actions)
+        {
+            Actions = actions;
+        }
+
+        public void SetPostExecutionAction(Action<bool> action)
+        {
+            PostExecutionAction = action;
+        }
+
+        public override ActionEvent Execute()
+        {
+            var evt = ActionEvent.NoEvent;
+            foreach (var act in Actions)
+            {
+                if (act != null)
+                {
+                    evt |= act.Execute();
+                }
+            }
+            if (PostExecutionAction != null)
+            {
+                PostExecutionAction.Invoke(false);
+            }
+            return evt;
+        }
+
+        public override ActionEvent Undo()
+        {
+            var evt = ActionEvent.NoEvent;
+            foreach (var act in Actions)
+            {
+                if (act != null)
+                {
+                    evt |= act.Undo();
+                }
+            }
+            if (PostExecutionAction != null)
+            {
+                PostExecutionAction.Invoke(true);
+            }
+            return evt;
+        }
+    }
+}
