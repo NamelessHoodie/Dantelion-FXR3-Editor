@@ -12,7 +12,10 @@ namespace DFXR3Editor
 {
     class DefParser
     {
-        private static readonly XDocument FieldDef = XDocument.Load("Defs/DefActionID.xml");
+        private static readonly string FieldDefPath = "Defs/DefActionID.xml";
+        private static readonly string TemplateDefPath = "Defs/TemplateDef.xml";
+        private static readonly XDocument FieldDef = XDocument.Load(FieldDefPath);
+        private static XDocument TemplateDef = XDocument.Load(TemplateDefPath);
         private static XElement symbolsDefElements = FieldDef.Root.Element("symbolsDef");
         private static XElement enumsElement = FieldDef.Root.Element("Enums");
         private static readonly IEnumerable<XElement> actionIdElements = FieldDef.Root.Element("ActionIDs").Elements("ActionID");
@@ -264,6 +267,32 @@ namespace DFXR3Editor
                 return actionIDsMatch.First().Attribute("name").Value;
             else
                 return ActionID;
+        }
+        public static XElement TemplateGetter(string TypeEnumA, string TypeEnumB) 
+        {
+            IEnumerable<XElement> templateXElements = from element in TemplateDef.Root.Element("AxByTemplates").Elements()
+                         where (element.Attribute("TypeEnumA").Value == TypeEnumA & element.Attribute("TypeEnumB").Value == TypeEnumB)
+                         select element;
+            if (templateXElements.Any())
+            {
+                return new XElement(templateXElements.First());
+            }
+            return null;
+        }
+        public static void TemplateWriter(XElement newXEelement, string sectionName) 
+        {
+            XElement templateSection = TemplateDef.Root.Element(sectionName);
+            if (templateSection != null)
+            {
+                templateSection.Add(new XElement(newXEelement));
+            }
+            else
+            {
+                TemplateDef.Root.Add(new XElement(sectionName, new XElement(newXEelement)));
+            }
+
+            TemplateDef.Save(TemplateDefPath);
+            TemplateDef = XDocument.Load(TemplateDefPath);
         }
     }
 }

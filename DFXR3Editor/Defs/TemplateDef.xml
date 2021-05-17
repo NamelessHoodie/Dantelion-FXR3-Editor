@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TemplateRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <AxByTemplates>
+    <FFXProperty TypeEnumA="0" TypeEnumB="0">
+      <Section8s />
+      <Fields />
+    </FFXProperty>
+    <FFXProperty TypeEnumA="16" TypeEnumB="4">
+      <Section8s />
+      <Fields />
+    </FFXProperty>
+    <FFXProperty TypeEnumA="19" TypeEnumB="7">
+      <Section8s />
+      <Fields />
+    </FFXProperty>
+    <FFXProperty TypeEnumA="32" TypeEnumB="8">
+      <Section8s />
+      <Fields>
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+      </Fields>
+    </FFXProperty>
+    <FFXProperty TypeEnumA="35" TypeEnumB="11">
+      <Section8s />
+      <Fields>
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+      </Fields>
+    </FFXProperty>
+    <FFXProperty TypeEnumA="64" TypeEnumB="16">
+      <Section8s />
+      <Fields>
+        <FFXField xsi:type="FFXFieldInt" Value="2" />
+        <FFXField xsi:type="FFXFieldInt" Value="0" />
+        <FFXField xsi:type="FFXFieldInt" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0.1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+      </Fields>
+    </FFXProperty>
+    <FFXProperty TypeEnumA="67" TypeEnumB="19">
+      <Section8s />
+      <Fields>
+        <FFXField xsi:type="FFXFieldInt" Value="2" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0.1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+      </Fields>
+    </FFXProperty>
+    <FFXProperty TypeEnumA="96" TypeEnumB="24">
+      <Section8s />
+      <Fields>
+        <FFXField xsi:type="FFXFieldInt" Value="2" />
+        <FFXField xsi:type="FFXFieldInt" Value="0" />
+        <FFXField xsi:type="FFXFieldInt" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0.1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+      </Fields>
+    </FFXProperty>
+    <FFXProperty TypeEnumA="99" TypeEnumB="27">
+      <Section8s />
+      <Fields>
+        <FFXField xsi:type="FFXFieldInt" Value="2" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0.1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+      </Fields>
+    </FFXProperty>
+    <FFXProperty TypeEnumA="4160" TypeEnumB="32">
+      <Section8s />
+      <Fields>
+        <FFXField xsi:type="FFXFieldInt" Value="2" />
+        <FFXField xsi:type="FFXFieldInt" Value="0" />
+        <FFXField xsi:type="FFXFieldInt" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0.1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+      </Fields>
+    </FFXProperty>
+    <FFXProperty TypeEnumA="4163" TypeEnumB="35">
+      <Section8s />
+      <Fields>
+        <FFXField xsi:type="FFXFieldInt" Value="2" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0.1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="0" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+        <FFXField xsi:type="FFXFieldFloat" Value="1" />
+      </Fields>
+    </FFXProperty>
+  </AxByTemplates>
+</TemplateRoot>

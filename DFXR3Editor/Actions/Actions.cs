@@ -137,6 +137,7 @@ namespace DFXR3Editor
         private XElement objXElement;
         private XElement originalXElement;
         private XElement newXElement;
+        private bool skipFirstDo = false;
 
         public XElementReplaceChildrenWithSnapshot(XElement node, XElement oldXelement)
         {
@@ -149,8 +150,15 @@ namespace DFXR3Editor
         {
             if (objXElement != null)
             {
-                objXElement.RemoveNodes();
-                objXElement.Add(newXElement.Elements());
+                if (skipFirstDo)
+                {
+                    objXElement.RemoveNodes();
+                    objXElement.Add(newXElement.Elements());
+                }
+                else
+                {
+                    skipFirstDo = true;
+                }
             }
             return ActionEvent.NoEvent;
         }

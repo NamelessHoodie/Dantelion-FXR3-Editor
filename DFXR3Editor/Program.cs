@@ -64,7 +64,9 @@ namespace DFXR3Editor
         public static IEnumerable<XElement> NodeListEditor;
         public static string AxBy;
         public static string[] Fields;
-        private static readonly XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        public static readonly XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        public static readonly XNamespace xsd = "http://www.w3.org/2001/XMLSchema";
+        public static readonly XNamespace nm;
         private static XElement ffxPropertyEditorElement;
 
         //FFX Workshop Tools
@@ -1053,46 +1055,37 @@ namespace DFXR3Editor
                             XElement axbyElement = ffxPropertyEditorElement;
                             if (str == "A19B7")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("19", "7");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "19"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "7"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "19"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "7"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    new XElement("PlaceHolder",
-                                            new XElement("Section8s"),
-                                            new XElement("Fields")
-                                            )
-                                        ));
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionList.Add(new ResetEditorSelection());
-
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A35B11")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("35", "11");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "35"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "11"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "35"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "11"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields",
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
-                                            )
-                                        )
-                                    ));
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionList.Add(new ResetEditorSelection());
-
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A67B19")
                             {
@@ -1108,106 +1101,37 @@ namespace DFXR3Editor
                                     actionManager.ExecuteAction(new CompoundAction(actionListQuick));
                                     return;
                                 }
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("67", "19");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "67"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "19"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "67"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "19"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields",
-                                            // Stop Count Number
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
-                                            // Useless 2 RGBA Fields
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Stops Count Values
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
-                                            // First Stop RGBA Fields - No Color, Full Transparency
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Second Stop RGBA Fields - White, Full Opacity
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
-                                        )
-                                    )
-                                ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A99B27")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("99", "27");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "99"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "27"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "99"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "27"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields",
-                                            // Stop Count Number
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
-                                            // Useless 2 RGBA Fields
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Stops Count Values
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
-                                            // First Stop RGBA Fields - No Color, Full Transparency
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Second Stop RGBA Fields - White, Full Opacity
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            // Curve Memes
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
-                                        )
-                                    )
-                                ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A4163B35")
                             {
@@ -1223,46 +1147,20 @@ namespace DFXR3Editor
                                     actionManager.ExecuteAction(new CompoundAction(actionListQuick));
                                     return;
                                 }
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("4163", "35");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "4163"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "35"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "4163"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "35"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields",
-                                            // Stop Count Number
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
-                                            // Useless 2 RGBA Fields
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Stops Count Values
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
-                                            // First Stop RGBA Fields - No Color, Full Transparency
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Second Stop RGBA Fields - White, Full Opacity
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
-                                        )
-                                    )
-                                ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             return;
                         }
@@ -1280,157 +1178,105 @@ namespace DFXR3Editor
                             XElement axbyElement = ffxPropertyEditorElement;
                             if (str == "A0B0")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("0", "0");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "0"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "0"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "0"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "0"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields")
-                                        )
-                                    ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A16B4")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("16", "4");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "16"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "4"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "16"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "4"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields")
-                                        )
-                                    ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A32B8")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("32", "8");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "32"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "8"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "32"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "8"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields",
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
-                                        )
-                                    )
-                                ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A64B16")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("64", "16");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "64"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "16"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "64"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "16"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields",
-                                            // Stop Count Number
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
-                                            // Useless 2 Fields
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
-                                            // Stops Count Values
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
-                                            // First Stop Field - 0 
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Second Stop Field - 1 
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
-                                        )
-                                    )
-                                ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A96B24")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("96", "24");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "96"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "24"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "96"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "24"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("PlaceHolder",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields",
-                                            // Stop Count Number
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
-                                            // Useless 2 Fields
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
-                                            // Stops Count Values
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
-                                            // First Stop Field - 0 
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Second Stop Field - 1 
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1")),
-                                            // Curve Memes
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0"))
-                                        )
-                                    )
-                                ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             else if (str == "A4160B32")
                             {
-                                var actionList = new List<Action>();
+                                XElement templateXElement = DefParser.TemplateGetter("4160", "32");
+                                if (templateXElement != null)
+                                {
+                                    var actionList = new List<Action>();
 
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "4160"));
-                                actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "32"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "4160"));
+                                    actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "32"));
 
-                                actionList.Add(new XElementReplaceChildren(axbyElement,
-                                    new XElement("FFXProperty",
-                                        new XElement("Section8s"),
-                                        new XElement("Fields",
-                                            // Stop Count Number
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "2")),
-                                            // Useless 2 Fields
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldInt"), new XAttribute("Value", "0")),
-                                            // Stops Count Values
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0.1")),
-                                            // First Stop Field - 0 
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "0")),
-                                            // Second Stop Field - 1 
-                                            new XElement("FFXField", new XAttribute(xsi + "type", "FFXFieldFloat"), new XAttribute("Value", "1"))
-                                        )
-                                    )
-                                ));
+                                    actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                actionList.Add(new ResetEditorSelection());
+                                    actionList.Add(new ResetEditorSelection());
 
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                                }
                             }
                             return;
                         }
@@ -1448,6 +1294,8 @@ namespace DFXR3Editor
             _showFFXEditorProperties = false;
             treeViewCurrentHighlighted = 0;
             _cPickerIsEnable = false;
+            if (NodeListEditor.Any())
+                NodeListEditor = XMLChildNodesValid(NodeListEditor.First().Parent);
         }
         public static void FFXEditor()
         {
