@@ -66,7 +66,6 @@ namespace DFXR3Editor
         public static string[] Fields;
         public static readonly XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
         public static readonly XNamespace xsd = "http://www.w3.org/2001/XMLSchema";
-        public static readonly XNamespace nm;
         private static XElement ffxPropertyEditorElement;
 
         //FFX Workshop Tools

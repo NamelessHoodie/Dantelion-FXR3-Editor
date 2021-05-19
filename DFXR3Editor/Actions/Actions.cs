@@ -29,7 +29,6 @@ namespace DFXR3Editor
     {
         private Vector4 newVector;
         private Vector4 oldVector;
-        private float newValue;
 
         public EditPublicCPickerVector4(Vector4 newVector)
         {
