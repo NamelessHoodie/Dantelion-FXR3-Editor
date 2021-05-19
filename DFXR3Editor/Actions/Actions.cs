@@ -9,6 +9,7 @@ using System.Reflection;
 using SoulsFormats;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Numerics;
 
 namespace DFXR3Editor
 {
@@ -24,6 +25,30 @@ namespace DFXR3Editor
         abstract public ActionEvent Undo();
     }
 
+    public class EditPublicCPickerVector4 : Action
+    {
+        private Vector4 newVector;
+        private Vector4 oldVector;
+        private float newValue;
+
+        public EditPublicCPickerVector4(Vector4 newVector)
+        {
+            oldVector = MainUserInterface._cPicker;
+            this.newVector = newVector;
+        }
+
+        public override ActionEvent Execute()
+        {
+            MainUserInterface._cPicker = newVector;
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            MainUserInterface._cPicker = oldVector;
+            return ActionEvent.NoEvent;
+        }
+    }
     public class ModifyXAttributeInt : Action
     {
         private XAttribute editedAttribute;

@@ -360,13 +360,19 @@ namespace DFXR3Editor
                         }
                         ImGui.Separator();
                         ImGui.Text("Brightness Multiplier");
-                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, -10f, 10f);
+                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, 0, 10f);
                         ImGui.SameLine();
-                        if (ImGuiAddons.ButtonGradient("Apply Change"))
+                        if (ImGuiAddons.ButtonGradient("Multiply Color"))
                         {
+                            List<Action> actions = new List<Action>();
                             _cPicker.X *= _colorOverload;
                             _cPicker.Y *= _colorOverload;
                             _cPicker.Z *= _colorOverload;
+                            actions.Add(new EditPublicCPickerVector4(new Vector4(_cPicker.X *= _colorOverload, _cPicker.Y *= _colorOverload, _cPicker.Z *= _colorOverload, _cPicker.W)));
+                            actions.Add(new ModifyXAttributeFloat(_cPickerRed.Attribute("Value"), _cPicker.X));
+                            actions.Add(new ModifyXAttributeFloat(_cPickerGreen.Attribute("Value"), _cPicker.Y));
+                            actions.Add(new ModifyXAttributeFloat(_cPickerBlue.Attribute("Value"), _cPicker.Z));
+                            actionManager.ExecuteAction(new CompoundAction(actions));
                         }
                         ImGui.End();
                     }
