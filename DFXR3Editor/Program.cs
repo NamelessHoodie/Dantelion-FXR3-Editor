@@ -460,6 +460,7 @@ namespace DFXR3Editor
                             GetFFXProperties(root, "Properties2");
                             GetFFXFields(root, "Fields1");
                             GetFFXFields(root, "Fields2");
+                            GetFFXFields(root, "Section10s");
                             ImGui.TreePop();
                         }
                         else
@@ -1016,7 +1017,23 @@ namespace DFXR3Editor
         }
         private static void GetFFXFields(XElement root, string fieldType)
         {
-            IEnumerable<XElement> NodeListProcessing = XMLChildNodesValid(root.Descendants(fieldType).First());
+            IEnumerable<XElement> NodeListProcessing;
+            if (fieldType == "Section10s")
+            {
+                NodeListProcessing = from element0 in root.Descendants(fieldType)
+                                     from element1 in element0.Elements()
+                                     from element2 in element1.Elements("Fields")
+                                     from element3 in element2.Elements()
+                                     select element3;
+            }
+            else
+            {
+                NodeListProcessing = from element0 in root.Descendants(fieldType)
+                                     from element1 in element0.Elements()
+                                     select element1;
+
+                //NodeListProcessing = XMLChildNodesValid(root.Descendants(fieldType).First());
+            }
             if (NodeListProcessing.Any())
             {
                 uint IDStorage = ImGui.GetID(fieldType);

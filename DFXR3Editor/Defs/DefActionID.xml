@@ -48,6 +48,13 @@
 		</orientationSpecializedModes606>
 	</Enums>
 	<ActionIDs>
+		<ActionID ID="75" name="PlaySoundEffect()">
+			<Fields1>
+				<Field name="Sound ID" dataType="s32" />
+				<Field name="Volume" dataType="f32" />
+				<Field name="Repeat" dataType="s32" isBool=""/>
+			</Fields1>
+		</ActionID>
 		<ActionID ID="131" name="EffectModifier()">
 			<Properties1>
 				<field type="[S]" arg="" name="" wiki="On one effect, this seemed to control the vertical speed of the particles it spawned, but on another it seemed to not do anything, so this is probably linked to some other property or field somewhere in some way" />
@@ -63,6 +70,16 @@
 			</Fields1>
 			<Fields2>
 			</Fields2>
+		</ActionID>
+		<ActionID ID="132" name="FFXReference()">
+			<Fields1>
+				<Field name="FFX ID" dataType="s32" />
+			</Fields1>
+		</ActionID>
+		<ActionID ID="199" name="isEnabled()">
+			<Section10s>
+				<Field name="FFX ID" dataType="s32"/>
+			</Section10s>
 		</ActionID>
 		<ActionID ID="600" name="TextureStatic()">
 			<Properties1>
