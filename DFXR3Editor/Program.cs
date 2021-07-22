@@ -170,7 +170,7 @@ namespace DFXR3Editor
                                 XMLOpen = true;
                                 xDocLinq = XDocument.Load(ofd.FileName);
 
-                                if (xDocLinq.Element("FXR3") == null || xDocLinq.Element("RootEffectCall") == null)
+                                if (xDocLinq.Element("FXR3") == null || xDocLinq.Root.Element("RootEffectCall") == null)
                                 {
                                     throw new Exception("This xml file is not a valid FFX, it does not contain the FXR3 node or the RootEffectCall node.");
                                 }
