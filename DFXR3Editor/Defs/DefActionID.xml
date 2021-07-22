@@ -48,7 +48,7 @@
 		</orientationSpecializedModes606>
 	</Enums>
 	<ActionIDs>
-		<ActionID ID="75" name="PlaySoundEffect()">
+		<ActionID ID="75" name="PlaySoundByID()">
 			<Fields1>
 				<Field name="Sound ID" dataType="s32" />
 				<Field name="Volume" dataType="f32" />
@@ -76,9 +76,9 @@
 				<Field name="FFX ID" dataType="s32" />
 			</Fields1>
 		</ActionID>
-		<ActionID ID="199" name="isEnabled()">
+		<ActionID ID="199" name="DisableEffect()">
 			<Section10s>
-				<Field name="FFX ID" dataType="s32"/>
+				<Field name="Disable Effect" dataType="s32" isBool=""/>
 			</Section10s>
 		</ActionID>
 		<ActionID ID="600" name="TextureStatic()">
