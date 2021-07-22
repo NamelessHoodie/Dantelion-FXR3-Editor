@@ -455,7 +455,7 @@ namespace DFXR3Editor
                     {
                         if (ImGuiAddons.TreeNodeTitleColored($"Action('{DefParser.ActionIDName(root.Attribute("ActionID").Value)}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
                         {
-                            TreeViewContextMenu(root, RootCommentNode, RootComment);
+                            TreeViewContextMenu(root, RootCommentNode, RootComment, "ActionID");
                             GetFFXProperties(root, "Properties1");
                             GetFFXProperties(root, "Properties2");
                             GetFFXFields(root, "Fields1");
@@ -464,7 +464,7 @@ namespace DFXR3Editor
                             ImGui.TreePop();
                         }
                         else
-                            TreeViewContextMenu(root, RootCommentNode, RootComment);
+                            TreeViewContextMenu(root, RootCommentNode, RootComment, "ActionID");
                     }
                 }
                 else if (root.Name == "EffectAs" || root.Name == "EffectBs" || root.Name == "RootEffectCall" || root.Name == "Actions")
@@ -485,7 +485,7 @@ namespace DFXR3Editor
                         //XCommentInputStyled(root, RootCommentNode, RootComment);
                         if (ImGuiAddons.TreeNodeTitleColored(EffectIDToName(root.Attribute("EffectID").Value), ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.TextDisabled)))
                         {
-                            TreeViewContextMenu(root, RootCommentNode, RootComment);
+                            TreeViewContextMenu(root, RootCommentNode, RootComment, "FFXEffectCallA-B");
                             foreach (XElement node in localNodeList)
                             {
                                 PopulateTree(node);
@@ -493,7 +493,7 @@ namespace DFXR3Editor
                             ImGui.TreePop();
                         }
                         else
-                            TreeViewContextMenu(root, RootCommentNode, RootComment);
+                            TreeViewContextMenu(root, RootCommentNode, RootComment, "FFXEffectCallA-B");
                     }
                     else
                     {
@@ -518,7 +518,7 @@ namespace DFXR3Editor
                 ImGui.PopID();
             }
         }
-        public static void TreeViewContextMenu(XElement Node, XComment RootCommentNode, string RootComment)
+        public static void TreeViewContextMenu(XElement Node, XComment RootCommentNode, string RootComment, string nodeType)
         {
             bool isComment = false;
             if (RootCommentNode != null)
@@ -542,6 +542,16 @@ namespace DFXR3Editor
                             ImGui.Text("Adds a comment to the selected node.");
                             ImGui.Text("Remember to left click to modify!");
                             ImGui.Unindent();
+                        }
+                    }
+                    if (nodeType != "ActionID")
+                    {
+                        if (ImGui.Selectable("Remove Node"))
+                        {
+                            var lst = new List<Action>();
+                            lst.Add(new XElementRemove(Node));
+                            lst.Add(new ResetEditorSelection());
+                            actionManager.ExecuteAction(new CompoundAction(lst));
                         }
                     }
                     ImGui.EndPopup();
@@ -1311,13 +1321,19 @@ namespace DFXR3Editor
                 ImGui.EndCombo();
             }
         }
-        public static void ResetEditorSelection() 
+        public static void ResetEditorSelection()
         {
+            _showFFXEditorFields = false;
             _showFFXEditorProperties = false;
             treeViewCurrentHighlighted = 0;
             _cPickerIsEnable = false;
-            if (NodeListEditor.Any())
-                NodeListEditor = XMLChildNodesValid(NodeListEditor.First().Parent);
+            if (NodeListEditor != null)
+            {
+                if (NodeListEditor.Any())
+                {
+                    NodeListEditor = XMLChildNodesValid(NodeListEditor.First().Parent);
+                }
+            }
         }
         public static void FFXEditor()
         {

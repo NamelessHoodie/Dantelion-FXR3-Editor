@@ -215,6 +215,49 @@ namespace DFXR3Editor
             return ActionEvent.NoEvent;
         }
     }
+    public class XElementRemove : Action
+    {
+        private XElement objXElement;
+        private XElement XParent;
+        private XElement originalXElement;
+        private int indexInParent;
+
+        public XElementRemove(XElement nodeToRemove)
+        {
+            this.objXElement = nodeToRemove;
+            this.originalXElement = new XElement(nodeToRemove);
+            this.XParent = nodeToRemove.Parent;
+            indexInParent = MainUserInterface.GetNodeIndexinParent(nodeToRemove);
+        }
+
+        public override ActionEvent Execute()
+        {
+            if (objXElement != null)
+            {
+                    objXElement.Remove();
+            }
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            if (objXElement != null)
+            {
+                if (indexInParent > 0)
+                {
+                    XParent.Elements().ElementAt(indexInParent - 1).AddAfterSelf(originalXElement);
+                    objXElement = XParent.Elements().ElementAt(indexInParent);
+                }
+                else
+                {
+                    XParent.AddFirst(originalXElement);
+                    objXElement = XParent.Elements().First();
+                }
+
+            }
+            return ActionEvent.NoEvent;
+        }
+    }
     public class CompoundAction : Action
     {
         private List<Action> Actions;
