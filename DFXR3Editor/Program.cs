@@ -1320,6 +1320,45 @@ namespace DFXR3Editor
                 }
                 ImGui.EndCombo();
             }
+            ImGui.SameLine();
+            if (ImGui.Button("Flip C/S"))
+            {
+                XElement axbyElement = ffxPropertyEditorElement;
+                if (AxByColorArray.Contains(AxBy))
+                {
+                    XElement templateXElement = DefParser.TemplateGetter("0", "0");
+                    if (templateXElement != null)
+                    {
+                        var actionList = new List<Action>();
+
+                        actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "0"));
+                        actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "0"));
+
+                        actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
+
+                        actionList.Add(new ResetEditorSelection());
+
+                        actionManager.ExecuteAction(new CompoundAction(actionList));
+                    }
+                }
+                else
+                {
+                    XElement templateXElement = DefParser.TemplateGetter("19", "7");
+                    if (templateXElement != null)
+                    {
+                        var actionList = new List<Action>();
+
+                        actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "19"));
+                        actionList.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "7"));
+
+                        actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
+
+                        actionList.Add(new ResetEditorSelection());
+
+                        actionManager.ExecuteAction(new CompoundAction(actionList));
+                    }
+                }
+            }
         }
         public static void ResetEditorSelection()
         {
