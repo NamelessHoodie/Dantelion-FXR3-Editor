@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Threading;
 using SoulsFormats;
+using System.Diagnostics;
 
 namespace DFXR3Editor
 {
@@ -154,108 +155,103 @@ namespace DFXR3Editor
             {
                 if (ImGui.BeginMenu("File"))
                 {
-                    if (ImGui.MenuItem("Load FFX *XML"))
+                    if (ImGui.MenuItem("Load FFX"))
                     {
                         try
                         {
-                            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
-                            {
-                                Filter = "XML|*.xml"
-                            };
+                            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
+                            ofd.Filter = "FFX|*.fxr;*.xml";
+                            ofd.Title = "Open FFX";
+
                             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                             {
-                                if (XMLOpen)
-                                    CloseOpenFFXWithoutSaving();
-                                _loadedFilePath = ofd.FileName;
-                                XMLOpen = true;
-                                xDocLinq = XDocument.Load(ofd.FileName);
-
-                                if (xDocLinq.Element("FXR3") == null || xDocLinq.Root.Element("RootEffectCall") == null)
+                                if (Path.GetExtension(ofd.FileName) == ".fxr")
                                 {
-                                    throw new Exception("This xml file is not a valid FFX, it does not contain the FXR3 node or the RootEffectCall node.");
+                                    if (XMLOpen)
+                                        CloseOpenFFXWithoutSaving();
+                                    _loadedFilePath = ofd.FileName;
+                                    XMLOpen = true;
+                                    xDocLinq = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(FXR3_XMLR.FXR3.Read(ofd.FileName));
                                 }
+                                else if (Path.GetExtension(ofd.FileName) == ".xml")
+                                {
+                                    if (XMLOpen)
+                                        CloseOpenFFXWithoutSaving();
+                                    _loadedFilePath = ofd.FileName;
+                                    XMLOpen = true;
+                                    xDocLinq = XDocument.Load(ofd.FileName);
 
-                            }
-
-                        }
-                        catch (Exception exception)
-                        {
-                            CloseOpenFFXWithoutSaving();
-                            ShowExceptionPopup("ERROR: *.xml loading failed", exception);
-                        }
-                    }
-                    if (ImGui.MenuItem("Load FFX *FXR"))
-                    {
-                        try
-                        {
-                            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
-                            {
-                                Filter = "FXR|*.fxr"
-                            };
-                            if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                            {
-                                if (XMLOpen)
-                                    CloseOpenFFXWithoutSaving();
-                                _loadedFilePath = ofd.FileName;
-                                XMLOpen = true;
-                                xDocLinq = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(FXR3_XMLR.FXR3.Read(ofd.FileName));
+                                    if (xDocLinq.Element("FXR3") == null || xDocLinq.Root.Element("RootEffectCall") == null)
+                                    {
+                                        throw new Exception("This xml file is not a valid FFX, it does not contain the FXR3 node or the RootEffectCall node.");
+                                    }
+                                }
                             }
                         }
                         catch (Exception exception)
                         {
                             CloseOpenFFXWithoutSaving();
-                            ShowExceptionPopup("ERROR: *.fxr loading failed", exception);
+                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
                         }
                     }
-                    if (_loadedFilePath != "" & XMLOpen)
+                    if (ImGui.MenuItem("Save", !string.IsNullOrEmpty(_loadedFilePath) & XMLOpen))
                     {
-                        if (ImGui.MenuItem("Save Open FFX"))
+                        try
                         {
-                            try
+                            if (_loadedFilePath.EndsWith(".xml"))
                             {
-                                if (_loadedFilePath.EndsWith(".xml"))
-                                {
-                                    xDocLinq.Save(_loadedFilePath);
-                                    FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath.Substring(0, _loadedFilePath.Length - 4));
-                                }
-                                else if (_loadedFilePath.EndsWith(".fxr"))
-                                {
-                                    xDocLinq.Save(_loadedFilePath + ".xml");
-                                    FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
-                                }
+                                xDocLinq.Save(_loadedFilePath);
+                                FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath.Substring(0, _loadedFilePath.Length - 4));
                             }
-                            catch (Exception exception)
+                            else if (_loadedFilePath.EndsWith(".fxr"))
                             {
-                                CloseOpenFFXWithoutSaving();
-                                ShowExceptionPopup("ERROR: FFX saving failed", exception);
+                                xDocLinq.Save(_loadedFilePath + ".xml");
+                                FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(_loadedFilePath);
                             }
                         }
-                    }
-                    else
-                    {
-                        ImGui.TextDisabled("Save Open FFX");
-                    }
-                    if (actionManager.CanUndo())
-                    {
-                        if (ImGui.MenuItem("Undo"))
+                        catch (Exception exception)
                         {
-                            actionManager.UndoAction();
+                            CloseOpenFFXWithoutSaving();
+                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
                         }
                     }
-                    else
+                    if (ImGui.MenuItem("Save as", !string.IsNullOrEmpty(_loadedFilePath) & XMLOpen))
                     {
-                        ImGui.TextDisabled("Undo");
-                    }
-                    if (actionManager.CanRedo())
-                    {
-                        if (ImGui.MenuItem("Redo"))
+                        try
                         {
-                            actionManager.RedoAction();
+                            System.Windows.Forms.SaveFileDialog saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+                            saveFileDialog1.Filter = "FXR|*.fxr|XML|*.xml";
+                            saveFileDialog1.Title = "Save FFX as";
+
+                            if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            {
+                                if (Path.GetExtension(saveFileDialog1.FileName) == ".fxr")
+                                {
+                                    FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(xDocLinq).Write(saveFileDialog1.FileName);
+                                }
+                                else if (Path.GetExtension(saveFileDialog1.FileName) == ".xml")
+                                {
+                                    xDocLinq.Save(saveFileDialog1.FileName);
+                                }
+                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            CloseOpenFFXWithoutSaving();
+                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
                         }
                     }
-                    else
+                    ImGui.EndMenu();
+                }
+                if (ImGui.BeginMenu("Edit"))
+                {
+                    if (ImGui.MenuItem("Undo", "Ctrl Z", false, actionManager.CanUndo()))
                     {
-                        ImGui.TextDisabled("Redo");
+                        actionManager.UndoAction();
+                    }
+                    if (ImGui.MenuItem("Redo", "Ctrl Y", false, actionManager.CanRedo()))
+                    {
+                        actionManager.RedoAction();
                     }
                     ImGui.EndMenu();
                 }
