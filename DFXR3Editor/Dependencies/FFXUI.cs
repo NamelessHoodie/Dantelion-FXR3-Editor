@@ -20,7 +20,7 @@ namespace DFXR3Editor.Dependencies
             _loadedFilePath = loadedFilePath;
         }
 
-        public void RenderFFX()
+        public unsafe void RenderFFX()
         {
             string windowTitle = Path.GetFileName(_loadedFilePath);
             bool windowOpen = true;
@@ -34,6 +34,14 @@ namespace DFXR3Editor.Dependencies
                 if (!windowOpen)
                 {
                     MainUserInterface.openFFXs.Remove(this);
+                    if (MainUserInterface.openFFXs.Any())
+                    {
+                        MainUserInterface.selectedFFXWindow = MainUserInterface.openFFXs.First();
+                    }
+                    else
+                    {
+                        MainUserInterface.selectedFFXWindow = null;
+                    }
                 }
                 foreach (XElement xElement in xDocLinq.Descendants("RootEffectCall"))
                 {
@@ -68,7 +76,7 @@ namespace DFXR3Editor.Dependencies
         public string _loadedFilePath = "";
 
         public ActionManager actionManager = new ActionManager();
-
+        public XElement dragAndDropBuffer;
         //UI Builders
         public void PopulateTree(XElement root)
         {
@@ -122,6 +130,7 @@ namespace DFXR3Editor.Dependencies
                         if (ImGuiAddons.TreeNodeTitleColored(FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.TextDisabled)))
                         {
                             TreeViewContextMenu(root, RootCommentNode, RootComment, "FFXEffectCallA-B");
+                            DragAndDropXElement(root, FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), "a", "a");
                             foreach (XElement node in localNodeList)
                             {
                                 PopulateTree(node);
@@ -129,7 +138,10 @@ namespace DFXR3Editor.Dependencies
                             ImGui.TreePop();
                         }
                         else
+                        {
                             TreeViewContextMenu(root, RootCommentNode, RootComment, "FFXEffectCallA-B");
+                            DragAndDropXElement(root, FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), "a", "a");
+                        }
                     }
                     else
                     {
@@ -506,9 +518,30 @@ namespace DFXR3Editor.Dependencies
                 }
             }
         }
-
-
-
+        public unsafe void DragAndDropXElement(XElement root, string dragAndDropName, string dragAndDropHostType, string dragAndDropRType)
+        {
+             {
+                ImGui.SameLine();
+                ImGui.RadioButton("DRG", false);
+                if (ImGui.BeginDragDropSource())
+                {
+                    ImGui.Text(dragAndDropName);
+                    ImGui.SetDragDropPayload(dragAndDropHostType, IntPtr.Zero, 0);
+                    dragAndDropBuffer = root;
+                    ImGui.EndDragDropSource();
+                }
+                if (ImGui.BeginDragDropTarget())
+                {
+                    var payload = ImGui.AcceptDragDropPayload(dragAndDropRType);
+                    if (payload.NativePtr != null)
+                    {
+                        root.Add(dragAndDropBuffer);
+                        dragAndDropBuffer = null;
+                    }
+                    ImGui.EndDragDropTarget();
+                }
+            }
+        }
 
         //Controls Editor
         public void IntInputDefaultNode(XElement node, string dataString)

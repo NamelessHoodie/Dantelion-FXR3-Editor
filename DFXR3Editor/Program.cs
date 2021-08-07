@@ -298,6 +298,38 @@ namespace DFXR3Editor
                 }
                 ImGui.End();
             }
+            SubmitTestWindow();
+        }
+        public static int draggedItem;
+        private static unsafe void SubmitTestWindow()
+        {
+            ImGui.Begin("Test");
+
+            string[] items = new string[] { "hello", "world", "how", "are", "you?" };
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                ImGui.Button(items[i]);
+                if (ImGui.BeginDragDropSource())
+                {
+                    ImGui.Text(items[i]);
+                    ImGui.SetDragDropPayload(typeof(string).FullName, IntPtr.Zero, 0);
+                    draggedItem = i;
+                    ImGui.EndDragDropSource();
+                }
+                if (ImGui.BeginDragDropTarget())
+                {
+                    var payload = ImGui.AcceptDragDropPayload(typeof(string).FullName);
+                    if (payload.NativePtr != null)
+                    {
+                        Console.WriteLine("Dropped " + items[draggedItem] + " onto " + items[i]);
+                        draggedItem = 0;
+                    }
+                    ImGui.EndDragDropTarget();
+                }
+            }
+
+            ImGui.End();
         }
         private static void SubmitDockableUI()
         {
