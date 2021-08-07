@@ -281,26 +281,20 @@ namespace DFXR3Editor
                 ImGui.EndMainMenuBar();
             }
             ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-            if (ImGui.Begin("Dantelion FXR3 Editor", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize))
+            for (int i = 0; i < openFFXs.Count(); i++)
             {
-                uint dockSpaceID = ImGui.GetID("MainDockSpace");
-                ImGui.DockSpace(dockSpaceID);
-                for (int i = 0; i < openFFXs.Count(); i++)
+                ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
+                openFFXs[i].RenderFFX();
+            }
+            ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
+            if (ImGui.Begin("FFXEditor"))
+            {
+                if (selectedFFXWindow != null)
                 {
-                    ImGui.SetNextWindowDockID(dockSpaceID, ImGuiCond.FirstUseEver);
-                    openFFXs[i].RenderFFX();
-                }
-                ImGui.SetNextWindowDockID(dockSpaceID, ImGuiCond.FirstUseEver);
-                if (ImGui.Begin("FFXEditor"))
-                {
-                    if (selectedFFXWindow != null)
+                    if (selectedFFXWindow._showFFXEditorProperties || selectedFFXWindow._showFFXEditorFields)
                     {
-                        if (selectedFFXWindow._showFFXEditorProperties || selectedFFXWindow._showFFXEditorFields)
-                        {
-                            FFXEditor();
-                        }
+                        FFXEditor();
                     }
-                    ImGui.End();
                 }
                 ImGui.End();
             }
