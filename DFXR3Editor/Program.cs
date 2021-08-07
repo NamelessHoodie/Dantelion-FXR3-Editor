@@ -226,11 +226,11 @@ namespace DFXR3Editor
                 }
                 if (ImGui.BeginMenu("Edit"))
                 {
-                    if (ImGui.MenuItem("Undo", "Ctrl Z", false, selectedFFXWindow.actionManager.CanUndo()))
+                    if (ImGui.MenuItem("Undo", "Ctrl Z", false, selectedFFXWindow != null ? selectedFFXWindow.actionManager.CanUndo() : false ))
                     {
                         selectedFFXWindow.actionManager.UndoAction();
                     }
-                    if (ImGui.MenuItem("Redo", "Ctrl Y", false, selectedFFXWindow.actionManager.CanRedo()))
+                    if (ImGui.MenuItem("Redo", "Ctrl Y", false, selectedFFXWindow != null ? selectedFFXWindow.actionManager.CanRedo() : false))
                     {
                         selectedFFXWindow.actionManager.RedoAction();
                     }
