@@ -1317,7 +1317,7 @@ namespace DFXR3Editor
                 ImGui.EndCombo();
             }
             ImGui.SameLine();
-            if (ImGui.Button("Flip C/S"))
+            if (ImGuiAddons.ButtonGradient("Flip C/S"))
             {
                 XElement axbyElement = ffxPropertyEditorElement;
                 if (AxByColorArray.Contains(AxBy))
