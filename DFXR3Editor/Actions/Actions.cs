@@ -10,6 +10,7 @@ using SoulsFormats;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Numerics;
+using DFXR3Editor.Dependencies;
 
 namespace DFXR3Editor
 {
@@ -199,19 +200,21 @@ namespace DFXR3Editor
     }
     public class ResetEditorSelection : Action
     {
-        public ResetEditorSelection()
+        FFXUI ui;
+        public ResetEditorSelection(FFXUI ffxRelevant)
         {
+            ui = ffxRelevant;
         }
 
         public override ActionEvent Execute()
         {
-            MainUserInterface.ResetEditorSelection();
+            MainUserInterface.ResetEditorSelection(ui);
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            MainUserInterface.ResetEditorSelection();
+            MainUserInterface.ResetEditorSelection(ui);
             return ActionEvent.NoEvent;
         }
     }
@@ -227,7 +230,7 @@ namespace DFXR3Editor
             this.objXElement = nodeToRemove;
             this.originalXElement = new XElement(nodeToRemove);
             this.XParent = nodeToRemove.Parent;
-            indexInParent = MainUserInterface.GetNodeIndexinParent(nodeToRemove);
+            indexInParent = FFXHelperMethods.GetNodeIndexinParent(nodeToRemove);
         }
 
         public override ActionEvent Execute()
