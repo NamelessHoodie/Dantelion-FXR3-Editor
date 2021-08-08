@@ -15,9 +15,7 @@ using DFXR3Editor.Dependencies;
 namespace DFXR3Editor
 {
     /// <summary>
-    /// An action that can be performed by the user in the editor that represents
-    /// a single atomic editor action that affects the state of the map. Each action
-    /// should have enough information to apply the action AND undo the action, as
+    /// An action that can be performed by the user in the editor
     /// these actions get pushed to a stack for undo/redo
     /// </summary>
     public abstract class Action
@@ -257,6 +255,35 @@ namespace DFXR3Editor
                     objXElement = XParent.Elements().First();
                 }
 
+            }
+            return ActionEvent.NoEvent;
+        }
+    }
+    public class XElementAdd : Action
+    {
+        private XElement objXElement;
+        private XElement newChild;
+
+        public XElementAdd(XElement node, XElement newChild)
+        {
+            this.objXElement = node;
+            this.newChild = new XElement(newChild);
+        }
+
+        public override ActionEvent Execute()
+        {
+            if (objXElement != null)
+            {
+                objXElement.Add(newChild);
+            }
+            return ActionEvent.NoEvent;
+        }
+
+        public override ActionEvent Undo()
+        {
+            if (objXElement != null)
+            {
+                newChild.Remove();
             }
             return ActionEvent.NoEvent;
         }

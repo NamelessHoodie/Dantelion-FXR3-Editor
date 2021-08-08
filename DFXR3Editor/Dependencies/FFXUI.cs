@@ -76,7 +76,6 @@ namespace DFXR3Editor.Dependencies
         public string _loadedFilePath = "";
 
         public ActionManager actionManager = new ActionManager();
-        public XElement dragAndDropBuffer;
         //UI Builders
         public void PopulateTree(XElement root)
         {
@@ -126,11 +125,13 @@ namespace DFXR3Editor.Dependencies
                                                      select node;
                     if (tempnode.Any())
                     {
-                        //XCommentInputStyled(root, RootCommentNode, RootComment);
+                        if (root.Name == "FFXEffectCallA")
+                        {
+                            DragAndDropXElement(root, FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), "a", "a");
+                        }
                         if (ImGuiAddons.TreeNodeTitleColored(FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.TextDisabled)))
                         {
                             TreeViewContextMenu(root, RootCommentNode, RootComment, "FFXEffectCallA-B");
-                            DragAndDropXElement(root, FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), "a", "a");
                             foreach (XElement node in localNodeList)
                             {
                                 PopulateTree(node);
@@ -140,7 +141,6 @@ namespace DFXR3Editor.Dependencies
                         else
                         {
                             TreeViewContextMenu(root, RootCommentNode, RootComment, "FFXEffectCallA-B");
-                            DragAndDropXElement(root, FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), "a", "a");
                         }
                     }
                     else
@@ -518,29 +518,28 @@ namespace DFXR3Editor.Dependencies
                 }
             }
         }
-        public unsafe void DragAndDropXElement(XElement root, string dragAndDropName, string dragAndDropHostType, string dragAndDropRType)
+        public unsafe void DragAndDropXElement(XElement root, string dragAndDropName, string dragAndDropSourceType, string dragAndDropTargetType)
         {
-             {
-                ImGui.SameLine();
-                ImGui.RadioButton("DRG", false);
-                if (ImGui.BeginDragDropSource())
-                {
-                    ImGui.Text(dragAndDropName);
-                    ImGui.SetDragDropPayload(dragAndDropHostType, IntPtr.Zero, 0);
-                    dragAndDropBuffer = root;
-                    ImGui.EndDragDropSource();
-                }
-                if (ImGui.BeginDragDropTarget())
-                {
-                    var payload = ImGui.AcceptDragDropPayload(dragAndDropRType);
-                    if (payload.NativePtr != null)
-                    {
-                        root.Add(dragAndDropBuffer);
-                        dragAndDropBuffer = null;
-                    }
-                    ImGui.EndDragDropTarget();
-                }
+            var a = Vector2.Add(ImGui.GetCursorPos(), ImGui.GetCursorScreenPos());
+            //ImGui.GetWindowDrawList().AddTriangleFilled(a, new Vector2(a.X - 5, a.Y + 5), new Vector2(a.X + 5, a.Y +5), ImGui.GetColorU32(ImGuiCol.ButtonActive));
+            ImGuiAddons.ButtonGradient("*", ImGui.CalcTextSize("*"));
+            if (ImGui.BeginDragDropSource())
+            {
+                ImGuiAddons.TreeNodeTitleColored(dragAndDropName);
+                ImGui.SetDragDropPayload(dragAndDropSourceType, IntPtr.Zero, 0);
+                MainUserInterface.dragAndDropBuffer = root;
+                ImGui.EndDragDropSource();
             }
+            if (ImGui.BeginDragDropTarget())
+            {
+                var payload = ImGui.AcceptDragDropPayload(dragAndDropTargetType);
+                if (payload.NativePtr != null)
+                {
+                    actionManager.ExecuteAction(new XElementAdd(root, MainUserInterface.dragAndDropBuffer));
+                }
+                ImGui.EndDragDropTarget();
+            }
+            ImGui.SameLine();
         }
 
         //Controls Editor
