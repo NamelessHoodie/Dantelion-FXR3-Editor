@@ -300,7 +300,6 @@ namespace DFXR3Editor
                 ImGui.End();
             }
         }
-        public static int draggedItem;
         private static void SubmitDockableUI()
         {
             { //Declare Standalone Windows here
