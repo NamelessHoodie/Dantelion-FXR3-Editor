@@ -235,6 +235,10 @@ namespace DFXR3Editor
                     {
                         selectedFFXWindow.actionManager.RedoAction();
                     }
+                    if (ImGui.MenuItem("Extend Active FFX Treeview", selectedFFXWindow != null))
+                    {
+                        selectedFFXWindow.collapseExpandTreeView = true;
+                    }
                     ImGui.EndMenu();
                 }
                 if (ImGui.BeginMenu("Themes"))
@@ -285,7 +289,10 @@ namespace DFXR3Editor
             for (int i = 0; i < openFFXs.Count(); i++)
             {
                 ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-                openFFXs[i].RenderFFX();
+                if (openFFXs[i].RenderFFX())
+                {
+                    openFFXs[i].TreeviewExpandCollapseHandler(true);
+                }
             }
             ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
             if (ImGui.Begin("FFXEditor"))

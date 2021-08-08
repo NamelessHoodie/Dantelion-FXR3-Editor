@@ -20,7 +20,7 @@ namespace DFXR3Editor.Dependencies
             _loadedFilePath = loadedFilePath;
         }
 
-        public unsafe void RenderFFX()
+        public unsafe bool RenderFFX()
         {
             string windowTitle = Path.GetFileName(_loadedFilePath);
             bool windowOpen = true;
@@ -42,6 +42,7 @@ namespace DFXR3Editor.Dependencies
                     {
                         MainUserInterface.selectedFFXWindow = null;
                     }
+                    return false;
                 }
                 foreach (XElement xElement in xDocLinq.Descendants("RootEffectCall"))
                 {
@@ -49,6 +50,7 @@ namespace DFXR3Editor.Dependencies
                 }
                 ImGui.End();
             }
+            return true;
         }
 
         //Logic 
@@ -76,6 +78,7 @@ namespace DFXR3Editor.Dependencies
         public string _loadedFilePath = "";
 
         public ActionManager actionManager = new ActionManager();
+        public bool collapseExpandTreeView = false;
         //UI Builders
         public void PopulateTree(XElement root)
         {
@@ -96,6 +99,7 @@ namespace DFXR3Editor.Dependencies
                 {
                     if (FFXHelperMethods._actionIDSupported.Contains(root.Attribute("ActionID").Value) || MainUserInterface._filtertoggle)
                     {
+                        TreeviewExpandCollapseHandler(false);
                         if (ImGuiAddons.TreeNodeTitleColored($"Action('{DefParser.ActionIDName(root.Attribute("ActionID").Value)}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
                         {
                             TreeViewContextMenu(root, RootCommentNode, RootComment, "ActionID");
@@ -129,6 +133,7 @@ namespace DFXR3Editor.Dependencies
                         {
                             DragAndDropXElement(root, FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), "a", "a");
                         }
+                        TreeviewExpandCollapseHandler(false);
                         if (ImGuiAddons.TreeNodeTitleColored(FFXHelperMethods.EffectIDToName(root.Attribute("EffectID").Value), ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.TextDisabled)))
                         {
                             TreeViewContextMenu(root, RootCommentNode, RootComment, "FFXEffectCallA-B");
@@ -153,6 +158,7 @@ namespace DFXR3Editor.Dependencies
                 }
                 else
                 {
+                    TreeviewExpandCollapseHandler(false);
                     if (ImGui.TreeNodeEx($"{root.Name}"))
                     {
                         //DoWork(root);
@@ -173,6 +179,7 @@ namespace DFXR3Editor.Dependencies
                                                   select element1;
             if (localNodeList.Any())
             {
+                TreeviewExpandCollapseHandler(false);
                 if (ImGui.TreeNodeEx($"{PropertyType}"))
                 {
                     if (ImGui.BeginTable("##table2", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
@@ -540,6 +547,21 @@ namespace DFXR3Editor.Dependencies
                 ImGui.EndDragDropTarget();
             }
             ImGui.SameLine();
+        }
+        public void TreeviewExpandCollapseHandler(bool TreeViewFinalize)
+        {
+            if (collapseExpandTreeView != false)
+            {
+                if (TreeViewFinalize)
+                {
+                    collapseExpandTreeView = false;
+                }
+                else if (collapseExpandTreeView == true)
+                {
+                    ImGui.SetNextItemOpen(true);
+
+                }
+            }
         }
 
         //Controls Editor
