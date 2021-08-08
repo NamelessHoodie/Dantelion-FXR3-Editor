@@ -274,7 +274,7 @@ namespace DFXR3Editor
         {
             if (objXElement != null)
             {
-                objXElement.Add(newChild);
+                objXElement.AddAfterSelf(newChild);
             }
             return ActionEvent.NoEvent;
         }
