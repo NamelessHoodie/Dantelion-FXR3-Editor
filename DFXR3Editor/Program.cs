@@ -18,6 +18,7 @@ using System.Threading;
 using SoulsFormats;
 using System.Diagnostics;
 using DFXR3Editor.Dependencies;
+using System.Windows.Forms;
 
 namespace DFXR3Editor
 {
@@ -280,6 +281,10 @@ namespace DFXR3Editor
                     ImGui.SameLine();
                     ImGuiAddons.ToggleButton("No ActionID Filter", ref _filtertoggle);
                     // No Action ID Filter End
+                    if (ImGui.MenuItem("Lock DFXR3E Input"))
+                    {
+                        MessageBox.Show("DFXR3E Inputs are locked, press OK to unlock");
+                    }
 
                     ImGui.EndMenu();
                 }
