@@ -109,6 +109,7 @@ namespace DFXR3Editor
                 ImGuiViewportPtr mainViewportPtr = ImGui.GetMainViewport();
                 mainViewPortDockSpaceID = ImGui.DockSpaceOverViewport(mainViewportPtr);
 
+                HotKeyGlobalListener();
                 if (_controller.GetWindowMinimized(mainViewportPtr) == 0)
                 {
                     SubmitMainWindowUI();
@@ -136,6 +137,15 @@ namespace DFXR3Editor
             _controller.Dispose();
             _cl.Dispose();
             _gd.Dispose();
+        }
+        public static void HotKeyGlobalListener()
+        {
+            { //Undo-Redo
+                if (ImGui.GetIO().KeyShift & ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
+                {
+                    MessageBox.Show("DFXR3E Inputs are locked, press OK to unlock");
+                }
+            }
         }
         private static unsafe void SubmitMainWindowUI()
         {
@@ -281,7 +291,7 @@ namespace DFXR3Editor
                     ImGui.SameLine();
                     ImGuiAddons.ToggleButton("No ActionID Filter", ref _filtertoggle);
                     // No Action ID Filter End
-                    if (ImGui.MenuItem("Lock DFXR3E Input"))
+                    if (ImGui.MenuItem("Lock DFXR3E Input", "Shift-Escape"))
                     {
                         MessageBox.Show("DFXR3E Inputs are locked, press OK to unlock");
                     }
