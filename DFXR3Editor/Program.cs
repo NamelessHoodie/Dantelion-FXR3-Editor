@@ -112,6 +112,7 @@ namespace DFXR3Editor
                 HotKeyGlobalListener();
                 if (_controller.GetWindowMinimized(mainViewportPtr) == 0)
                 {
+                    SubmitMainMenuBar();
                     SubmitMainWindowUI();
                 }
                 SubmitDockableUI();
@@ -138,16 +139,7 @@ namespace DFXR3Editor
             _cl.Dispose();
             _gd.Dispose();
         }
-        public static void HotKeyGlobalListener()
-        {
-            { //Undo-Redo
-                if (ImGui.GetIO().KeyShift & ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
-                {
-                    MessageBox.Show("DFXR3E Inputs are locked, press OK to unlock");
-                }
-            }
-        }
-        private static unsafe void SubmitMainWindowUI()
+        public static void SubmitMainMenuBar()
         {
             if (ImGui.BeginMainMenuBar())
             {
@@ -238,7 +230,7 @@ namespace DFXR3Editor
                 }
                 if (ImGui.BeginMenu("Edit"))
                 {
-                    if (ImGui.MenuItem("Undo", "Ctrl Z", false, selectedFFXWindow != null ? selectedFFXWindow.actionManager.CanUndo() : false ))
+                    if (ImGui.MenuItem("Undo", "Ctrl Z", false, selectedFFXWindow != null ? selectedFFXWindow.actionManager.CanUndo() : false))
                     {
                         selectedFFXWindow.actionManager.UndoAction();
                     }
@@ -249,6 +241,12 @@ namespace DFXR3Editor
                     if (ImGui.MenuItem("Extend Active FFX Treeview", selectedFFXWindow != null))
                     {
                         selectedFFXWindow.collapseExpandTreeView = true;
+                    }
+                    if (ImGuiAddons.isItemHoveredForTime(500, MainUserInterface.FrameRateForDelta, "HoverTimerTreeViewExpander"))
+                    {
+                        ImGui.Indent();
+                            ImGui.Text("Holding Shift while clicking this button will not expand properties.");
+                        ImGui.Unindent();
                     }
                     ImGui.EndMenu();
                 }
@@ -295,11 +293,22 @@ namespace DFXR3Editor
                     {
                         MessageBox.Show("DFXR3E Inputs are locked, press OK to unlock");
                     }
-
                     ImGui.EndMenu();
                 }
                 ImGui.EndMainMenuBar();
             }
+        }
+        public static void HotKeyGlobalListener()
+        {
+            { //Undo-Redo
+                if (ImGui.GetIO().KeyShift & ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
+                {
+                    MessageBox.Show("DFXR3E Inputs are locked, press OK to unlock");
+                }
+            }
+        }
+        private static void SubmitMainWindowUI()
+        {
             ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
             for (int i = 0; i < openFFXs.Count(); i++)
             {

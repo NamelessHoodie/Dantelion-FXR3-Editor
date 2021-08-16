@@ -179,7 +179,10 @@ namespace DFXR3Editor.Dependencies
                                                   select element1;
             if (localNodeList.Any())
             {
-                TreeviewExpandCollapseHandler(false);
+                if (ImGui.GetIO().KeyShift)
+                {
+                    TreeviewExpandCollapseHandler(false);
+                }
                 if (ImGui.TreeNodeEx($"{PropertyType}"))
                 {
                     if (ImGui.BeginTable("##table2", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
