@@ -71,8 +71,7 @@
 				<Field name="Z rotation" dataType="f32" />
 			</Fields1>
 		</ActionID>
-		</ActionID>
-		<ActionID ID="36" name="Random Position and Rotation?(35)">
+		<ActionID ID="36" name="Random Position and Rotation?(36)">
 			<Fields1>
 				<Field name="X Position Max?" dataType="f32" />
 				<Field name="Y Position Max?" dataType="f32" />
