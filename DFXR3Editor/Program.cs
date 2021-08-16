@@ -245,7 +245,7 @@ namespace DFXR3Editor
                     if (ImGuiAddons.isItemHoveredForTime(500, MainUserInterface.FrameRateForDelta, "HoverTimerTreeViewExpander"))
                     {
                         ImGui.Indent();
-                            ImGui.Text("Holding Shift while clicking this button will not expand properties.");
+                            ImGui.Text("Holding Shift while clicking this button will expand properties aswell as the treeview itself.");
                         ImGui.Unindent();
                     }
                     ImGui.EndMenu();
