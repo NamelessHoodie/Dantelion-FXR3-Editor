@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <xml>
 	<symbolsDef>
 		<entry symbol="[C]" def="Color Archetype"/>
@@ -6,8 +6,8 @@
 		<entry symbol="[E]" def="Effect Argument"/>
 		<entry symbol="[P]" def="Particle Argument"/>
 		<entry symbol="[PG]" def="Particle On Generation Argument"/>
-		<entry symbol="[T]" def="Trail Argument"/>
-		<entry symbol="[TG]" def="Trail On Generation Argument"/>
+		<entry symbol="[T]" def="Trace Argument"/>
+		<entry symbol="[TG]" def="Trace On Generation Argument"/>
 	</symbolsDef>
 	<Enums>
 		<blendModes>
@@ -48,14 +48,68 @@
 		</orientationSpecializedModes606>
 	</Enums>
 	<ActionIDs>
-		<ActionID ID="75" name="PlaySoundByID()">
+		<ActionID ID="34" name="Position,Rotation(34)">
+			<Properties1>
+				<field type="[S]" arg="" name="X Rotation Speed" />
+				<field type="[S]" arg="" name="X Rotation Speed Multiplier" />
+				<field type="[S]" arg="" name="Y Rotation Speed" />
+				<field type="[S]" arg="" name="Y Rotation Speed Multiplier" />
+				<field type="[S]" arg="" name="Z Rotation Speed" />
+				<field type="[S]" arg="" name="Z Rotation Speed Multiplier" />
+=			</Properties1>
+			<Fields1>
+				<Field name="" dataType="s32" isBool=""/>
+			</Fields1>
+		</ActionID>
+		<ActionID ID="35" name="Position and Rotation(35)">
+			<Fields1>
+				<Field name="X Position" dataType="f32" />
+				<Field name="Y Position" dataType="f32" />
+				<Field name="Z Position" dataType="f32" />
+				<Field name="X Rotation" dataType="f32" />
+				<Field name="Y Rotation" dataType="f32" />
+				<Field name="Z rotation" dataType="f32" />
+			</Fields1>
+		</ActionID>
+		</ActionID>
+		<ActionID ID="36" name="Random Position and Rotation?(35)">
+			<Fields1>
+				<Field name="X Position Max?" dataType="f32" />
+				<Field name="Y Position Max?" dataType="f32" />
+				<Field name="Z Position Max?" dataType="f32" />
+				<Field name="X Rotation Max?" dataType="f32" />
+				<Field name="Y Rotation Max?" dataType="f32" />
+				<Field name="Z rotation Max?" dataType="f32" />
+				<Field name="X Position Min?" dataType="f32" />
+				<Field name="Y Position Min?" dataType="f32" />
+				<Field name="Z Position Min?" dataType="f32" />
+				<Field name="X Rotation Min?" dataType="f32" />
+				<Field name="Y Rotation Min?" dataType="f32" />
+				<Field name="Z rotation Min?" dataType="f32" />
+			</Fields1>
+		</ActionID>
+		<ActionID ID="75" name="PlaySoundByID(75)">
 			<Fields1>
 				<Field name="Sound ID" dataType="s32" />
 				<Field name="Volume" dataType="f32" />
 				<Field name="Repeat" dataType="s32" isBool=""/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="131" name="EffectModifier()">
+		<ActionID ID="105" name="Brownian Particle Motion?(105)">
+			<Properties1>
+				<field type="[S]" arg="" name="Particle Acceleration" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="" />
+				<field type="[S]" arg="" name="Max Angle of Random Turns" />
+				<field type="[S]" arg="" name="" />
+=			</Properties1>
+			<Fields1>
+				<Field name="" dataType="s32" isBool="0"/>
+				<Field name="" dataType="s32" />
+				<Field name="" dataType="s32" isBool=""/>
+			</Fields1>
+		</ActionID>
+		<ActionID ID="131" name="EffectModifier(131)">
 			<Properties1>
 				<field type="[S]" arg="" name="" wiki="On one effect, this seemed to control the vertical speed of the particles it spawned, but on another it seemed to not do anything, so this is probably linked to some other property or field somewhere in some way" />
 				<field type="[S]" arg="[E]" name="X Scale Multiplier" />
@@ -63,25 +117,32 @@
 				<field type="[S]" arg="[E]" name="Z Scale Multiplier?" wiki="Probably Z scale multiplier? Just haven't tested it yet." />
 				<field type="[C]" arg="[E]" name="Color Multiplier" />
 			</Properties1>
-			<Properties2>
-			</Properties2>
 			<Fields1>
 				<Field name="Keep aspect ratio" dataType="s32" isBool="" wiki="When set to 0, you can scale the particles in each direction individually using the scale multipliers in this action's properties When set to 1, the X scale multiplier will apply to the Y and Z axes as well, so the particles will maintain their aspect ratio. I think the two(?) other scale multipliers do nothing when this is set to 1."/>
 			</Fields1>
-			<Fields2>
-			</Fields2>
 		</ActionID>
-		<ActionID ID="132" name="FFXReference()">
+		<ActionID ID="132" name="FFXReference(132)">
 			<Fields1>
 				<Field name="FFX ID" dataType="s32" />
 			</Fields1>
 		</ActionID>
-		<ActionID ID="199" name="DisableEffect()">
+		<ActionID ID="199" name="DisableEffect(199)">
 			<Section10s>
 				<Field name="Disable Effect" dataType="s32" isBool=""/>
 			</Section10s>
 		</ActionID>
-		<ActionID ID="600" name="TextureStatic()">
+		<ActionID ID="128" name="Duration(128)">
+			<Properties1>
+				<field type="[S]" arg="" name="" wiki="How long this effect will spawn particles in seconds. If set to a negative value, it will never stop unless something else makes it stop." />
+			</Properties1>
+			<Fields1>
+				<Field name="Spawner Delay" dataType="f32"/>
+				<field name="" dataType="s32" isBool=""/>
+				<Field name="" dataType="s32"/>
+				<Field name="" dataType="f32"/>
+			</Fields1>
+		</ActionID>
+		<ActionID ID="600" name="TextureStatic(600)">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="Scale*" />
 				<field type="[C]" arg="[P]" name="Color*" />
@@ -137,7 +198,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="601" name="Line(Color)">
+		<ActionID ID="601" name="Line(601)">
 			<Properties1>
 				<field type="[S]" arg="[PG]" name="Lenght*" />
 				<field type="[C]" arg="[P]" name="Color*" />
@@ -193,7 +254,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="602" name="Rectangle(Color)">
+		<ActionID ID="602" name="Rectangle(602)">
 			<Properties1>
 				<field type="[S]" arg="[PG]" name="X Scale*" />
 				<field type="[S]" arg="[PG]" name="Y Scale*" />
@@ -251,7 +312,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="603" name="TextureAnimated()">
+		<ActionID ID="603" name="TextureAnimated(603)">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Offset" wiki="X Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
 				<field type="[S]" arg="[P]" name="Y Offset" wiki="Y Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
@@ -338,7 +399,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="604" name="TexturesBlend(Texture, Texture, Texture, Animation)">
+		<ActionID ID="604" name="TexturesBlend(604)">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Offset" wiki="X Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
 				<field type="[S]" arg="[P]" name="Y Offset" wiki="Y Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
@@ -440,7 +501,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="605" name="Mesh(Texture)">
+		<ActionID ID="605" name="Mesh(605)">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Scale*" />
 				<field type="[S]" arg="[P]" name="Y Scale*" />
@@ -530,7 +591,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="606" name="Trail[Texture, Animation]">
+		<ActionID ID="606" name="Traces(606)">
 			<Properties1>
 				<field type="[S]" arg="" name="Scale*" />
 				<field type="[S]" arg="" name="" />
@@ -607,7 +668,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="607" name="RectangleDistorted[Texture]">
+		<ActionID ID="607" name="RectangleDistorted(607)">
 			<Properties1>
 				<field type="[S]" arg="" name="" />
 				<field type="[S]" arg="" name="" />
@@ -683,7 +744,7 @@
 				<field name="" dataType=""/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="609" name="LightSource(Color)">
+		<ActionID ID="609" name="LightSource(609)">
 			<Properties1>
 				<field type="[C]" arg="" name="Light Color" />
 				<field type="[C]" arg="" name="Specular Color" />
