@@ -202,52 +202,33 @@ namespace DFXR3Editor.Dependencies
                             string localInput = FFXHelperMethods.AxByToName(localAxBy);
                             string localLabel = $"{localIndex} {localSlot[0]}: {localSlot[1]} {localInput}";
                             ImGui.PushID($"ItemForLoopNode = {localLabel}");
-                            if (FFXHelperMethods.AxByScalarArray.Contains(localAxBy) || FFXHelperMethods.AxByColorArray.Contains(localAxBy))
+                            IEnumerable<XElement> NodeListProcessing = FFXHelperMethods.XMLChildNodesValid(Node.Element("Fields"));
+                            uint IDStorage = ImGui.GetID(localLabel);
+                            ImGuiStoragePtr storage = ImGui.GetStateStorage();
+                            bool selected = storage.GetBool(IDStorage);
+                            if (selected & IDStorage != treeViewCurrentHighlighted)
                             {
-                                IEnumerable<XElement> NodeListProcessing = FFXHelperMethods.XMLChildNodesValid(Node.Element("Fields"));
-                                uint IDStorage = ImGui.GetID(localLabel);
-                                ImGuiStoragePtr storage = ImGui.GetStateStorage();
-                                bool selected = storage.GetBool(IDStorage);
-                                if (selected & IDStorage != treeViewCurrentHighlighted)
-                                {
-                                    storage.SetBool(IDStorage, false);
-                                    selected = false;
-                                }
-                                ImGui.Selectable($"{localSlot[0]}###{localLabel}", selected, ImGuiSelectableFlags.SpanAllColumns);
-                                if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
-                                {
-                                    treeViewCurrentHighlighted = IDStorage;
-                                    storage.SetBool(IDStorage, true);
-                                    NodeListEditor = NodeListProcessing;
-                                    ffxPropertyEditorElement = Node;
-                                    AxBy = localAxBy;
-                                    _showFFXEditorProperties = true;
-                                    _showFFXEditorFields = false;
-                                }
-                                ShowToolTipWiki("Wiki", localSlot);
-                                ImGui.TableNextColumn();
-                                ImGui.Text(localSlot[1]);
-                                ImGui.TableNextColumn();
-                                ImGui.Text(localSlot[2]);
-                                ImGui.TableNextColumn();
-                                ImGui.Text(localInput);
+                                storage.SetBool(IDStorage, false);
+                                selected = false;
                             }
-                            else
+                            ImGui.Selectable($"{localSlot[0]}###{localLabel}", selected, ImGuiSelectableFlags.SpanAllColumns);
+                            if (ImGui.IsItemClicked(ImGuiMouseButton.Left) & !selected)
                             {
-                                Vector2 cursorPos = ImGui.GetCursorPos();
-                                ImGui.Indent();
-                                ImGui.Text(localSlot[0]);
-                                ImGui.Unindent();
-                                ImGui.SetCursorPos(cursorPos);
-                                ImGui.Selectable($"###{localLabel}", false, ImGuiSelectableFlags.SpanAllColumns);
-                                ShowToolTipWiki("Wiki", localSlot);
-                                ImGui.TableNextColumn();
-                                ImGui.Text(localSlot[1]);
-                                ImGui.TableNextColumn();
-                                ImGui.Text(localSlot[2]);
-                                ImGui.TableNextColumn();
-                                ImGui.Text(localInput);
+                                treeViewCurrentHighlighted = IDStorage;
+                                storage.SetBool(IDStorage, true);
+                                NodeListEditor = NodeListProcessing;
+                                ffxPropertyEditorElement = Node;
+                                AxBy = localAxBy;
+                                _showFFXEditorProperties = true;
+                                _showFFXEditorFields = false;
                             }
+                            ShowToolTipWiki("Wiki", localSlot);
+                            ImGui.TableNextColumn();
+                            ImGui.Text(localSlot[1]);
+                            ImGui.TableNextColumn();
+                            ImGui.Text(localSlot[2]);
+                            ImGui.TableNextColumn();
+                            ImGui.Text(localInput);
                             ImGui.PopID();
                         }
                         ImGui.EndTable();
