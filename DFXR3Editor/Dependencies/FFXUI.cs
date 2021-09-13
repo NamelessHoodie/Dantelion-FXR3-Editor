@@ -221,6 +221,7 @@ namespace DFXR3Editor.Dependencies
                                 AxBy = localAxBy;
                                 _showFFXEditorProperties = true;
                                 _showFFXEditorFields = false;
+                                ImGui.SetWindowFocus("FFXEditor");
                             }
                             ShowToolTipWiki("Wiki", localSlot);
                             ImGui.TableNextColumn();
@@ -294,6 +295,7 @@ namespace DFXR3Editor.Dependencies
                     Fields = new string[] { fieldType, root.Attributes().ToArray()[0].Value };
                     _showFFXEditorProperties = false;
                     _showFFXEditorFields = true;
+                    ImGui.SetWindowFocus("FFXEditor");
                 }
             }
         }

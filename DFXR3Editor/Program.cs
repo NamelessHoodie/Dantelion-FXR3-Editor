@@ -139,6 +139,18 @@ namespace DFXR3Editor
             _cl.Dispose();
             _gd.Dispose();
         }
+        public static void LoadFFXFromXml(XDocument fxrXml, string filePath)
+        {
+            if (fxrXml.Element("FXR3") == null || fxrXml.Root.Element("RootEffectCall") == null)
+            {
+                throw new Exception("This file is not a valid FFX, it does not contain the FXR3 node or the RootEffectCall node.");
+            }
+            else
+            {
+                selectedFFXWindow = new FFXUI(fxrXml, filePath);
+                openFFXs.Add(selectedFFXWindow);
+            }
+        }
         public static void SubmitMainMenuBar()
         {
             if (ImGui.BeginMainMenuBar())
@@ -158,21 +170,12 @@ namespace DFXR3Editor
                                 if (Path.GetExtension(ofd.FileName) == ".fxr")
                                 {
                                     var fxrXml = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(FXR3_XMLR.FXR3.Read(ofd.FileName));
-                                    selectedFFXWindow = new FFXUI(fxrXml, ofd.FileName);
-                                    openFFXs.Add(selectedFFXWindow);
+                                    LoadFFXFromXml(fxrXml, ofd.FileName);
                                 }
                                 else if (Path.GetExtension(ofd.FileName) == ".xml")
                                 {
                                     var fxrXml = XDocument.Load(ofd.FileName);
-                                    if (fxrXml.Element("FXR3") == null || fxrXml.Root.Element("RootEffectCall") == null)
-                                    {
-                                        throw new Exception("This xml file is not a valid FFX, it does not contain the FXR3 node or the RootEffectCall node.");
-                                    }
-                                    else
-                                    {
-                                        selectedFFXWindow = new FFXUI(fxrXml, ofd.FileName);
-                                        openFFXs.Add(selectedFFXWindow);
-                                    }
+                                    LoadFFXFromXml(fxrXml, ofd.FileName);
                                 }
                             }
                         }
