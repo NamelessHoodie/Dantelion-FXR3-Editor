@@ -3,6 +3,7 @@ using ImGuiNETAddons;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -100,8 +101,11 @@ namespace DFXR3Editor.Dependencies
                     if (FFXHelperMethods._actionIDSupported.Contains(root.Attribute("ActionID").Value) || MainUserInterface._filtertoggle)
                     {
                         TreeviewExpandCollapseHandler(false);
-                        if (ImGuiAddons.TreeNodeTitleColored($"Action('{DefParser.ActionIDName(root.Attribute("ActionID").Value)}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
+                        var actionNumericID = root.Attribute("ActionID").Value;
+                        var actionIdDef = DefParser.ActionIDNameAndDescription(actionNumericID);
+                        if (ImGuiAddons.TreeNodeTitleColored($"Action('{actionIdDef.name}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
                         {
+                            ShowToolTipSimple("", $"Action ID={actionNumericID} Name={actionIdDef.name}", $"Description={actionIdDef.description}", false, 500);
                             TreeViewContextMenu(root, RootCommentNode, RootComment, "ActionID");
                             GetFFXProperties(root, "Properties1");
                             GetFFXProperties(root, "Properties2");
@@ -111,7 +115,10 @@ namespace DFXR3Editor.Dependencies
                             ImGui.TreePop();
                         }
                         else
+                        {
+                            ShowToolTipSimple("", $"Action ID={actionNumericID} Name={actionIdDef.name}", $"Description={actionIdDef.description}", false, 500);
                             TreeViewContextMenu(root, RootCommentNode, RootComment, "ActionID");
+                        }
                     }
                 }
                 else if (root.Name == "EffectAs" || root.Name == "EffectBs" || root.Name == "RootEffectCall" || root.Name == "Actions")
@@ -299,6 +306,7 @@ namespace DFXR3Editor.Dependencies
                 }
             }
         }
+
         public void TreeViewContextMenu(XElement Node, XComment RootCommentNode, string RootComment, string nodeType)
         {
             bool isComment = false;
@@ -566,6 +574,51 @@ namespace DFXR3Editor.Dependencies
                     actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), intNodeValue));
 
                     actionManager.ExecuteAction(new CompoundAction(actionList));
+                }
+            }
+        }
+        public void TextureShowAndInput(XElement node, string dataString)
+        {
+            string nodeValue = node.Attribute("Value").Value;
+            ImGui.SetNextItemWidth(ImGui.CalcTextSize("000000").X);
+            IntInputDefaultNode(node, dataString+"IntInputField");
+            if (MainUserInterface.ffxTextureHandler != null)
+            {
+                ImGui.SameLine();
+                if (ImGui.BeginCombo(dataString, nodeValue))
+                {
+                    for (int i = 0; i < MainUserInterface.ffxTextureHandler.FfxTexturesIdList.Count(); i++)
+                    {
+                        var str = MainUserInterface.ffxTextureHandler.FfxTexturesIdList[i].ToString();
+                        if (ImGui.Selectable(str))
+                        {
+                            if (Int32.TryParse(str, out int intNodeValue))
+                            {
+                                var actionList = new List<Action>();
+
+                                if (node.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldFloat")
+                                    actionList.Add(new ModifyXAttributeString(node.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldInt"));
+                                actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), intNodeValue));
+
+                                actionManager.ExecuteAction(new CompoundAction(actionList));
+                            }
+                        }
+                        var a = MainUserInterface.ffxTextureHandler.GetFfxTextureIntPtr(int.Parse(str));
+                        if (a.TextureExists)
+                        {
+                            ImGui.SameLine();
+                            ImGui.Image(a.TextureHandle, new Vector2(100, 100));
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
+                if (int.TryParse(nodeValue, out int textureID))
+                {
+                    var a = MainUserInterface.ffxTextureHandler.GetFfxTextureIntPtr(textureID);
+                    if (a.TextureExists)
+                    {
+                        ImGui.Image(a.TextureHandle, new Vector2(300, 300));
+                    }
                 }
             }
         }

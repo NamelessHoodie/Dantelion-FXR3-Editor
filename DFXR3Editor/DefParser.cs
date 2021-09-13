@@ -73,6 +73,14 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     MainUserInterface.selectedFFXWindow.BooleanIntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
+                                else if (localLoopNode.Attribute("isResourceTexture") != null)
+                                {
+                                    ImGui.Text(dataType);
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text(name);
+                                    ImGui.TableNextColumn();
+                                    MainUserInterface.selectedFFXWindow.TextureShowAndInput(NodeListEditor[i], "##" + index);
+                                }
                                 else if (localLoopAttributeEnum != null)
                                 {
                                     XElement localLoopEnum = enumsElement.Element(localLoopAttributeEnum.Value);
@@ -248,7 +256,7 @@ namespace DFXR3Editor
             }
             return new string[] { "[u]", "[u]", "Unk" };
         }
-        public static string[] SupportedActionIDs() 
+        public static string[] SupportedActionIDs()
         {
             List<string> ActionIDList = new List<string>();
             foreach (XElement Element in actionIdElements)
@@ -261,26 +269,31 @@ namespace DFXR3Editor
             }
             return ActionIDList.ToArray();
         }
-        public static string ActionIDName(string ActionID)
+        public static (string name, string description) ActionIDNameAndDescription(string ActionID)
         {
-            IEnumerable <XElement> actionIDsMatch = actionIdElements.Where(i => i.Attribute("ID").Value == ActionID);
+            IEnumerable<XElement> actionIDsMatch = actionIdElements.Where(i => i.Attribute("ID").Value == ActionID);
             if (actionIDsMatch.Any())
-                return actionIDsMatch.First().Attribute("name").Value;
+            {
+                var actionIDXElement = actionIDsMatch.First();
+                return (actionIDXElement.Attribute("name").Value, actionIDXElement.Attribute("description")?.Value ?? "");
+            }
             else
-                return ActionID;
+            {
+                return (ActionID, "");
+            }
         }
-        public static XElement TemplateGetter(string TypeEnumA, string TypeEnumB) 
+        public static XElement TemplateGetter(string TypeEnumA, string TypeEnumB)
         {
             IEnumerable<XElement> templateXElements = from element in TemplateDef.Root.Element("AxByTemplates").Elements()
-                         where (element.Attribute("TypeEnumA").Value == TypeEnumA & element.Attribute("TypeEnumB").Value == TypeEnumB)
-                         select element;
+                                                      where (element.Attribute("TypeEnumA").Value == TypeEnumA & element.Attribute("TypeEnumB").Value == TypeEnumB)
+                                                      select element;
             if (templateXElements.Any())
             {
                 return new XElement(templateXElements.First());
             }
             return null;
         }
-        public static void TemplateWriter(XElement newXEelement, string sectionName) 
+        public static void TemplateWriter(XElement newXEelement, string sectionName)
         {
             XElement templateSection = TemplateDef.Root.Element(sectionName);
             if (templateSection != null)

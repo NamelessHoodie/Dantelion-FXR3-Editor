@@ -19,15 +19,21 @@ using SoulsFormats;
 using System.Diagnostics;
 using DFXR3Editor.Dependencies;
 using System.Windows.Forms;
+using Veldrid.ImageSharp;
+using DDSReader;
+using SixLabors.ImageSharp.PixelFormats;
+using System.Drawing;
+using SixLabors.ImageSharp;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace DFXR3Editor
 {
     class MainUserInterface
     {
         public static Sdl2Window _window;
-        private static GraphicsDevice _gd;
+        public static GraphicsDevice _gd;
         private static CommandList _cl;
-        private static ImGuiController _controller;
+        public static ImGuiController _controller;
         public static readonly float FrameRateForDelta = 58.82352941176471f;
 
         // Exception Handler
@@ -47,6 +53,7 @@ namespace DFXR3Editor
         private static bool _keyboardInputGuide = false;
         public static bool _axbyDebugger = false;
         public static XElement dragAndDropBuffer = null;
+        public static ImGuiFxrTextureHandler ffxTextureHandler;
 
         // Config
         private static readonly string iniPath = "Config/EditorConfigs.ini";
@@ -229,6 +236,14 @@ namespace DFXR3Editor
                             ShowExceptionPopup("ERROR: FFX saving failed", exception);
                         }
                     }
+                    if (ImGui.MenuItem("Load FFX Resources For Texture Display - Requires Relatively Good Hardware", ffxTextureHandler == null))
+                    {
+                        var ofd = new OpenFileDialog() { Title = "Open frpg_sfxbnd_commoneffects_resource.ffxbnd", Filter = "FfxRes|frpg_sfxbnd_commoneffects_resource.ffxbnd.dcx" };
+                        if (ofd.ShowDialog() == DialogResult.OK)
+                        {
+                            ffxTextureHandler = new ImGuiFxrTextureHandler(BND4.Read(ofd.FileName));
+                        }
+                    }
                     ImGui.EndMenu();
                 }
                 if (ImGui.BeginMenu("Edit"))
@@ -248,7 +263,7 @@ namespace DFXR3Editor
                     if (ImGuiAddons.isItemHoveredForTime(500, MainUserInterface.FrameRateForDelta, "HoverTimerTreeViewExpander"))
                     {
                         ImGui.Indent();
-                            ImGui.Text("Holding Shift while clicking this button will expand properties aswell as the treeview itself.");
+                        ImGui.Text("Holding Shift while clicking this button will expand properties aswell as the treeview itself.");
                         ImGui.Unindent();
                     }
                     ImGui.EndMenu();
