@@ -581,43 +581,58 @@ namespace DFXR3Editor.Dependencies
         {
             string nodeValue = node.Attribute("Value").Value;
             ImGui.SetNextItemWidth(ImGui.CalcTextSize("000000").X);
-            IntInputDefaultNode(node, dataString+"IntInputField");
+            IntInputDefaultNode(node, dataString + "IntInputField");
             if (MainUserInterface.ffxTextureHandler != null)
             {
-                ImGui.SameLine();
-                if (ImGui.BeginCombo(dataString, nodeValue))
-                {
-                    for (int i = 0; i < MainUserInterface.ffxTextureHandler.FfxTexturesIdList.Count(); i++)
-                    {
-                        var str = MainUserInterface.ffxTextureHandler.FfxTexturesIdList[i].ToString();
-                        if (ImGui.Selectable(str))
-                        {
-                            if (Int32.TryParse(str, out int intNodeValue))
-                            {
-                                var actionList = new List<Action>();
-
-                                if (node.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldFloat")
-                                    actionList.Add(new ModifyXAttributeString(node.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldInt"));
-                                actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), intNodeValue));
-
-                                actionManager.ExecuteAction(new CompoundAction(actionList));
-                            }
-                        }
-                        var a = MainUserInterface.ffxTextureHandler.GetFfxTextureIntPtr(int.Parse(str));
-                        if (a.TextureExists)
-                        {
-                            ImGui.SameLine();
-                            ImGui.Image(a.TextureHandle, new Vector2(100, 100));
-                        }
-                    }
-                    ImGui.EndCombo();
-                }
                 if (int.TryParse(nodeValue, out int textureID))
                 {
                     var a = MainUserInterface.ffxTextureHandler.GetFfxTextureIntPtr(textureID);
                     if (a.TextureExists)
                     {
-                        ImGui.Image(a.TextureHandle, new Vector2(300, 300));
+                        ImGui.ImageButton(a.TextureHandle, new Vector2(MainUserInterface._textureDisplaySize));
+                    }
+                    else
+                    {
+                        ImGui.SameLine();
+                        ImGuiAddons.ButtonGradient("Texture Not Found, Press to select texture." + dataString + "Button");
+                    }
+                }
+                string popupName = dataString + "PopUp";
+                ImGui.OpenPopupOnItemClick(popupName, ImGuiPopupFlags.MouseButtonLeft);
+                if (ImGui.IsPopupOpen(popupName))
+                {
+                    bool a = true;
+                    ImGuiViewportPtr mainViewport = ImGui.GetMainViewport();
+                    Vector2 popupSize = new Vector2(mainViewport.Size.X * 0.8f, mainViewport.Size.Y * 0.8f);
+                    ImGui.SetNextWindowPos(new Vector2(mainViewport.Pos.X + mainViewport.Size.X * 0.5f, mainViewport.Pos.Y + mainViewport.Size.Y * 0.5f), ImGuiCond.Always, new Vector2(0.5f, 0.5f));
+                    ImGui.SetNextWindowSize(popupSize);
+                    if (ImGui.BeginPopupModal(popupName, ref a, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
+                    {
+                        for (int i = 0; i < MainUserInterface.ffxTextureHandler.FfxTexturesIdList.Count(); i++)
+                        {
+                            var str = MainUserInterface.ffxTextureHandler.FfxTexturesIdList[i].ToString();
+                            var textureHandleAndBoolPair = MainUserInterface.ffxTextureHandler.GetFfxTextureIntPtr(int.Parse(str));
+                            if (textureHandleAndBoolPair.TextureExists)
+                            {
+                                if (ImGui.ImageButton(textureHandleAndBoolPair.TextureHandle, new Vector2(MainUserInterface._textureDisplaySize)))
+                                {
+                                    if (Int32.TryParse(str, out int intNodeValue))
+                                    {
+                                        var actionList = new List<Action>();
+
+                                        if (node.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldFloat")
+                                            actionList.Add(new ModifyXAttributeString(node.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldInt"));
+                                        actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), intNodeValue));
+
+                                        actionManager.ExecuteAction(new CompoundAction(actionList));
+                                        ImGui.CloseCurrentPopup();
+                                    }
+                                }
+                                ImGui.SameLine();
+                            }
+                            ImGui.Text(str);
+                        }
+                        ImGui.EndPopup();
                     }
                 }
             }

@@ -56,10 +56,12 @@ namespace DFXR3Editor
         public static ImGuiFxrTextureHandler ffxTextureHandler;
 
         // Config
-        private static readonly string iniPath = "Config/EditorConfigs.ini";
+        private static readonly string iniPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory ,"Config/EditorConfigs.ini");
 
-        private static readonly IniConfigFile _selectedTheme = new IniConfigFile("General", "Theme", "Red Clay", iniPath);
-        private static string _activeTheme = _selectedTheme.ReadConfigsIni();
+        private static readonly IniConfigFile textureDisplaySizeConfig = new IniConfigFile("UIConfigs", "textureDisplaySizeInt32", "100", iniPath);
+        public static int _textureDisplaySize = int.Parse(textureDisplaySizeConfig.ReadConfigsIni());
+        private static readonly IniConfigFile selectedThemeConfig = new IniConfigFile("General", "Theme", "Red Clay", iniPath);
+        private static string _activeTheme = selectedThemeConfig.ReadConfigsIni();
 
         //Theme Selector
         readonly static String[] _themeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Classic" };
@@ -116,6 +118,8 @@ namespace DFXR3Editor
                 ImGuiViewportPtr mainViewportPtr = ImGui.GetMainViewport();
                 mainViewPortDockSpaceID = ImGui.DockSpaceOverViewport(mainViewportPtr);
 
+                ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+
                 HotKeyGlobalListener();
                 if (_controller.GetWindowMinimized(mainViewportPtr) == 0)
                 {
@@ -139,6 +143,7 @@ namespace DFXR3Editor
                 Thread.Sleep(17);
             }
             //Runtime Configs Save
+            textureDisplaySizeConfig.WriteConfigsIni(_textureDisplaySize);
 
             // Clean up Veldrid resources
             _gd.WaitForIdle();
@@ -268,7 +273,7 @@ namespace DFXR3Editor
                     }
                     ImGui.EndMenu();
                 }
-                if (ImGui.BeginMenu("Themes"))
+                if (ImGui.BeginMenu("UI Configs"))
                 {
                     if (ImGui.BeginCombo("Theme Selector", _activeTheme))
                     {
@@ -281,11 +286,12 @@ namespace DFXR3Editor
                             {
                                 _activeTheme = str;
                                 Themes.ThemesSelectorPush(_activeTheme);
-                                _selectedTheme.WriteConfigsIni(_activeTheme);
+                                selectedThemeConfig.WriteConfigsIni(_activeTheme);
                             }
                         }
                         ImGui.EndCombo();
                     }
+                    ImGui.InputInt("Displayed Texture Size", ref _textureDisplaySize);
                     ImGui.EndMenu();
                 }
                 if (ImGui.BeginMenu("Useful Info"))
