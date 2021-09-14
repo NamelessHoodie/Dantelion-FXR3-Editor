@@ -597,7 +597,7 @@ namespace DFXR3Editor.Dependencies
                         ImGuiAddons.ButtonGradient("Texture Not Found, Press to select texture." + dataString + "Button");
                     }
                 }
-                string popupName = dataString + "PopUp";
+                string popupName = "Select Texture" + dataString + "PopUp";
                 ImGui.OpenPopupOnItemClick(popupName, ImGuiPopupFlags.MouseButtonLeft);
                 if (ImGui.IsPopupOpen(popupName))
                 {
@@ -608,6 +608,10 @@ namespace DFXR3Editor.Dependencies
                     ImGui.SetNextWindowSize(popupSize);
                     if (ImGui.BeginPopupModal(popupName, ref a, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
                     {
+                        if (ImGui.IsKeyDown(ImGui.GetKeyIndex(ImGuiKey.Escape)))
+                        {
+                            ImGui.CloseCurrentPopup();
+                        }
                         for (int i = 0; i < MainUserInterface.ffxTextureHandler.FfxTexturesIdList.Count(); i++)
                         {
                             var str = MainUserInterface.ffxTextureHandler.FfxTexturesIdList[i].ToString();
