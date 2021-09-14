@@ -343,7 +343,7 @@ namespace DFXR3Editor
                 }
             }
             ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-            if (ImGui.Begin("FFXEditor"))
+            if (ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove))
             {
                 if (selectedFFXWindow != null)
                 {
