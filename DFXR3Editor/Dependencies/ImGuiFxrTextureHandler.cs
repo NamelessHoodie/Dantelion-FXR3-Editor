@@ -4,6 +4,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SoulsFormats;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace DFXR3Editor
     public class ImGuiFxrTextureHandler
     {
         private Dictionary<int, IntPtr> loadedTexturesDictionary = new Dictionary<int, IntPtr>();
-        public List<int> FfxTexturesIdList { get;} = new List<int>();
+        public List<int> FfxTexturesIdList { get; } = new List<int>();
         private IEnumerable<BinderFile> ffxTexturesIEnumerable;
         public ImGuiFxrTextureHandler(BND4 ffxResourcesBin)
         {
@@ -77,9 +78,24 @@ namespace DFXR3Editor
                     var tpf = tpfTexturesList.First();
                     if (int.TryParse(tpf.Name.TrimStart('s'), out int textureID) && !loadedTexturesDictionary.ContainsKey(textureID))
                     {
+
                         var ddsBytes = tpf.Bytes;
                         DDSImage ddsImage = new DDSImage(ddsBytes);
                         Image<Rgba32> image = Image.LoadPixelData<Rgba32>(ddsImage.Data, ddsImage.Width, ddsImage.Height);
+                        for (int y = 0; y < image.Height; y++)
+                        {
+                            for (int x = 0; x < image.Width; x++)
+                            {
+                                var rgba32 = image[x, y];
+                                var r = rgba32.R;
+                                var g = rgba32.G;
+                                var b = rgba32.B;
+                                rgba32.R = b;
+                                rgba32.G = g;
+                                rgba32.B = r;
+                                image[x, y] = rgba32; //Set Inverted Pixels
+                            }
+                        }
                         var img = new ImageSharpTexture(image);
                         var veldridTexture = img.CreateDeviceTexture(MainUserInterface._gd, MainUserInterface._gd.ResourceFactory);
                         var textureHandle = MainUserInterface._controller.GetOrCreateImGuiBinding(MainUserInterface._gd.ResourceFactory, veldridTexture);
@@ -89,6 +105,5 @@ namespace DFXR3Editor
                 }
             }
         }
-
     }
 }
