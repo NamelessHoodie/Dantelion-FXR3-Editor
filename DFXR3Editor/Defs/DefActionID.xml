@@ -252,8 +252,8 @@ Can be used with actions 401-404 since they change the shape of the spawner. Act
 				<field type="[C]" arg="[E]" name="Color*"/>
 			</Properties1>
 			<Properties2>
-				<field type="[S]" arg="" name="" wiki="Probably brightness multipliers, just haven't tested them"/>
-				<field type="[S]" arg="" name="" wiki="Probably brightness multipliers, just haven't tested them"/>
+				<field type="[S]" arg="" name="Brightness*?" wiki="Probably brightness multipliers, just haven't tested them"/>
+				<field type="[S]" arg="" name="Brightness*?" wiki="Probably brightness multipliers, just haven't tested them"/>
 				<field type="[S]" arg="" name=""/>
 				<field type="[C]" arg="" name=""/>
 				<field type="[C]" arg="" name=""/>
