@@ -356,5 +356,33 @@ namespace ImGuiNETAddons
                 return false;
             }
         }
+        public static bool BeginComboFixed(string label, string previewValue )
+        {
+            string labelOnly = label.Contains("##") ? label.Split("##")[0] : label;
+            ImGui.Text(labelOnly);
+            ImGui.SameLine();
+            string popupID = label + "Popup";
+            var popupPos = ImGui.GetMousePosOnOpeningCurrentPopup();
+            ImGui.ArrowButton("##" + label + "ButtonArrow", ImGuiDir.Right);
+            ImGui.OpenPopupOnItemClick(popupID, ImGuiPopupFlags.MouseButtonLeft);
+            ImGui.SameLine();
+            var cursorPosAfterArrowButton = ImGui.GetCursorPos();
+            ImGui.SetCursorPos(new Vector2(cursorPosAfterArrowButton.X - 10, cursorPosAfterArrowButton.Y));
+            ButtonGradient(previewValue + "##" + label + "ButtonMain");
+            ImGui.OpenPopupOnItemClick(popupID, ImGuiPopupFlags.MouseButtonLeft);
+            if (ImGui.IsPopupOpen(popupID))
+            {
+                ImGui.SetNextWindowPos(popupPos, ImGuiCond.Appearing);
+                ImGui.SetNextWindowSize(new Vector2(300, 400));
+                return ImGui.BeginPopupContextItem(popupID);
+            }
+            return false;
+
+
+        }
+        public static void EndComboFixed()
+        {
+            ImGui.EndPopup();
+        }
     }
 }

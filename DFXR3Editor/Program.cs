@@ -275,7 +275,7 @@ namespace DFXR3Editor
                 }
                 if (ImGui.BeginMenu("UI Configs"))
                 {
-                    if (ImGui.BeginCombo("Theme Selector", _activeTheme))
+                    if (ImGuiAddons.BeginComboFixed("Theme Selector", _activeTheme))
                     {
                         foreach (string str in _themeSelectorEntriesArray)
                         {
@@ -289,7 +289,7 @@ namespace DFXR3Editor
                                 selectedThemeConfig.WriteConfigsIni(_activeTheme);
                             }
                         }
-                        ImGui.EndCombo();
+                        ImGuiAddons.EndComboFixed();
                     }
                     ImGui.InputInt("Displayed Texture Size", ref _textureDisplaySize);
                     ImGui.EndMenu();
@@ -355,6 +355,7 @@ namespace DFXR3Editor
                 ImGui.End();
             }
         }
+        public static string selectedDebugListBoxValue = "lol";
         private static void SubmitDockableUI()
         {
             { //Declare Standalone Windows here
@@ -457,6 +458,21 @@ namespace DFXR3Editor
                         }
                     }
                 }
+                if (true)
+                {
+                    ImGui.Begin("nEW ListBox Debug Window");
+                    if (ImGuiAddons.BeginComboFixed("stuffandcum", selectedDebugListBoxValue))
+                    {
+
+                        for (int i = 0; i < 100; i++)
+                        {
+                            if (ImGui.Selectable("selectabletest" + i.ToString()))
+                                selectedDebugListBoxValue = "selectabletest" + i.ToString();
+                        }
+                        ImGuiAddons.EndComboFixed();
+                    }
+                    ImGui.End();
+                }
             }
         }
         public static void CloseOpenFFXWithoutSaving(FFXUI ffxUI)
@@ -547,7 +563,7 @@ namespace DFXR3Editor
         {
             ImGui.BulletText("Input Type:");
             ImGui.SameLine();
-            if (ImGui.BeginCombo("##Current AxBy", FFXHelperMethods.AxByToName(selectedFFXWindow.AxBy)))
+            if (ImGuiAddons.BeginComboFixed("##Current AxBy", FFXHelperMethods.AxByToName(selectedFFXWindow.AxBy)))
             {
                 if (FFXHelperMethods.AxByColorArray.Contains(selectedFFXWindow.AxBy))
                 {
@@ -792,7 +808,7 @@ namespace DFXR3Editor
                 {
                     ImGui.Selectable(selectedFFXWindow.AxBy, true);
                 }
-                ImGui.EndCombo();
+                ImGuiAddons.EndComboFixed();
             }
             ImGui.SameLine();
             if (ImGuiAddons.ButtonGradient("Flip C/S"))

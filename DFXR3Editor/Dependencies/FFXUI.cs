@@ -712,20 +712,27 @@ namespace DFXR3Editor.Dependencies
         }
         public void IntComboDefaultNode(XElement node, string comboTitle, string[] entriesArrayValues, string[] entriesArrayNames)
         {
-            int blendModeCurrent = Int32.Parse(node.Attribute("Value").Value);
-            if (ImGui.Combo(comboTitle, ref blendModeCurrent, entriesArrayNames, entriesArrayNames.Length))
+            string blendModeCurrent = node.Attribute("Value").Value;
+            if (ImGuiAddons.BeginComboFixed(comboTitle, blendModeCurrent))
             {
-                string tempstring = entriesArrayValues[blendModeCurrent];
-                if (Int32.TryParse(tempstring, out int tempint))
+                for (int i = 0; i < entriesArrayNames.Count(); i++)
                 {
-                    var actionList = new List<Action>();
+                    if (ImGui.Selectable(entriesArrayNames[i]))
+                    {
+                        string tempstring = entriesArrayValues[i];
+                        if (Int32.TryParse(tempstring, out int tempint))
+                        {
+                            var actionList = new List<Action>();
 
-                    if (node.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldFloat")
-                        actionList.Add(new ModifyXAttributeString(node.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldInt"));
-                    actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), tempint));
+                            if (node.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldFloat")
+                                actionList.Add(new ModifyXAttributeString(node.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldInt"));
+                            actionList.Add(new ModifyXAttributeInt(node.Attribute("Value"), tempint));
 
-                    actionManager.ExecuteAction(new CompoundAction(actionList));
+                            actionManager.ExecuteAction(new CompoundAction(actionList));
+                        }
+                    }
                 }
+                ImGuiAddons.EndComboFixed();
             }
         }
         public void IntComboNotLinearDefaultNode(XElement node, string comboTitle, XElement EnumEntries)
@@ -747,7 +754,7 @@ namespace DFXR3Editor.Dependencies
             string[] localArray = new string[localTempArray.Count];
             localTempArray.CopyTo(localArray);
 
-            if (ImGui.BeginCombo(comboTitle, localSelectedItem))
+            if (ImGuiAddons.BeginComboFixed(comboTitle, localSelectedItem))
             {
                 for (int i = 0; i < localArray.Length; i++)
                 {
@@ -765,7 +772,7 @@ namespace DFXR3Editor.Dependencies
                         }
                     }
                 }
-                ImGui.EndCombo();
+                ImGuiAddons.EndComboFixed();
             }
         }
 
