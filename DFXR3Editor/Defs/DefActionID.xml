@@ -48,7 +48,26 @@
 		</orientationSpecializedModes606>
 	</Enums>
 	<ActionIDs>
-		<ActionID ID="34" name="Spawner Rotation" description="dummyTxt">
+		<ActionID ID="1" name="Unknown" description=" ???
+		This is by far the most confusing action I've looked at. It controls the movement of the effect, but it does so in a very strange way, and I don't see how it could be all that useful, but I don't know exactly how it works yet.
+		Action 129's field might have something to do with the strange behavior here, since it also affected action 34, which goes in the same slot as this. Still need to test this.">
+			<Properties1>
+				<field type="[S]" arg="" name="Effect vertical speed" wiki="Positive = down"/>
+				<field type="[S]" arg="" name="" wiki="This is a weird one.
+				When it's set to 0 or a negative value, things seems to work as you would expect.
+				When it's a positive value and the speed above and the acceleration below are both 0, it controls the effect's downwards speed.
+				When it's a positive value and the speed above or the acceleration below is not 0, it no longer has anything to do with the downwards speed, but seems to work almost like a multiplier for the speed/acceleration properties, except not quite, because it doesn't make them stop when it approaches 0."/>
+				<field type="[S]" arg="" name="" wiki="Multiplier for the property above? When this is set to 0, the property above does nothing"/>
+				<field type="[S]" arg="" name="Effect acceleration" wiki="Not sure what controls the direction this goes in. By default it seems like it goes towards positive Y. (Probably action 35/36?)"/>
+=			</Properties1>
+			<Fields1>
+				<Field name="" dataType="s32" wiki="Always 0"/>
+				<Field name="" dataType="s32" isBool="" wiki="When set to 1, this seems to turn off the everything this action does. Not sure if it does anything else."/>
+				<Field name="" dataType="f32" isBool="" wiki="This only ranges from 0 to 0.1 in commoneffects. So, whatever this is, it must be pretty sensitive or something"/>
+			</Fields1>
+		</ActionID>
+		<ActionID ID="34" name="Spawner Rotation" description=" Controls the rotation of the particle spawner around its center
+Can be used with actions 401-404 since they change the shape of the spawner. Action 400 makes this not really do anything, since the spawner is a just single point in the center, so it just rotates around itself">
 			<Properties1>
 				<field type="[S]" arg="" name="X Rotation Speed"/>
 				<field type="[S]" arg="" name="X Rotation Speed Multiplier"/>
@@ -61,7 +80,7 @@
 				<Field name="" dataType="s32" isBool=""/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="35" name="Position and Rotation (Ignores dummy points)" description="dummyTxt">
+		<ActionID ID="35" name="Position and Rotation" description=" Controls the position and rotation of the effect, useful if the dummy point isn't posiotioned correctly or you want to add a new particle on top that doesn't follow the dummy poly">
 			<Fields1>
 				<Field name="X Position" dataType="f32"/>
 				<Field name="Y Position" dataType="f32"/>
@@ -71,7 +90,8 @@
 				<Field name="Z rotation" dataType="f32"/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="36" name="Random Position and Rotation?" description="dummyTxt">
+		<ActionID ID="36" name="Random Position and Rotation?" description=" This haven't been tested at all yet, the notes are just speculation based on the values this action have in the vanilla FXRs
+		This action probably does the same thing as 35, but with a range for each value that the game picks a random number from, e.g. you could set X position min value to 0 and max value to 1 and the game would pick a random number between 0 and 1 when creating a new instance of that effect.">
 			<Fields1>
 				<Field name="X Position Max?" dataType="f32"/>
 				<Field name="Y Position Max?" dataType="f32"/>
@@ -87,39 +107,45 @@
 				<Field name="Z rotation Min?" dataType="f32"/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="75" name="Play Sound by ID" description="dummyTxt">
+		<ActionID ID="75" name="Play Sound" description=" Controls effect audio">
 			<Fields1>
 				<Field name="Sound ID" dataType="s32"/>
 				<Field name="Volume" dataType="f32"/>
 				<Field name="Repeat" dataType="s32" isBool=""/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="105" name="Random Particle Motion?" description="dummyTxt">
+		<ActionID ID="105" name="Random Particle Motion?" description=" Controls the random motion of particles in a 3d space">
 			<Properties1>
-				<field type="[S]" arg="" name="Particle Acceleration"/>
+				<field type="[S]" arg="" name="Particle Acceleration" wiki="Downwards acceleration. Can be negative values to accelerate up instead."/>
 				<field type="[S]" arg="" name=""/>
 				<field type="[S]" arg="" name=""/>
-				<field type="[S]" arg="" name="Max Angle of Random Turns"/>
-				<field type="[S]" arg="" name=""/>
+				<field type="[S]" arg="" name="Max Angle of Random Turns" wiki="When the particles have acceleration from the property above, they will turn in random directions by a random amount that is limited to angles below this value. For example, when the acceleration property above is set to a negative value and this is set to 20, the particles will fly almost straight up, but some will fly slightly to one side.
+				At 0, the particles move in perfectly straight lines up or down.
+				At 90, the particles will pretty much move around completetly randomly, like a swarm of flies."/>
+				<field type="[S]" arg="" name="" wiki="Controls how well the particles follow the effect if it's moving.
+				At 0, the particles will not follow at all, they'll just stay where they spawned
+				At 1, the particles will follow the effect perfectly, as if they are glued on
+				Values between 0 and 1 makes the particles lag behind the effect a bit
+				Action 34's rotation speed properties also affects the trail this can leave behind, so the whole trail of partciles will rotate around the center of the spawner"/>
 			</Properties1>
 			<Fields1>
-				<Field name="" dataType="s32" isBool="0"/>
-				<Field name="" dataType="s32"/>
+				<Field name="" dataType="s32" wiki="Always 0"/>
+				<Field name="" dataType="s32" wiki="Ranges from 0 to 15 in commoneffects"/>
 				<Field name="" dataType="s32" isBool=""/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="128" name="FFX Duration" description="dummyTxt">
+		<ActionID ID="128" name="Spawner Duration" description=" How long the spawner will stay active for">
 			<Properties1>
 				<field type="[S]" arg="" name="" wiki="How long this effect will spawn particles in seconds. If set to a negative value, it will never stop unless something else makes it stop."/>
 			</Properties1>
 			<Fields1>
-				<Field name="Spawner Delay" dataType="f32"/>
+				<Field name="Spawner Delay" dataType="f32" wiki="Seconds between the effect being created and the spawner activating for the first time"/>
 				<field name="" dataType="s32" isBool=""/>
 				<Field name="" dataType="s32"/>
 				<Field name="" dataType="f32"/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="129" name="Particle Duration" description="dummyTxt">
+		<ActionID ID="129" name="Particle Duration" description=" Controls how long the particles from this effect will last">
 			<Properties1>
 				<field type="[S]" arg="" name="" wiki="How long the particles last in seconds. If set to a negative value, the particles will last forever."/>
 			</Properties1>
@@ -127,7 +153,7 @@
 				<Field name="" dataType="f32" wiki="This has a strange effect on effects using action 105's 5th property (normally controls how well particles follow the effect) and action 34's rotation speed properties. When this is set to 1 while those other action properties are also used, it makes the particles fly away from where they spawned very quickly for some reason. Setting it to 0 disables this strange effect. Need to do some more testing with this to figure out what exactly is going on"/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="131" name="Effect Multiplier (Scale, Color)" description="dummyTxt">
+		<ActionID ID="131" name="Effect Multiplier" description=" Controls a few things about how the particles from this effect looks and moves on top of the normal action that controls them, a good way to make deep colors is to add the same ones here">
 			<Properties1>
 				<field type="[S]" arg="" name="" wiki="On one effect, this seemed to control the vertical speed of the particles it spawned, but on another it seemed to not do anything, so this is probably linked to some other property or field somewhere in some way"/>
 				<field type="[S]" arg="[E]" name="X Scale"/>
@@ -139,17 +165,17 @@
 				<Field name="Keep aspect ratio" dataType="s32" isBool="" wiki="When set to 0, you can scale the particles in each direction individually using the scale multipliers in this action's properties When set to 1, the X scale multiplier will apply to the Y and Z axes as well, so the particles will maintain their aspect ratio. I think the two(?) other scale multipliers do nothing when this is set to 1."/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="132" name="FXR Reference" description="dummyTxt">
+		<ActionID ID="132" name="FXR Reference" description=" Refernces another FXR">
 			<Fields1>
 				<Field name="FXR ID" dataType="s32"/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="199" name="Disable Action" description="dummyTxt">
+		<ActionID ID="199" name="Disable Effect" description=" Disables the entire effect">
 			<Section10s>
 				<Field name="Disable Action" dataType="s32" isBool=""/>
 			</Section10s>
 		</ActionID>
-		<ActionID ID="300" name="Spawner Control" description="dummyTxt">
+		<ActionID ID="300" name="Spawner Control" description=" Controls how particles from this effect are spawned">
 			<Properties1>
 				<field type="[S]" arg="" name="Particle Spawn Interval" wiki="Delay in seconds between spawning groups of particles."/>
 				<field type="[S]" arg="" name="Particle Spawn Group Size" wiki="This is how many particels spawn at once"/>
@@ -160,14 +186,16 @@
 				<field name="" dataType="s32" isBool=""/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="399" name="Spawner Control (Only Spawn Once)" description="dummyTxt">
+		<ActionID ID="399" name="Single Spawn" description=" Controls how particles from this effect are spawned, makes them only spawn once, and never again">
 		</ActionID>
-		<ActionID ID="400" name="Spawner (Single Point)" description="dummyTxt">
+		<ActionID ID="400" name="Spawner (Single Point)" description=" Controls the shape of the spawner
+		Makes the spawner a single point.">
 			<Fields1>
 				<Field name="" dataType="f32"/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="401" name="Spawner (Circular, Ring)" description="dummyTxt">
+		<ActionID ID="401" name="Spawner (Circular, Ring)" description=" Controls the shape of the spawner
+		Makes the spawner circular. Particles are spawned with their anchor points at random places inside a circle or in a ring.">
 			<Properties1>
 				<field type="[S]" arg="" name="Radius"/>
 				<field type="[S]" arg="" name="Negative Dead Zone Fraction" wiki="At 0, there is no dead zone and the particles can spawn anywhere in the circle. As the value approaches -1, a dead zone appears in the middle of the circle where no particles can spawn, so they form a ring. At -1, the ring has no width and the particles will only spawn at the outer edge of the circle, exactly (Raduis) away from the center. Positive values will turn the shape into a single point, probably as a backup because the shape is invalid or something."/>
@@ -176,7 +204,8 @@
 				<Field name="" dataType="s32" wiki="This is probably some mode or something like that, but I have no idea what it does. When set to values other than 0-6, the shape turns into a single point."/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="402" name="Spawner (Rectangle)" description="dummyTxt">
+		<ActionID ID="402" name="Spawner (Rectangle)" description=" Controls the shape of the spawner
+		Makes the spawner rectangular. Particles are spawned with their anchor points at random places in the rectangle.">
 			<Properties1>
 				<field type="[S]" arg="" name="X Size" wiki="Distance between the center of the rectangle and the sides, i.e. half of the length of each side"/>
 				<field type="[S]" arg="" name="Y Size" wiki="Distance between the center of the rectangle and the sides, i.e. half of the length of each side"/>
@@ -186,7 +215,8 @@
 				<Field name="" dataType="s32" wiki="This is probably some mode or something like that, but I have no idea what it does. When set to values other than 0-6, the shape turns into a single point."/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="403" name="Spawner (Spherical)" description="dummyTxt">
+		<ActionID ID="403" name="Spawner (Spherical)" description=" Controls the shape of the spawner
+		Makes the spawner spherical. Particles are spawned with their anchor points at random places on or in the sphere.">
 			<Properties1>
 				<field type="[S]" arg="" name="Radius"/>
 			</Properties1>
@@ -195,7 +225,8 @@
 				When set to 1, particles can spawn anywhere inside the sphere."/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="404" name="Spawner (Cuboidal)" description="dummyTxt">
+		<ActionID ID="404" name="Spawner (Cuboidal)" description=" Controls the shape of the spawner
+		Makes the spawner cuboidal. Particles are spawned with their anchor points at random places on or in the cuboid.">
 			<Properties1>
 				<field type="[S]" arg="" name="X Size" wiki="Distance between the center of the cuboid and the faces, i.e. half of the length of each side"/>
 				<field type="[S]" arg="" name="Y Size" wiki="Distance between the center of the cuboid and the faces, i.e. half of the length of each side"/>
@@ -206,22 +237,23 @@
 				<Field name="" dataType="s32" wiki="When set to 0, particles are only spawned on the surface of the cuboid. When set to 1, particles can spawn anywhere inside the cuboid."	/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="501" name="Random Rotation?" description="dummyTxt">
+		<ActionID ID="501" name="Random Rotation?" description=" Controls the random rotations of particles">
 			<Properties1>
-				<field type="[S]" arg="" name="Maximum Random Rotation"/>
+				<field type="[S]" arg="" name="Maximum Random Rotation" wiki="In degrees. Particles are given a random rotation when spawned, and this controls how far off their default rotation they can be."/>
 				<field type="[S]" arg="" name="Radius"/>
 			</Properties1>
 		</ActionID>
-		<ActionID ID="600" name="Static Texture" description="dummyTxt">
+		<ActionID ID="600" name="Static Texture" description=" Controls how the particles from this effect look
+		Similar to 603, but with far fewer options. Probably the simplest action to use if you just want an effect to spawn simple 2D particles.">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="Scale*"/>
 				<field type="[C]" arg="[P]" name="Color*"/>
-				<field type="[C]" arg="[PG]" name="Color*"/>
+				<field type="[C]" arg="[PG]" name="Color*" wiki="The color is chosen when the particle spawns and it will stay that color until it expires."/>
 				<field type="[C]" arg="[E]" name="Color*"/>
 			</Properties1>
 			<Properties2>
-				<field type="[S]" arg="" name=""/>
-				<field type="[S]" arg="" name=""/>
+				<field type="[S]" arg="" name="Brightness*?" wiki="Probably brightness multipliers, just haven't tested them"/>
+				<field type="[S]" arg="" name="Brightness*?" wiki="Probably brightness multipliers, just haven't tested them"/>
 				<field type="[S]" arg="" name=""/>
 				<field type="[C]" arg="" name=""/>
 				<field type="[C]" arg="" name=""/>
@@ -231,15 +263,15 @@
 			<Fields1>
 				<Field name="Texture ID" dataType="s32"/>
 				<Field name="Particle Blend Mode" dataType="s32" enum="BlendModes"/>
-				<Field name="" dataType="s32"/>
-				<Field name="" dataType="s32"/>
-				<Field name="" dataType=""/>
+				<Field name="" dataType="s32" wiki="Always -2?"/>
+				<Field name="" dataType="s32" wiki="Always -2?"/>
+				<Field name="" dataType="" wiki="Always 0"/>
 			</Fields1>
 			<Fields2>
-				<Field name="" dataType=""/>
-				<Field name="" dataType=""/>
-				<Field name="" dataType="s32"/>
-				<Field name="" dataType=""/>
+				<Field name="" dataType="" wiki="Always 0"/>
+				<Field name="" dataType="" wiki="Always 1"/>
+				<Field name="" dataType="s32" wiki="Always 8"/>
+				<Field name="" dataType="" wiki="Always 0"/>
 				<field name="" dataType="s32" isBool=""/>
 				<field name="Color* R?" dataType="f32"/>
 				<field name="Color* G?" dataType="f32"/>
@@ -256,19 +288,20 @@
 				<field name="Distance Fade: Far 1" dataType="f32" wiki="Controls something about how the particles fade away as the distance to the camera increases."/>
 				<field name="Minimum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
 				<field name="Maximum View Distance" dataType="f32" wiki="When the distance between the camera and a particle from this effect is outside of this range, the particle will not be visible. Can be set to negative values to make the particles visible from any distance. Setting just one of them to a negative value will only remove the restriction from that side of the range."/>
-				<field name="" dataType=""/>
-				<field name="" dataType=""/>
-				<field name="" dataType=""/>
-				<field name="" dataType=""/>
-				<field name="" dataType=""/>
+				<field name="" dataType="" wiki="Always 0"/>
+				<field name="" dataType="" wiki="Always 0"/>
+				<field name="" dataType="" wiki="Always 0"/>
+				<field name="" dataType="" wiki="Always 0"/>
+				<field name="" dataType="" wiki="Always 0"/>
 				<field name="" dataType="f32"/>
-				<field name="" dataType=""/>
+				<field name="" dataType="" wiki="Always 0"/>
 				<field name="" dataType="s32"/>
-				<field name="" dataType=""/>
+				<field name="" dataType="" wiki="Always 0"/>
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="601" name="Line" description="dummyTxt">
+		<ActionID ID="601" name="Line" description=" Controls how the particles from this effect look
+		This creates simple 1px thick lines. Useful for sparks and things like that.">
 			<Properties1>
 				<field type="[S]" arg="[PG]" name="Lenght*"/>
 				<field type="[C]" arg="[P]" name="Color*"/>
@@ -324,7 +357,8 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="602" name="Basic Rectangle" description="dummyTxt">
+		<ActionID ID="602" name="Basic Rectangle" description=" Controls how the particles from this effect look
+		This creates simple colored rectangles">
 			<Properties1>
 				<field type="[S]" arg="[PG]" name="X Scale*"/>
 				<field type="[S]" arg="[PG]" name="Y Scale*"/>
@@ -382,7 +416,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="603" name="Animated Texture" description="dummyTxt">
+		<ActionID ID="603" name="Animated Texture" description=" Controls how the particles from this effect look">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Offset" wiki="X Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
 				<field type="[S]" arg="[P]" name="Y Offset" wiki="Y Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
@@ -469,7 +503,8 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="604" name="Textures Blend (Texture, Texture, Animated Texture)" description="dummyTxt">
+		<ActionID ID="604" name="Texture Blend" description=" Controls how the particles from this effect look
+		Similar to 603, but this can have three different textures that blend together in some way">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Offset" wiki="X Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
 				<field type="[S]" arg="[P]" name="Y Offset" wiki="Y Offset from the anchor point, can be very useful for making particles move around. The other properties of the particle affects it, like the scale multiplier, particle rotation, and orientation mode."/>
@@ -571,7 +606,8 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="605" name="Mesh" description="dummyTxt">
+		<ActionID ID="605" name="Model" description=" Controls how the particles from this effect look
+		This uses a model instead of just a flat plane with a texture on it">
 			<Properties1>
 				<field type="[S]" arg="[P]" name="X Scale*"/>
 				<field type="[S]" arg="[P]" name="Y Scale*"/>
@@ -610,7 +646,7 @@
 			</Properties2>
 			<Fields1>
 				<Field name="Orientation Mode" dataType="s32" enum="orientationSpecializedModes605"/>
-				<Field name="Model ID" dataType="s32"/>
+				<Field name="Flver ID" dataType="s32"/>
 				<Field name="" dataType="f32"/>
 				<Field name="" dataType="f32"/>
 				<Field name="" dataType="f32"/>
@@ -661,7 +697,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="606" name="Trail" description="dummyTxt">
+		<ActionID ID="606" name="Trail" description=" Normal trails (Not to be confused with weapon traces)">
 			<Properties1>
 				<field type="[S]" arg="" name="Scale*"/>
 				<field type="[S]" arg="" name=""/>
@@ -738,7 +774,7 @@
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="607" name="Distortion (Rectangle)" description="dummyTxt">
+		<ActionID ID="607" name="Distortion" description=" Textured square with distortion effect">
 			<Properties1>
 				<field type="[S]" arg="" name=""/>
 				<field type="[S]" arg="" name=""/>
@@ -814,7 +850,7 @@
 				<field name="" dataType=""/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="609" name="Light Source" description="dummyTxt">
+		<ActionID ID="609" name="Light Source" description=" A simple point light">
 			<Properties1>
 				<field type="[C]" arg="" name="Light Color"/>
 				<field type="[C]" arg="" name="Specular Color"/>
@@ -863,7 +899,7 @@
 				<Field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="10012" name="Tracer" description="dummyTxt">
+		<ActionID ID="10012" name="Tracer" description=" Weapon traces (long 1 pixel wide traces across the weapon)">
 			<Properties1>
 				<field type="[S]" arg="" name="Trail Size"/>
 				<field type="[S]" arg="" name="Scale Multiplier"/>
