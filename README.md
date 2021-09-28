@@ -9,4 +9,4 @@ CCCode: for his information dump that helped me build the tool. https://docs.goo
 TKGP and Meowmaritus: Modified version (By Meowmaritus) of Soulsformats's "FXR3" (By TKGP) class is used to load .fxr's.
 
 # Patreon
-If you would like to contribute to this project considering becoming my patreon https://www.patreon.com/namelesshoodie
+If you would like to contribute to this project considering becoming my patron https://www.patreon.com/namelesshoodie
