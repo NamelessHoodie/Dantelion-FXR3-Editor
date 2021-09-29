@@ -188,13 +188,13 @@ Can be used with actions 401-404 since they change the shape of the spawner. Act
 		</ActionID>
 		<ActionID ID="399" name="Single Spawn" description=" Controls how particles from this effect are spawned, makes them only spawn once, and never again">
 		</ActionID>
-		<ActionID ID="400" name="Spawner (Single Point)" description=" Controls the shape of the spawner
+		<ActionID ID="400" name="Spawner(Single Point)" description=" Controls the shape of the spawner
 		Makes the spawner a single point.">
 			<Fields1>
 				<Field name="" dataType="f32"/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="401" name="Spawner (Circular, Ring)" description=" Controls the shape of the spawner
+		<ActionID ID="401" name="Spawner(Circular, Ring)" description=" Controls the shape of the spawner
 		Makes the spawner circular. Particles are spawned with their anchor points at random places inside a circle or in a ring.">
 			<Properties1>
 				<field type="[S]" arg="" name="Radius"/>
@@ -204,7 +204,7 @@ Can be used with actions 401-404 since they change the shape of the spawner. Act
 				<Field name="" dataType="s32" wiki="This is probably some mode or something like that, but I have no idea what it does. When set to values other than 0-6, the shape turns into a single point."/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="402" name="Spawner (Rectangle)" description=" Controls the shape of the spawner
+		<ActionID ID="402" name="Spawner(Rectangle)" description=" Controls the shape of the spawner
 		Makes the spawner rectangular. Particles are spawned with their anchor points at random places in the rectangle.">
 			<Properties1>
 				<field type="[S]" arg="" name="X Size" wiki="Distance between the center of the rectangle and the sides, i.e. half of the length of each side"/>
@@ -215,7 +215,7 @@ Can be used with actions 401-404 since they change the shape of the spawner. Act
 				<Field name="" dataType="s32" wiki="This is probably some mode or something like that, but I have no idea what it does. When set to values other than 0-6, the shape turns into a single point."/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="403" name="Spawner (Spherical)" description=" Controls the shape of the spawner
+		<ActionID ID="403" name="Spawner(Spherical)" description=" Controls the shape of the spawner
 		Makes the spawner spherical. Particles are spawned with their anchor points at random places on or in the sphere.">
 			<Properties1>
 				<field type="[S]" arg="" name="Radius"/>
@@ -225,7 +225,7 @@ Can be used with actions 401-404 since they change the shape of the spawner. Act
 				When set to 1, particles can spawn anywhere inside the sphere."/>
 			</Fields1>
 		</ActionID>
-		<ActionID ID="404" name="Spawner (Cuboidal)" description=" Controls the shape of the spawner
+		<ActionID ID="404" name="Spawner(Cuboidal)" description=" Controls the shape of the spawner
 		Makes the spawner cuboidal. Particles are spawned with their anchor points at random places on or in the cuboid.">
 			<Properties1>
 				<field type="[S]" arg="" name="X Size" wiki="Distance between the center of the cuboid and the faces, i.e. half of the length of each side"/>
@@ -774,7 +774,7 @@ Can be used with actions 401-404 since they change the shape of the spawner. Act
 				<field name="" dataType="f32"/>
 			</Fields2>
 		</ActionID>
-		<ActionID ID="607" name="Distortion" description=" Textured square with distortion effect">
+		<ActionID ID="607" name="Distortion Texture" description=" Textured square with distortion effect">
 			<Properties1>
 				<field type="[S]" arg="" name=""/>
 				<field type="[S]" arg="" name=""/>

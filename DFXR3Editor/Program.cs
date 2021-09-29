@@ -297,7 +297,7 @@ namespace DFXR3Editor
                         }
                         ImGuiAddons.EndComboFixed();
                     }
-                    ImGui.InputInt("Displayed Texture Size", ref _textureDisplaySize);
+                    ImGui.InputInt("Displayed Texture Size", ref _textureDisplaySize, 10, 100);
                     ImGui.EndMenu();
                 }
                 if (ImGui.BeginMenu("Useful Info"))
@@ -470,7 +470,7 @@ namespace DFXR3Editor
                     ImGui.SetNextWindowSize(new Vector2(300,80));
                     ImGui.SetNextWindowPos(new Vector2(viewport.Pos.X + viewport.Size.X - 15, viewport.Pos.Y + 38), ImGuiCond.None, new Vector2(1,0));
                     ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
-                    if (ImGui.Begin("SearchBarWindow", ref MainUserInterface._isSearchBarOpen, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
+                    if (ImGui.Begin("Action Search", ref MainUserInterface._isSearchBarOpen, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
                     {
                         ImGui.SetNextItemWidth(190);
                         ImGui.InputText("Action Search", ref MainUserInterface._SearchBarString, 1024);

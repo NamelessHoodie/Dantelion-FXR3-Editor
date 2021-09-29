@@ -115,7 +115,7 @@ namespace DFXR3Editor.Dependencies
                         showActionSearch = searchBarSpaceless.Length > 0 ? actionID.StartsWith(searchBarSpaceless) : true;
                     }
 
-                    if (FFXHelperMethods._actionIDSupported.Contains(actionNumericID) && showActionSearch || MainUserInterface._filtertoggle)
+                    if (FFXHelperMethods._actionIDSupported.Contains(actionNumericID) && MainUserInterface._isSearchBarOpen ? showActionSearch : true || MainUserInterface._filtertoggle)
                     {
                         TreeviewExpandCollapseHandler(false);
                         if (ImGuiAddons.TreeNodeTitleColored($"Action('{actionIdDef.name}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
