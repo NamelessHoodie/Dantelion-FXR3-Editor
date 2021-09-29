@@ -54,10 +54,12 @@ namespace DFXR3Editor
         public static bool _axbyDebugger = false;
         public static XElement dragAndDropBuffer = null;
         public static ImGuiFxrTextureHandler ffxTextureHandler;
+        public static bool _isSearchByID = false;
+        public static string _SearchBarString = "";
+        public static bool _isSearchBarOpen = false;
 
         // Config
-        private static readonly string iniPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory ,"Config/EditorConfigs.ini");
-
+        private static readonly string iniPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config/EditorConfigs.ini");
         private static readonly IniConfigFile textureDisplaySizeConfig = new IniConfigFile("UIConfigs", "textureDisplaySizeInt32", "100", iniPath);
         public static int _textureDisplaySize = int.Parse(textureDisplaySizeConfig.ReadConfigsIni());
         private static readonly IniConfigFile selectedThemeConfig = new IniConfigFile("General", "Theme", "Red Clay", iniPath);
@@ -271,6 +273,10 @@ namespace DFXR3Editor
                         ImGui.Text("Holding Shift while clicking this button will expand properties aswell as the treeview itself.");
                         ImGui.Unindent();
                     }
+                    if (ImGui.MenuItem("Search Actions..."))
+                    {
+                        _isSearchBarOpen = !_isSearchBarOpen;
+                    }
                     ImGui.EndMenu();
                 }
                 if (ImGui.BeginMenu("UI Configs"))
@@ -325,7 +331,7 @@ namespace DFXR3Editor
         public static void HotKeyGlobalListener()
         {
             { //Undo-Redo
-                if (ImGui.GetIO().KeyShift & ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
+                if (ImGui.GetIO().KeyShift && ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
                 {
                     MessageBox.Show("DFXR3E Inputs are locked, press OK to unlock");
                 }
@@ -355,7 +361,6 @@ namespace DFXR3Editor
                 ImGui.End();
             }
         }
-        public static string selectedDebugListBoxValue = "lol";
         private static void SubmitDockableUI()
         {
             { //Declare Standalone Windows here
@@ -458,20 +463,21 @@ namespace DFXR3Editor
                         }
                     }
                 }
-                if (true)
+                if (MainUserInterface._isSearchBarOpen)
                 {
-                    ImGui.Begin("nEW ListBox Debug Window");
-                    if (ImGuiAddons.BeginComboFixed("stuffandcum", selectedDebugListBoxValue))
-                    {
+                    var viewport = ImGui.GetMainViewport();
 
-                        for (int i = 0; i < 100; i++)
-                        {
-                            if (ImGui.Selectable("selectabletest" + i.ToString()))
-                                selectedDebugListBoxValue = "selectabletest" + i.ToString();
-                        }
-                        ImGuiAddons.EndComboFixed();
+                    ImGui.SetNextWindowSize(new Vector2(300,80));
+                    ImGui.SetNextWindowPos(new Vector2(viewport.Pos.X + viewport.Size.X - 15, viewport.Pos.Y + 38), ImGuiCond.None, new Vector2(1,0));
+                    ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
+                    if (ImGui.Begin("SearchBarWindow", ref MainUserInterface._isSearchBarOpen, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
+                    {
+                        ImGui.SetNextItemWidth(190);
+                        ImGui.InputText("Action Search", ref MainUserInterface._SearchBarString, 1024);
+                        ImGui.Checkbox("Search By ID", ref MainUserInterface._isSearchByID);
+                        
+                        ImGui.End();
                     }
-                    ImGui.End();
                 }
             }
         }

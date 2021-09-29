@@ -96,13 +96,28 @@ namespace DFXR3Editor.Dependencies
                 }
                 ImGui.PushID($"TreeFunctionlayer = {root.Name} ChildIndex = {rootIndexInParent}");
                 IEnumerable<XElement> localNodeList = FFXHelperMethods.XMLChildNodesValid(root);
-                if (root.Attribute(XName.Get("ActionID")) != null)
+                if (root.Attribute("ActionID") != null)
                 {
-                    if (FFXHelperMethods._actionIDSupported.Contains(root.Attribute("ActionID").Value) || MainUserInterface._filtertoggle)
+                    //actionIdDef.name.Replace(" ", "").Contains(MainUserInterface._SearchBarString.Replace(" ", "")
+                    var actionNumericID = root.Attribute("ActionID").Value;
+                    var actionIdDef = DefParser.ActionIDNameAndDescription(actionNumericID);
+                    bool showActionSearch;
+                    if (!MainUserInterface._isSearchByID)
+                    {
+                        var searchBarSpaceless = MainUserInterface._SearchBarString.Replace(" ", "").ToLower();
+                        var actionNameSpaceless = actionIdDef.name.Replace(" ", "").ToLower();
+                        showActionSearch = searchBarSpaceless.Length > 0 ? actionNameSpaceless.Contains(searchBarSpaceless) : true;
+                    }
+                    else
+                    {
+                        var searchBarSpaceless = MainUserInterface._SearchBarString.Replace(" ", "");
+                        var actionID = actionNumericID;
+                        showActionSearch = searchBarSpaceless.Length > 0 ? actionID.StartsWith(searchBarSpaceless) : true;
+                    }
+
+                    if (FFXHelperMethods._actionIDSupported.Contains(actionNumericID) && showActionSearch || MainUserInterface._filtertoggle)
                     {
                         TreeviewExpandCollapseHandler(false);
-                        var actionNumericID = root.Attribute("ActionID").Value;
-                        var actionIdDef = DefParser.ActionIDNameAndDescription(actionNumericID);
                         if (ImGuiAddons.TreeNodeTitleColored($"Action('{actionIdDef.name}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
                         {
                             ShowToolTipSimple("", $"Action ID={actionNumericID} Name={actionIdDef.name}", $"Description={actionIdDef.description}", false, 500);
