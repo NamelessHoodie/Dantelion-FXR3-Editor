@@ -173,30 +173,34 @@ namespace DFXR3Editor
                 {
                     if (ImGui.MenuItem("Load FFX"))
                     {
+#if RELEASE
                         try
                         {
-                            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
-                            ofd.Filter = "FFX|*.fxr;*.xml";
-                            ofd.Title = "Open FFX";
+#endif
+                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
+                        ofd.Filter = "FFX|*.fxr;*.xml";
+                        ofd.Title = "Open FFX";
 
-                            if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            if (Path.GetExtension(ofd.FileName) == ".fxr")
                             {
-                                if (Path.GetExtension(ofd.FileName) == ".fxr")
-                                {
-                                    var fxrXml = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(FXR3_XMLR.FXR3.Read(ofd.FileName));
-                                    LoadFFXFromXml(fxrXml, ofd.FileName);
-                                }
-                                else if (Path.GetExtension(ofd.FileName) == ".xml")
-                                {
-                                    var fxrXml = XDocument.Load(ofd.FileName);
-                                    LoadFFXFromXml(fxrXml, ofd.FileName);
-                                }
+                                var fxrXml = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(FXR3_XMLR.FXR3.Read(ofd.FileName));
+                                LoadFFXFromXml(fxrXml, ofd.FileName);
+                            }
+                            else if (Path.GetExtension(ofd.FileName) == ".xml")
+                            {
+                                var fxrXml = XDocument.Load(ofd.FileName);
+                                LoadFFXFromXml(fxrXml, ofd.FileName);
                             }
                         }
+#if RELEASE
+                    }
                         catch (Exception exception)
                         {
                             ShowExceptionPopup("ERROR: FFX loading failed", exception);
                         }
+#endif
                     }
                     if (ImGui.MenuItem("Save", openFFXs.Any()))
                     {
@@ -467,15 +471,15 @@ namespace DFXR3Editor
                 {
                     var viewport = ImGui.GetMainViewport();
 
-                    ImGui.SetNextWindowSize(new Vector2(300,80));
-                    ImGui.SetNextWindowPos(new Vector2(viewport.Pos.X + viewport.Size.X - 15, viewport.Pos.Y + 38), ImGuiCond.None, new Vector2(1,0));
+                    ImGui.SetNextWindowSize(new Vector2(300, 80));
+                    ImGui.SetNextWindowPos(new Vector2(viewport.Pos.X + viewport.Size.X - 15, viewport.Pos.Y + 38), ImGuiCond.None, new Vector2(1, 0));
                     ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
                     if (ImGui.Begin("Action Search", ref MainUserInterface._isSearchBarOpen, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
                     {
                         ImGui.SetNextItemWidth(190);
                         ImGui.InputText("Action Search", ref MainUserInterface._SearchBarString, 1024);
                         ImGui.Checkbox("Search By ID", ref MainUserInterface._isSearchByID);
-                        
+
                         ImGui.End();
                     }
                 }
