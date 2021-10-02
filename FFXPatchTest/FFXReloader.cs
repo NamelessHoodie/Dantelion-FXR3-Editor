@@ -12,7 +12,7 @@ namespace FFXPatchTest {
             var headerAob = originalFxr.Take(16).ToArray();
             var patchedFxr = changedFxrByteArray;
 
-            if (originalFxr.Length < patchedFxr.Length) {
+            if (originalFxr.Length != patchedFxr.Length) {
                 throw new NotImplementedException("Bad human! No changing file sizes!");
             }
 
