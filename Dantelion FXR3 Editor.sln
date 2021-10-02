@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoulsFormats", "SoulsFormat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DDSReader", "DDSReader\DDSReader.csproj", "{CCCBF14A-4545-418A-BD24-4F6889A78120}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXPatchTest", "FFXPatchTest\FFXPatchTest.csproj", "{F2C114C3-A073-4B45-B6EB-CD7E4CAC9CC8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{CCCBF14A-4545-418A-BD24-4F6889A78120}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCCBF14A-4545-418A-BD24-4F6889A78120}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCCBF14A-4545-418A-BD24-4F6889A78120}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2C114C3-A073-4B45-B6EB-CD7E4CAC9CC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2C114C3-A073-4B45-B6EB-CD7E4CAC9CC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2C114C3-A073-4B45-B6EB-CD7E4CAC9CC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2C114C3-A073-4B45-B6EB-CD7E4CAC9CC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -24,7 +24,9 @@ using DDSReader;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Drawing;
 using SixLabors.ImageSharp;
+using FXR3 = FXR3_XMLR.FXR3;
 using Image = SixLabors.ImageSharp.Image;
+using FFXPatchTest;
 
 namespace DFXR3Editor
 {
@@ -153,7 +155,7 @@ namespace DFXR3Editor
             _cl.Dispose();
             _gd.Dispose();
         }
-        public static void LoadFFXFromXml(XDocument fxrXml, string filePath)
+        public static void LoadFFXFromXml(XDocument fxrXml, string filePath, FXR3 loadTimeFxr3)
         {
             if (fxrXml.Element("FXR3") == null || fxrXml.Root.Element("RootEffectCall") == null)
             {
@@ -161,7 +163,7 @@ namespace DFXR3Editor
             }
             else
             {
-                selectedFFXWindow = new FFXUI(fxrXml, filePath);
+                selectedFFXWindow = new FFXUI(fxrXml, filePath, loadTimeFxr3);
                 openFFXs.Add(selectedFFXWindow);
             }
         }
@@ -185,13 +187,15 @@ namespace DFXR3Editor
                         {
                             if (Path.GetExtension(ofd.FileName) == ".fxr")
                             {
-                                var fxrXml = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(FXR3_XMLR.FXR3.Read(ofd.FileName));
-                                LoadFFXFromXml(fxrXml, ofd.FileName);
+                                var fxr3 = FXR3.Read(ofd.FileName);
+                                var fxrXml = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(fxr3);
+                                LoadFFXFromXml(fxrXml, ofd.FileName, fxr3);
                             }
                             else if (Path.GetExtension(ofd.FileName) == ".xml")
                             {
                                 var fxrXml = XDocument.Load(ofd.FileName);
-                                LoadFFXFromXml(fxrXml, ofd.FileName);
+                                var fxr3 = FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(selectedFFXWindow.xDocLinq);
+                                LoadFFXFromXml(fxrXml, ofd.FileName, fxr3);
                             }
                         }
 #if RELEASE
@@ -326,6 +330,14 @@ namespace DFXR3Editor
                     if (ImGui.MenuItem("Lock DFXR3E Input", "Shift-Escape"))
                     {
                         MessageBox.Show("DFXR3E Inputs are locked, press OK to unlock");
+                    }
+                    ImGui.EndMenu();
+                }
+                if (ImGui.BeginMenu("Experimental Memes"))
+                {
+                    if (ImGui.MenuItem("Experimental Meme Reload Lol", selectedFFXWindow != null))
+                    {
+                        FFXReloader.Reload(selectedFFXWindow.loadTimeFxr3.Write(), FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(selectedFFXWindow.xDocLinq).Write());
                     }
                     ImGui.EndMenu();
                 }

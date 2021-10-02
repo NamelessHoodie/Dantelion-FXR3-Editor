@@ -54,6 +54,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DDSReader\DDSReader.csproj" />
+    <ProjectReference Include="..\FFXPatchTest\FFXPatchTest.csproj" />
     <ProjectReference Include="..\ImGui.NET\ImGui.NET.csproj" />
     <ProjectReference Include="..\ImGuizmo.NET\ImGuizmo.NET.csproj" />
     <ProjectReference Include="..\ImNodes.NET\ImNodes.NET.csproj" />

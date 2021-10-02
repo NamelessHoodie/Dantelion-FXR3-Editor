@@ -10,15 +10,17 @@ using System.Numerics;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using FXR3_XMLR;
 
 namespace DFXR3Editor.Dependencies
 {
     public class FFXUI
     {
-        public FFXUI(XDocument xdoc, string loadedFilePath)
+        public FFXUI(XDocument xdoc, string loadedFilePath, FXR3 loadTimeFxr3)
         {
             xDocLinq = xdoc;
             _loadedFilePath = loadedFilePath;
+            this.loadTimeFxr3 = loadTimeFxr3;
         }
 
         public unsafe bool RenderFFX()
@@ -77,6 +79,7 @@ namespace DFXR3Editor.Dependencies
 
         // Save/Load Path
         public string _loadedFilePath = "";
+        public FXR3 loadTimeFxr3;
 
         public ActionManager actionManager = new ActionManager();
         public bool collapseExpandTreeView = false;
