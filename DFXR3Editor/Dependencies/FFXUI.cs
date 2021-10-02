@@ -3,11 +3,9 @@ using ImGuiNETAddons;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using FXR3_XMLR;
@@ -27,23 +25,23 @@ namespace DFXR3Editor.Dependencies
         {
             string windowTitle = Path.GetFileName(_loadedFilePath);
             bool windowOpen = true;
-            int indexFfx = MainUserInterface.openFFXs.IndexOf(this);
-            if (ImGui.Begin(windowTitle + "##" + indexFfx, ref windowOpen, (MainUserInterface.selectedFFXWindow == this ? ImGuiWindowFlags.UnsavedDocument : ImGuiWindowFlags.None)))
+            int indexFfx = MainUserInterface.OpenFfXs.IndexOf(this);
+            if (ImGui.Begin(windowTitle + "##" + indexFfx, ref windowOpen, (MainUserInterface.SelectedFfxWindow == this ? ImGuiWindowFlags.UnsavedDocument : ImGuiWindowFlags.None)))
             {
                 if (ImGui.IsWindowHovered() && (ImGui.IsMouseClicked(ImGuiMouseButton.Left) || ImGui.IsMouseClicked(ImGuiMouseButton.Right)))
                 {
-                    MainUserInterface.selectedFFXWindow = this;
+                    MainUserInterface.SelectedFfxWindow = this;
                 }
                 if (!windowOpen)
                 {
-                    MainUserInterface.openFFXs.Remove(this);
-                    if (MainUserInterface.openFFXs.Any())
+                    MainUserInterface.OpenFfXs.Remove(this);
+                    if (MainUserInterface.OpenFfXs.Any())
                     {
-                        MainUserInterface.selectedFFXWindow = MainUserInterface.openFFXs.First();
+                        MainUserInterface.SelectedFfxWindow = MainUserInterface.OpenFfXs.First();
                     }
                     else
                     {
-                        MainUserInterface.selectedFFXWindow = null;
+                        MainUserInterface.SelectedFfxWindow = null;
                     }
                     return false;
                 }
@@ -105,20 +103,20 @@ namespace DFXR3Editor.Dependencies
                     var actionNumericID = root.Attribute("ActionID").Value;
                     var actionIdDef = DefParser.ActionIDNameAndDescription(actionNumericID);
                     bool showActionSearch;
-                    if (!MainUserInterface._isSearchByID)
+                    if (!MainUserInterface.IsSearchById)
                     {
-                        var searchBarSpaceless = MainUserInterface._SearchBarString.Replace(" ", "").ToLower();
+                        var searchBarSpaceless = MainUserInterface.SearchBarString.Replace(" ", "").ToLower();
                         var actionNameSpaceless = actionIdDef.name.Replace(" ", "").ToLower();
                         showActionSearch = searchBarSpaceless.Length > 0 ? actionNameSpaceless.Contains(searchBarSpaceless) : true;
                     }
                     else
                     {
-                        var searchBarSpaceless = MainUserInterface._SearchBarString.Replace(" ", "");
+                        var searchBarSpaceless = MainUserInterface.SearchBarString.Replace(" ", "");
                         var actionID = actionNumericID;
                         showActionSearch = searchBarSpaceless.Length > 0 ? actionID.StartsWith(searchBarSpaceless) : true;
                     }
 
-                    if (MainUserInterface._isSearchBarOpen ? showActionSearch && FFXHelperMethods._actionIDSupported.Contains(actionNumericID) : FFXHelperMethods._actionIDSupported.Contains(actionNumericID) || MainUserInterface._filtertoggle)
+                    if (MainUserInterface.IsSearchBarOpen ? showActionSearch && FFXHelperMethods._actionIDSupported.Contains(actionNumericID) : FFXHelperMethods._actionIDSupported.Contains(actionNumericID) || MainUserInterface.Filtertoggle)
                     {
                         TreeviewExpandCollapseHandler(false);
                         if (ImGuiAddons.TreeNodeTitleColored($"Action('{actionIdDef.name}')", ImGuiAddons.GetStyleColorVec4Safe(ImGuiCol.CheckMark)))
@@ -150,7 +148,7 @@ namespace DFXR3Editor.Dependencies
                 {
                     IEnumerable<XElement> tempnode = from node in root.Descendants()
                                                      where node.Name == "FFXActionCall" & node.Attribute("ActionID") != null
-                                                     where MainUserInterface._filtertoggle || FFXHelperMethods._actionIDSupported.Contains(node.Attribute("ActionID").Value)
+                                                     where MainUserInterface.Filtertoggle || FFXHelperMethods._actionIDSupported.Contains(node.Attribute("ActionID").Value)
                                                      select node;
                     if (tempnode.Any())
                     {
@@ -475,7 +473,7 @@ namespace DFXR3Editor.Dependencies
             {
                 Vector2 mousePos = ImGui.GetMousePos();
                 Vector2 localTextSize = ImGui.CalcTextSize(toolTipText);
-                float maxToolTipWidth = (float)MainUserInterface._window.Width * 0.4f;
+                float maxToolTipWidth = (float)MainUserInterface.Window.Width * 0.4f;
                 Vector2 windowSize = new Vector2(maxToolTipWidth, localTextSize.Y);
                 float windowWidth = mousePos.X;
                 ImGui.SetNextWindowPos(new Vector2(windowWidth, mousePos.Y), ImGuiCond.Appearing);
@@ -523,7 +521,7 @@ namespace DFXR3Editor.Dependencies
             {
                 Vector2 mousePos = ImGui.GetMousePos();
                 Vector2 localTextSize = ImGui.CalcTextSize(toolTipText);
-                float maxToolTipWidth = (float)MainUserInterface._window.Width * 0.4f;
+                float maxToolTipWidth = (float)MainUserInterface.Window.Width * 0.4f;
                 Vector2 windowSize = new Vector2(maxToolTipWidth, localTextSize.Y);
                 float windowWidth = mousePos.X;
                 ImGui.SetNextWindowPos(new Vector2(windowWidth, mousePos.Y + frameHeight), ImGuiCond.Appearing);
@@ -546,7 +544,7 @@ namespace DFXR3Editor.Dependencies
             {
                 ImGuiAddons.TreeNodeTitleColored(dragAndDropName);
                 ImGui.SetDragDropPayload(dragAndDropSourceType, IntPtr.Zero, 0);
-                MainUserInterface.dragAndDropBuffer = root;
+                MainUserInterface.DragAndDropBuffer = root;
                 ImGui.EndDragDropSource();
             }
             if (ImGui.BeginDragDropTarget())
@@ -554,7 +552,7 @@ namespace DFXR3Editor.Dependencies
                 var payload = ImGui.AcceptDragDropPayload(dragAndDropTargetType);
                 if (payload.NativePtr != null)
                 {
-                    actionManager.ExecuteAction(new XElementAdd(root, MainUserInterface.dragAndDropBuffer));
+                    actionManager.ExecuteAction(new XElementAdd(root, MainUserInterface.DragAndDropBuffer));
                 }
                 ImGui.EndDragDropTarget();
             }
@@ -600,14 +598,14 @@ namespace DFXR3Editor.Dependencies
             string nodeValue = node.Attribute("Value").Value;
             ImGui.SetNextItemWidth(ImGui.CalcTextSize("000000").X);
             IntInputDefaultNode(node, dataString + "IntInputField");
-            if (MainUserInterface.ffxTextureHandler != null)
+            if (MainUserInterface.FfxTextureHandler != null)
             {
                 if (int.TryParse(nodeValue, out int textureID))
                 {
-                    var a = MainUserInterface.ffxTextureHandler.GetFfxTextureIntPtr(textureID);
+                    var a = MainUserInterface.FfxTextureHandler.GetFfxTextureIntPtr(textureID);
                     if (a.TextureExists)
                     {
-                        ImGui.ImageButton(a.TextureHandle, new Vector2(MainUserInterface._textureDisplaySize));
+                        ImGui.ImageButton(a.TextureHandle, new Vector2(MainUserInterface.TextureDisplaySize));
                     }
                     else
                     {
@@ -630,13 +628,13 @@ namespace DFXR3Editor.Dependencies
                         {
                             ImGui.CloseCurrentPopup();
                         }
-                        for (int i = 0; i < MainUserInterface.ffxTextureHandler.FfxTexturesIdList.Count(); i++)
+                        for (int i = 0; i < MainUserInterface.FfxTextureHandler.FfxTexturesIdList.Count(); i++)
                         {
-                            var str = MainUserInterface.ffxTextureHandler.FfxTexturesIdList[i].ToString();
-                            var textureHandleAndBoolPair = MainUserInterface.ffxTextureHandler.GetFfxTextureIntPtr(int.Parse(str));
+                            var str = MainUserInterface.FfxTextureHandler.FfxTexturesIdList[i].ToString();
+                            var textureHandleAndBoolPair = MainUserInterface.FfxTextureHandler.GetFfxTextureIntPtr(int.Parse(str));
                             if (textureHandleAndBoolPair.TextureExists)
                             {
-                                if (ImGui.ImageButton(textureHandleAndBoolPair.TextureHandle, new Vector2(MainUserInterface._textureDisplaySize)))
+                                if (ImGui.ImageButton(textureHandleAndBoolPair.TextureHandle, new Vector2(MainUserInterface.TextureDisplaySize)))
                                 {
                                     if (Int32.TryParse(str, out int intNodeValue))
                                     {
@@ -811,12 +809,12 @@ namespace DFXR3Editor.Dependencies
             ImGui.Indent();
             if (ImGui.ColorButton($"Static Color", new Vector4(float.Parse(NodeListEditor.ElementAt(0).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(1).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(2).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(3).Attribute("Value").Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
             {
-                MainUserInterface._cPickerRed = NodeListEditor.ElementAt(0);
-                MainUserInterface._cPickerGreen = NodeListEditor.ElementAt(1);
-                MainUserInterface._cPickerBlue = NodeListEditor.ElementAt(2);
-                MainUserInterface._cPickerAlpha = NodeListEditor.ElementAt(3);
-                MainUserInterface._cPicker = new Vector4(float.Parse(MainUserInterface._cPickerRed.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerGreen.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerBlue.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerAlpha.Attribute("Value").Value));
-                MainUserInterface._cPickerIsEnable = true;
+                MainUserInterface.CPickerRed = NodeListEditor.ElementAt(0);
+                MainUserInterface.CPickerGreen = NodeListEditor.ElementAt(1);
+                MainUserInterface.CPickerBlue = NodeListEditor.ElementAt(2);
+                MainUserInterface.CPickerAlpha = NodeListEditor.ElementAt(3);
+                MainUserInterface.CPicker = new Vector4(float.Parse(MainUserInterface.CPickerRed.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerGreen.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerBlue.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerAlpha.Attribute("Value").Value));
+                MainUserInterface.CPickerIsEnable = true;
                 ImGui.SetWindowFocus("FFX Color Picker");
             }
             ImGui.Unindent();
@@ -975,12 +973,12 @@ namespace DFXR3Editor.Dependencies
                         ImGui.SameLine();
                         if (ImGui.ColorButton($"Stage Position {i}: Color", new Vector4(float.Parse(NodeListEditor.ElementAt(PositionOffset).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(PositionOffset + 1).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(PositionOffset + 2).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(PositionOffset + 3).Attribute("Value").Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
                         {
-                            MainUserInterface._cPickerRed = NodeListEditor.ElementAt(PositionOffset);
-                            MainUserInterface._cPickerGreen = NodeListEditor.ElementAt(PositionOffset + 1);
-                            MainUserInterface._cPickerBlue = NodeListEditor.ElementAt(PositionOffset + 2);
-                            MainUserInterface._cPickerAlpha = NodeListEditor.ElementAt(PositionOffset + 3);
-                            MainUserInterface._cPicker = new Vector4(float.Parse(MainUserInterface._cPickerRed.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerGreen.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerBlue.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerAlpha.Attribute("Value").Value));
-                            MainUserInterface._cPickerIsEnable = true;
+                            MainUserInterface.CPickerRed = NodeListEditor.ElementAt(PositionOffset);
+                            MainUserInterface.CPickerGreen = NodeListEditor.ElementAt(PositionOffset + 1);
+                            MainUserInterface.CPickerBlue = NodeListEditor.ElementAt(PositionOffset + 2);
+                            MainUserInterface.CPickerAlpha = NodeListEditor.ElementAt(PositionOffset + 3);
+                            MainUserInterface.CPicker = new Vector4(float.Parse(MainUserInterface.CPickerRed.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerGreen.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerBlue.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerAlpha.Attribute("Value").Value));
+                            MainUserInterface.CPickerIsEnable = true;
                             ImGui.SetWindowFocus("FFX Color Picker");
                         }
                         LocalColorOffset += 5;
@@ -1170,12 +1168,12 @@ namespace DFXR3Editor.Dependencies
                         ImGui.SameLine();
                         if (ImGui.ColorButton($"Stage Position {i}: Color", new Vector4(float.Parse(NodeListEditor.ElementAt(PositionOffset).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(PositionOffset + 1).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(PositionOffset + 2).Attribute("Value").Value), float.Parse(NodeListEditor.ElementAt(PositionOffset + 3).Attribute("Value").Value)), ImGuiColorEditFlags.AlphaPreview, new Vector2(30, 30)))
                         {
-                            MainUserInterface._cPickerRed = NodeListEditor.ElementAt(PositionOffset);
-                            MainUserInterface._cPickerGreen = NodeListEditor.ElementAt(PositionOffset + 1);
-                            MainUserInterface._cPickerBlue = NodeListEditor.ElementAt(PositionOffset + 2);
-                            MainUserInterface._cPickerAlpha = NodeListEditor.ElementAt(PositionOffset + 3);
-                            MainUserInterface._cPicker = new Vector4(float.Parse(MainUserInterface._cPickerRed.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerGreen.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerBlue.Attribute("Value").Value), float.Parse(MainUserInterface._cPickerAlpha.Attribute("Value").Value));
-                            MainUserInterface._cPickerIsEnable = true;
+                            MainUserInterface.CPickerRed = NodeListEditor.ElementAt(PositionOffset);
+                            MainUserInterface.CPickerGreen = NodeListEditor.ElementAt(PositionOffset + 1);
+                            MainUserInterface.CPickerBlue = NodeListEditor.ElementAt(PositionOffset + 2);
+                            MainUserInterface.CPickerAlpha = NodeListEditor.ElementAt(PositionOffset + 3);
+                            MainUserInterface.CPicker = new Vector4(float.Parse(MainUserInterface.CPickerRed.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerGreen.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerBlue.Attribute("Value").Value), float.Parse(MainUserInterface.CPickerAlpha.Attribute("Value").Value));
+                            MainUserInterface.CPickerIsEnable = true;
                             ImGui.SetWindowFocus("FFX Color Picker");
                         }
                         LocalColorOffset += 5;

@@ -4,12 +4,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SoulsFormats;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using Veldrid;
 using Veldrid.ImageSharp;
 
 namespace DFXR3Editor
@@ -53,8 +48,8 @@ namespace DFXR3Editor
                         DDSImage ddsImage = new DDSImage(ddsBytes);
                         Image<Rgba32> image = Image.LoadPixelData<Rgba32>(ddsImage.Data, ddsImage.Width, ddsImage.Height);
                         var img = new ImageSharpTexture(image);
-                        var veldridTexture = img.CreateDeviceTexture(MainUserInterface._gd, MainUserInterface._gd.ResourceFactory);
-                        var textureHandle = MainUserInterface._controller.GetOrCreateImGuiBinding(MainUserInterface._gd.ResourceFactory, veldridTexture);
+                        var veldridTexture = img.CreateDeviceTexture(MainUserInterface.Gd, MainUserInterface.Gd.ResourceFactory);
+                        var textureHandle = MainUserInterface.Controller.GetOrCreateImGuiBinding(MainUserInterface.Gd.ResourceFactory, veldridTexture);
                         veldridTexture.Dispose();
                         loadedTexturesDictionary.Add(textureID, textureHandle);
                         return (true, textureHandle);
@@ -97,8 +92,8 @@ namespace DFXR3Editor
                             }
                         }
                         var img = new ImageSharpTexture(image);
-                        var veldridTexture = img.CreateDeviceTexture(MainUserInterface._gd, MainUserInterface._gd.ResourceFactory);
-                        var textureHandle = MainUserInterface._controller.GetOrCreateImGuiBinding(MainUserInterface._gd.ResourceFactory, veldridTexture);
+                        var veldridTexture = img.CreateDeviceTexture(MainUserInterface.Gd, MainUserInterface.Gd.ResourceFactory);
+                        var textureHandle = MainUserInterface.Controller.GetOrCreateImGuiBinding(MainUserInterface.Gd.ResourceFactory, veldridTexture);
                         veldridTexture.Dispose();
                         loadedTexturesDictionary.Add(textureID, textureHandle);
                     }

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using ImGuiNET;
 using System.Numerics;
-using System.Collections;
-using System.Xml;
 using System.Xml.Linq;
 using System.Linq;
 using DFXR3Editor.Dependencies;
@@ -71,7 +67,7 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.selectedFFXWindow.BooleanIntInputDefaultNode(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.SelectedFfxWindow.BooleanIntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                                 else if (localLoopNode.Attribute("isResourceTexture") != null)
                                 {
@@ -79,7 +75,7 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.selectedFFXWindow.TextureShowAndInput(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.SelectedFfxWindow.TextureShowAndInput(NodeListEditor[i], "##" + index);
                                 }
                                 else if (localLoopAttributeEnum != null)
                                 {
@@ -90,7 +86,7 @@ namespace DFXR3Editor
                                         ImGui.TableNextColumn();
                                         ImGui.Text(name);
                                         ImGui.TableNextColumn();
-                                        MainUserInterface.selectedFFXWindow.IntComboNotLinearDefaultNode(NodeListEditor[i], "##" + index, localLoopEnum);
+                                        MainUserInterface.SelectedFfxWindow.IntComboNotLinearDefaultNode(NodeListEditor[i], "##" + index, localLoopEnum);
                                     }
                                     else
                                     {
@@ -103,7 +99,7 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.selectedFFXWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.SelectedFfxWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                             }
                             else if (dataType == "f32")
@@ -112,7 +108,7 @@ namespace DFXR3Editor
                                 ImGui.TableNextColumn();
                                 ImGui.Text(name);
                                 ImGui.TableNextColumn();
-                                MainUserInterface.selectedFFXWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
+                                MainUserInterface.SelectedFfxWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                             }
                             else
                             {
@@ -123,7 +119,7 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.selectedFFXWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.SelectedFfxWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                                 else if (unkdataType == "FFXFieldFloat")
                                 {
@@ -131,13 +127,13 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.selectedFFXWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
+                                    MainUserInterface.SelectedFfxWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                             }
                             if (localLoopAttributeWiki != null)
                             {
                                 ImGui.SameLine();
-                                MainUserInterface.selectedFFXWindow.ShowToolTipSimple(i.ToString(), $"{fieldType}: ToolTip:", localLoopAttributeWiki.Value, true, ImGuiPopupFlags.MouseButtonLeft);
+                                MainUserInterface.SelectedFfxWindow.ShowToolTipSimple(i.ToString(), $"{fieldType}: ToolTip:", localLoopAttributeWiki.Value, true, ImGuiPopupFlags.MouseButtonLeft);
                             }
                         }
                         else
@@ -161,7 +157,7 @@ namespace DFXR3Editor
                             ImGui.TableNextColumn();
                             ImGui.Text(name);
                             ImGui.TableNextColumn();
-                            MainUserInterface.selectedFFXWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
+                            MainUserInterface.SelectedFfxWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                         }
                         else if (unkdataType == "FFXFieldFloat")
                         {
@@ -169,7 +165,7 @@ namespace DFXR3Editor
                             ImGui.TableNextColumn();
                             ImGui.Text(name);
                             ImGui.TableNextColumn();
-                            MainUserInterface.selectedFFXWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
+                            MainUserInterface.SelectedFfxWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                         }
                     }
                 }

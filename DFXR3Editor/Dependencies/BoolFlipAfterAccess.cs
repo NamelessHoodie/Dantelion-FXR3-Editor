@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DFXR3Editor.Dependencies
+﻿namespace DFXR3Editor.Dependencies
 {
     public class BoolFlipAfterAccess
     {

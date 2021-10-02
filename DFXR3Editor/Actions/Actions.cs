@@ -1,14 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Xml;
 using System.Xml.Linq;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
-using SoulsFormats;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using System.Numerics;
 using DFXR3Editor.Dependencies;
 
@@ -31,19 +24,19 @@ namespace DFXR3Editor
 
         public EditPublicCPickerVector4(Vector4 newVector)
         {
-            oldVector = MainUserInterface._cPicker;
+            oldVector = MainUserInterface.CPicker;
             this.newVector = newVector;
         }
 
         public override ActionEvent Execute()
         {
-            MainUserInterface._cPicker = newVector;
+            MainUserInterface.CPicker = newVector;
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            MainUserInterface._cPicker = oldVector;
+            MainUserInterface.CPicker = oldVector;
             return ActionEvent.NoEvent;
         }
     }
