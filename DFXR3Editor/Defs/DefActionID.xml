@@ -48,7 +48,7 @@
 		</orientationSpecializedModes606>
 	</Enums>
 	<ActionIDs>
-		<ActionID ID="1" name="Unknown" description=" ???
+		<ActionID ID="1" name="Unknown(1)" description=" ???
 		This is by far the most confusing action I've looked at. It controls the movement of the effect, but it does so in a very strange way, and I don't see how it could be all that useful, but I don't know exactly how it works yet.
 		Action 129's field might have something to do with the strange behavior here, since it also affected action 34, which goes in the same slot as this. Still need to test this.">
 			<Properties1>
@@ -112,6 +112,18 @@ Can be used with actions 401-404 since they change the shape of the spawner. Act
 				<Field name="Sound ID" dataType="s32"/>
 				<Field name="Volume" dataType="f32"/>
 				<Field name="Repeat" dataType="s32" isBool=""/>
+			</Fields1>
+		</ActionID>
+		<ActionID ID="81" name="Play Sound" description=" Controls effect audio, seems to be the same action as 75 just without the looping, perhaps for burst sound effects">
+			<Fields1>
+				<Field name="Sound ID" dataType="s32"/>
+				<Field name="Volume" dataType="f32"/>
+			</Fields1>
+		</ActionID>
+		<ActionID ID="84" name="Unknown(84)" description=" I haven't done any testing with this action yet, putting it here for easy editing">
+			<Fields1>
+				<Field name="S" dataType="s32"/>
+				<Field name="Volume" dataType="f32"/>
 			</Fields1>
 		</ActionID>
 		<ActionID ID="105" name="Random Particle Motion?" description=" Controls the random motion of particles in a 3d space">
