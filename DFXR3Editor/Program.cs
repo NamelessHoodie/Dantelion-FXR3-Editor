@@ -36,17 +36,6 @@ namespace DFXR3Editor
         public static ImGuiController Controller;
         public static readonly float FrameRateForDelta = 58.82352941176471f;
 
-        // Exception Handler
-        private static bool _exceptionPopupOPen = false;
-        private static string _exceptionTitleString = "";
-        private static string _exceptionContentString = "";
-        private static void ShowExceptionPopup(string exceptionTitle, Exception exceptionToDisplay)
-        {
-            _exceptionPopupOPen = true;
-            _exceptionTitleString = exceptionTitle;
-            _exceptionContentString = exceptionToDisplay.ToString();
-        }
-
         // UI state
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
         public static uint mainViewPortDockSpaceID;
@@ -124,7 +113,7 @@ namespace DFXR3Editor
                 ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
                 HotKeyGlobalListener();
-                if (Controller.GetWindowMinimized(mainViewportPtr) == 0)
+                if (Controller.GetWindowMinimized(mainViewportPtr) == 0 && !ExceptionManager.TryRenderException())
                 {
                     SubmitMainMenuBar();
                     SubmitMainWindowUi();
@@ -199,7 +188,7 @@ namespace DFXR3Editor
                     }
                         catch (Exception exception)
                         {
-                            ShowExceptionPopup("ERROR: FFX loading failed", exception);
+                            ExceptionManager.PushExceptionForRendering("ERROR: FFX loading failed", exception);
                         }
 #endif
                     }
@@ -220,7 +209,7 @@ namespace DFXR3Editor
                         }
                         catch (Exception exception)
                         {
-                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
+                            ExceptionManager.PushExceptionForRendering("ERROR: FFX saving failed", exception);
                         }
                     }
                     if (ImGui.MenuItem("Save as", OpenFfXs.Any()))
@@ -245,7 +234,7 @@ namespace DFXR3Editor
                         }
                         catch (Exception exception)
                         {
-                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
+                            ExceptionManager.PushExceptionForRendering("ERROR: FFX saving failed", exception);
                         }
                     }
                     if (ImGui.MenuItem("Load FFX Resources For Texture Display - Requires Relatively Good Hardware", FfxTextureHandler == null))
@@ -369,6 +358,17 @@ namespace DFXR3Editor
         private static void SubmitDockableUi()
         {
             { //Declare Standalone Windows here
+#if DEBUG
+                //Debug Window
+                {
+                    if (ImGui.Button("Throw Another Exception"))
+                        ExceptionManager.PushExceptionForRendering
+                        (
+                            $"DummyException:{new Random().Next()}", 
+                            new Exception("hAaaaa")
+                        );
+                }
+#endif
                 // Color Picker
                 if (CPickerIsEnable)
                 {
@@ -445,28 +445,6 @@ namespace DFXR3Editor
                         }
                     }
                     ImGui.End();
-                }
-                if (_exceptionPopupOPen)
-                {
-                    if (!ImGui.IsPopupOpen(_exceptionTitleString))
-                    {
-                        ImGui.OpenPopup(_exceptionTitleString);
-                    }
-                    if (ImGui.IsPopupOpen(_exceptionTitleString))
-                    {
-                        ImGuiViewportPtr mainViewport = ImGui.GetMainViewport();
-                        Vector2 textInputSize = new Vector2(mainViewport.Size.X * 0.8f, mainViewport.Size.Y * 0.8f);
-                        ImGui.SetNextWindowPos(new Vector2(mainViewport.Pos.X + mainViewport.Size.X * 0.5f, mainViewport.Pos.Y + mainViewport.Size.Y * 0.5f), ImGuiCond.Always, new Vector2(0.5f, 0.5f));
-                        if (ImGui.BeginPopupModal(_exceptionTitleString, ref _exceptionPopupOPen, ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize))
-                        {
-                            ImGui.InputTextMultiline("TextInput", ref _exceptionContentString, 1024, textInputSize, ImGuiInputTextFlags.ReadOnly);
-                            if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
-                            {
-                                _exceptionPopupOPen = false;
-                            }
-                            ImGui.EndPopup();
-                        }
-                    }
                 }
                 if (MainUserInterface.IsSearchBarOpen)
                 {
