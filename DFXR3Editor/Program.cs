@@ -5,26 +5,14 @@ using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using ImGuiNET;
-using ImPlotNET;
-using imnodesNET;
-using ImGuizmoNET;
 using System.Xml.Linq;
-using System.Collections;
 using ImGuiNETAddons;
 using System.IO;
 using System.Collections.Generic;
-using System.Xml;
 using System.Threading;
 using SoulsFormats;
-using System.Diagnostics;
 using DFXR3Editor.Dependencies;
 using System.Windows.Forms;
-using Veldrid.ImageSharp;
-using DDSReader;
-using SixLabors.ImageSharp.PixelFormats;
-using System.Drawing;
-using SixLabors.ImageSharp;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace DFXR3Editor
 {
