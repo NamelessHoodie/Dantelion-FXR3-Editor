@@ -47,8 +47,8 @@ namespace DFXR3Editor
 
         public static bool Filtertoggle = false;
 
-        public static Ffxui SelectedFfxWindow;
-        public static List<Ffxui> OpenFfXs = new List<Ffxui>();
+        public static RenderableFXR SelectedFfxWindow;
+        public static List<RenderableFXR> OpenFfXs = new List<RenderableFXR>();
 
         //<Color Editor>
         public static bool CPickerIsEnable = false;
@@ -139,7 +139,7 @@ namespace DFXR3Editor
             }
             else
             {
-                SelectedFfxWindow = new Ffxui(fxrXml, filePath);
+                SelectedFfxWindow = new RenderableFXR(fxrXml, filePath);
                 OpenFfXs.Add(SelectedFfxWindow);
             }
         }
@@ -325,7 +325,7 @@ namespace DFXR3Editor
             for (int i = 0; i < OpenFfXs.Count(); i++)
             {
                 ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-                if (OpenFfXs[i].RenderFfx())
+                if (OpenFfXs[i].RenderWithImgui())
                 {
                     OpenFfXs[i].TreeviewExpandCollapseHandler(true);
                 }
@@ -452,7 +452,7 @@ namespace DFXR3Editor
                 }
             }
         }
-        public static void CloseOpenFfxWithoutSaving(Ffxui ffxUi)
+        public static void CloseOpenFfxWithoutSaving(RenderableFXR ffxUi)
         {
             ffxUi.LoadedFilePath = "";
             ffxUi.XDocLinq = null;
@@ -460,7 +460,7 @@ namespace DFXR3Editor
             ffxUi.ShowFfxEditorFields = false;
             ffxUi.ShowFfxEditorProperties = false;
         }
-        public static void ResetEditorSelection(Ffxui ffxUi)
+        public static void ResetEditorSelection(RenderableFXR ffxUi)
         {
             ffxUi.ShowFfxEditorFields = false;
             ffxUi.ShowFfxEditorProperties = false;

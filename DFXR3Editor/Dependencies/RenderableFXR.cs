@@ -13,15 +13,30 @@ using System.Xml.Linq;
 
 namespace DFXR3Editor.Dependencies
 {
-    public class Ffxui
+    public class RenderableFXR
     {
-        public Ffxui(XDocument xdoc, string loadedFilePath)
+        //XML
+        public XDocument XDocLinq;
+        public bool ShowFfxEditorFields = false;
+        public bool ShowFfxEditorProperties = false;
+        public uint TreeViewCurrentHighlighted = 0;
+        public IEnumerable<XElement> NodeListEditor;
+        public string AxBy;
+        public string[] Fields;
+        public XElement FfxPropertyEditorElement;
+
+        // Save/Load Path
+        public string LoadedFilePath = "";
+        public ActionManager ActionManager = new ActionManager();
+        public bool CollapseExpandTreeView = false;
+
+        public RenderableFXR(XDocument xdoc, string loadedFilePath)
         {
             XDocLinq = xdoc;
             LoadedFilePath = loadedFilePath;
         }
 
-        public unsafe bool RenderFfx()
+        public unsafe bool RenderWithImgui()
         {
             string windowTitle = Path.GetFileName(LoadedFilePath);
             bool windowOpen = true;
@@ -65,21 +80,6 @@ namespace DFXR3Editor.Dependencies
             }
         }
 
-        //XML
-        public XDocument XDocLinq;
-        public bool ShowFfxEditorFields = false;
-        public bool ShowFfxEditorProperties = false;
-        public uint TreeViewCurrentHighlighted = 0;
-        public IEnumerable<XElement> NodeListEditor;
-        public string AxBy;
-        public string[] Fields;
-        public XElement FfxPropertyEditorElement;
-
-        // Save/Load Path
-        public string LoadedFilePath = "";
-
-        public ActionManager ActionManager = new ActionManager();
-        public bool CollapseExpandTreeView = false;
         //UI Builders
         public void PopulateTree(XElement root)
         {

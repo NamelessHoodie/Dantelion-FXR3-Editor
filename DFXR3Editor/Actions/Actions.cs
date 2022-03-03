@@ -198,8 +198,8 @@ namespace DFXR3Editor
     }
     public class ResetEditorSelection : Action
     {
-        Ffxui _ui;
-        public ResetEditorSelection(Ffxui ffxRelevant)
+        RenderableFXR _ui;
+        public ResetEditorSelection(RenderableFXR ffxRelevant)
         {
             _ui = ffxRelevant;
         }
