@@ -9,32 +9,32 @@ using System.Xml.Linq;
 
 namespace DFXR3Editor.Dependencies
 {
-    public class FFXHelperMethods
+    public class FfxHelperMethods
     {
-        public static readonly XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        public static readonly XNamespace xsd = "http://www.w3.org/2001/XMLSchema";
+        public static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        public static readonly XNamespace Xsd = "http://www.w3.org/2001/XMLSchema";
 
         // Supported FFX Arguments
-        public static readonly string[] _actionIDSupported = DefParser.SupportedActionIDs();
+        public static readonly string[] ActionIdSupported = DefParser.SupportedActionIDs();
         public static readonly string[] AxByColorArray = new string[] { "A19B7", "A35B11", "A67B19", "A99B27", "A4163B35" };
         public static readonly string[] AxByScalarArray = new string[] { "A0B0", "A16B4", "A32B8", "A64B16", "A96B24", "A4160B32" };
 
-        public static IEnumerable<XElement> XMLChildNodesValid(XElement Node)
+        public static IEnumerable<XElement> XmlChildNodesValid(XElement node)
         {
             //return from element in Node.Elements()
             //       where element.NodeType == XmlNodeType.Element
             //       select element;
 
-            return Node.Elements();
+            return node.Elements();
         }
-        public static int GetNodeIndexinParent(XElement Node)
+        public static int GetNodeIndexinParent(XElement node)
         {
             //return Node.ElementsBeforeSelf().Where(n => n.NodeType == XmlNodeType.Element).Count();
-            return Node.ElementsBeforeSelf().Count();
+            return node.ElementsBeforeSelf().Count();
         }
-        public static string AxByToName(string FFXPropertyAxBy)
+        public static string AxByToName(string ffxPropertyAxBy)
         {
-            return FFXPropertyAxBy switch
+            return ffxPropertyAxBy switch
             {
                 "A0B0" => "Static 0",
                 "A16B4" => "Static 1",
@@ -47,12 +47,12 @@ namespace DFXR3Editor.Dependencies
                 "A99B27" => "Curve interpolation",
                 "A4160B32" => "Loop Linear Interpolation",
                 "A4163B35" => "Loop Linear Interpolation",
-                _ => FFXPropertyAxBy,
+                _ => ffxPropertyAxBy,
             };
         }
-        public static string EffectIDToName(string EffectID)
+        public static string EffectIdToName(string effectId)
         {
-            return EffectID switch
+            return effectId switch
             {
                 "1002" => "Thresholds<'LOD'>",
                 "1004" => "Effect()",
@@ -61,7 +61,7 @@ namespace DFXR3Editor.Dependencies
                 "2002" => "Container<'LOD'>",
                 "2200" => "Container<'Effect'>",
                 "2202" => "Container<'Effect+'>",
-                _ => EffectID,
+                _ => effectId,
             };
         }
     }

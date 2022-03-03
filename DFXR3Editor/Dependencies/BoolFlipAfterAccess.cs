@@ -6,21 +6,21 @@ namespace DFXR3Editor.Dependencies
 {
     public class BoolFlipAfterAccess
     {
-        private uint accessesCount = 0;
-        private uint maximumAccesses;
-        private bool _Boolean;
+        private uint _accessesCount = 0;
+        private uint _maximumAccesses;
+        private bool _boolean;
         public bool Boolean
         {
             get
             {
-                if (accessesCount >= maximumAccesses)
+                if (_accessesCount >= _maximumAccesses)
                 {
-                    return !_Boolean;
+                    return !_boolean;
                 }
                 else
                 {
-                    accessesCount++;
-                    return _Boolean;
+                    _accessesCount++;
+                    return _boolean;
                 }
             }
         }
@@ -31,8 +31,8 @@ namespace DFXR3Editor.Dependencies
         /// <param name="accessesBeforeFlip">Amount of times the boolean can be accessed before flipping it</param>
         public BoolFlipAfterAccess(bool initialState, uint accessesBeforeFlip)
         {
-            _Boolean = initialState;
-            maximumAccesses = accessesBeforeFlip;
+            _boolean = initialState;
+            _maximumAccesses = accessesBeforeFlip;
         }
     }
 }

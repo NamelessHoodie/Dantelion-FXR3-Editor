@@ -8,7 +8,7 @@ namespace DFXR3Editor
 {
     class Themes
     {
-        private static string lastTheme = "";
+        private static string _lastTheme = "";
         public static void ThemesSelectorPush(String themeName)
         {
             if (themeName == "Red Clay")
@@ -86,7 +86,7 @@ namespace DFXR3Editor
 
         private static void ThemesSelectorPop(string newTheme)
         {
-            int PopStyleColorCount = lastTheme switch
+            int popStyleColorCount = _lastTheme switch
             {
                 "Red Clay" => 39,
                 "ImGui Dark" => 1,
@@ -94,7 +94,7 @@ namespace DFXR3Editor
                 "ImGui Classic" => 2,
                 _ => 0,
             };
-            int PopStyleVarCount = lastTheme switch
+            int popStyleVarCount = _lastTheme switch
             {
                 "Red Clay" => 1,
                 "ImGui Dark" => 0,
@@ -103,12 +103,12 @@ namespace DFXR3Editor
                 _ => 0,
             };
 
-            if (PopStyleColorCount != 0)
-                ImGui.PopStyleColor(PopStyleColorCount);
-            if (PopStyleVarCount != 0)
-                ImGui.PopStyleVar(PopStyleVarCount);
+            if (popStyleColorCount != 0)
+                ImGui.PopStyleColor(popStyleColorCount);
+            if (popStyleVarCount != 0)
+                ImGui.PopStyleVar(popStyleVarCount);
 
-            lastTheme = newTheme;
+            _lastTheme = newTheme;
         }
     }
 }

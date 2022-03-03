@@ -32,8 +32,8 @@ namespace DFXR3Editor
     {
         private List<IActionEventHandler> _eventHandlers = new List<IActionEventHandler>();
 
-        private Stack<Action> UndoStack = new Stack<Action>();
-        private Stack<Action> RedoStack = new Stack<Action>();
+        private Stack<Action> _undoStack = new Stack<Action>();
+        private Stack<Action> _redoStack = new Stack<Action>();
 
         public void AddEventHandler(IActionEventHandler handler)
         {
@@ -55,55 +55,55 @@ namespace DFXR3Editor
         public void ExecuteAction(Action a)
         {
             NotifyHandlers(a.Execute());
-            UndoStack.Push(a);
-            RedoStack.Clear();
+            _undoStack.Push(a);
+            _redoStack.Clear();
         }
 
         public Action PeekUndoAction()
         {
-            if (UndoStack.Count() == 0)
+            if (_undoStack.Count() == 0)
             {
                 return null;
             }
-            return UndoStack.Peek();
+            return _undoStack.Peek();
         }
 
         public void UndoAction()
         {
-            if (UndoStack.Count() == 0)
+            if (_undoStack.Count() == 0)
             {
                 return;
             }
-            var a = UndoStack.Pop();
+            var a = _undoStack.Pop();
             NotifyHandlers(a.Undo());
-            RedoStack.Push(a);
+            _redoStack.Push(a);
         }
 
         public void RedoAction()
         {
-            if (RedoStack.Count() == 0)
+            if (_redoStack.Count() == 0)
             {
                 return;
             }
-            var a = RedoStack.Pop();
+            var a = _redoStack.Pop();
             NotifyHandlers(a.Execute());
-            UndoStack.Push(a);
+            _undoStack.Push(a);
         }
 
         public bool CanUndo()
         {
-            return UndoStack.Count() > 0;
+            return _undoStack.Count() > 0;
         }
 
         public bool CanRedo()
         {
-            return RedoStack.Count() > 0;
+            return _redoStack.Count() > 0;
         }
 
         public void Clear()
         {
-            UndoStack.Clear();
-            RedoStack.Clear();
+            _undoStack.Clear();
+            _redoStack.Clear();
         }
     }
 }
