@@ -26,161 +26,161 @@ namespace DFXR3Editor
 
     public class EditPublicCPickerVector4 : Action
     {
-        private Vector4 _newVector;
-        private Vector4 _oldVector;
+        private Vector4 newVector;
+        private Vector4 oldVector;
 
         public EditPublicCPickerVector4(Vector4 newVector)
         {
-            _oldVector = MainUserInterface.CPicker;
-            this._newVector = newVector;
+            oldVector = MainUserInterface._cPicker;
+            this.newVector = newVector;
         }
 
         public override ActionEvent Execute()
         {
-            MainUserInterface.CPicker = _newVector;
+            MainUserInterface._cPicker = newVector;
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            MainUserInterface.CPicker = _oldVector;
+            MainUserInterface._cPicker = oldVector;
             return ActionEvent.NoEvent;
         }
     }
     public class ModifyXAttributeInt : Action
     {
-        private XAttribute _editedAttribute;
-        private string _oldValue;
-        private string _newValue;
+        private XAttribute editedAttribute;
+        private string oldValue;
+        private string newValue;
 
         public ModifyXAttributeInt(XAttribute attributeToEdit, int newValue)
         {
-            this._editedAttribute = attributeToEdit;
-            this._oldValue = attributeToEdit.Value;
-            this._newValue = newValue.ToString();
+            this.editedAttribute = attributeToEdit;
+            this.oldValue = attributeToEdit.Value;
+            this.newValue = newValue.ToString();
         }
 
         public override ActionEvent Execute()
         {
-            _editedAttribute.Value = _newValue;
+            editedAttribute.Value = newValue;
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            _editedAttribute.Value = _oldValue;
+            editedAttribute.Value = oldValue;
             return ActionEvent.NoEvent;
         }
     }
     public class ModifyXAttributeFloat : Action
     {
-        private XAttribute _editedAttribute;
-        private string _oldValue;
-        private string _newValue;
+        private XAttribute editedAttribute;
+        private string oldValue;
+        private string newValue;
 
         public ModifyXAttributeFloat(XAttribute attributeToEdit, float newValue)
         {
-            this._editedAttribute = attributeToEdit;
-            this._oldValue = attributeToEdit.Value;
-            this._newValue = newValue.ToString("0.####");
+            this.editedAttribute = attributeToEdit;
+            this.oldValue = attributeToEdit.Value;
+            this.newValue = newValue.ToString("0.####");
         }
 
         public override ActionEvent Execute()
         {
-            _editedAttribute.Value = _newValue;
+            editedAttribute.Value = newValue;
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            _editedAttribute.Value = _oldValue;
+            editedAttribute.Value = oldValue;
             return ActionEvent.NoEvent;
         }
     }
     public class ModifyXAttributeString : Action
     {
-        private XAttribute _editedAttribute;
-        private string _oldValue;
-        private string _newValue;
+        private XAttribute editedAttribute;
+        private string oldValue;
+        private string newValue;
 
         public ModifyXAttributeString(XAttribute attributeToEdit, string newValue)
         {
-            this._editedAttribute = attributeToEdit;
-            this._oldValue = attributeToEdit.Value;
-            this._newValue = newValue;
+            this.editedAttribute = attributeToEdit;
+            this.oldValue = attributeToEdit.Value;
+            this.newValue = newValue;
         }
 
         public override ActionEvent Execute()
         {
-            _editedAttribute.Value = _newValue;
+            editedAttribute.Value = newValue;
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            _editedAttribute.Value = _oldValue;
+            editedAttribute.Value = oldValue;
             return ActionEvent.NoEvent;
         }
     }
     public class XElementReplaceChildren : Action
     {
-        private XElement _objXElement;
-        private XElement _originalXElement;
-        private XElement _newXElement;
+        private XElement objXElement;
+        private XElement originalXElement;
+        private XElement newXElement;
 
         public XElementReplaceChildren(XElement node, XElement newXElement)
         {
-            this._objXElement = node;
-            this._originalXElement = new XElement(node);
-            this._newXElement = new XElement(newXElement);
+            this.objXElement = node;
+            this.originalXElement = new XElement(node);
+            this.newXElement = new XElement(newXElement);
         }
 
         public override ActionEvent Execute()
         {
-            if (_objXElement != null)
+            if (objXElement != null)
             {
-                _objXElement.RemoveNodes();
-                _objXElement.Add(_newXElement.Elements());
+                objXElement.RemoveNodes();
+                objXElement.Add(newXElement.Elements());
             }
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            if (_objXElement != null)
+            if (objXElement != null)
             {
-                _objXElement.RemoveNodes();
-                _objXElement.Add(_originalXElement.Elements());
+                objXElement.RemoveNodes();
+                objXElement.Add(originalXElement.Elements());
             }
             return ActionEvent.NoEvent;
         }
     }
     public class XElementReplaceChildrenWithSnapshot : Action
     {
-        private XElement _objXElement;
-        private XElement _originalXElement;
-        private XElement _newXElement;
-        private bool _skipFirstDo = false;
+        private XElement objXElement;
+        private XElement originalXElement;
+        private XElement newXElement;
+        private bool skipFirstDo = false;
 
         public XElementReplaceChildrenWithSnapshot(XElement node, XElement oldXelement)
         {
-            this._objXElement = node;
-            this._originalXElement = new XElement(oldXelement);
-            this._newXElement = new XElement(node);
+            this.objXElement = node;
+            this.originalXElement = new XElement(oldXelement);
+            this.newXElement = new XElement(node);
         }
 
         public override ActionEvent Execute()
         {
-            if (_objXElement != null)
+            if (objXElement != null)
             {
-                if (_skipFirstDo)
+                if (skipFirstDo)
                 {
-                    _objXElement.RemoveNodes();
-                    _objXElement.Add(_newXElement.Elements());
+                    objXElement.RemoveNodes();
+                    objXElement.Add(newXElement.Elements());
                 }
                 else
                 {
-                    _skipFirstDo = true;
+                    skipFirstDo = true;
                 }
             }
             return ActionEvent.NoEvent;
@@ -188,71 +188,71 @@ namespace DFXR3Editor
 
         public override ActionEvent Undo()
         {
-            if (_objXElement != null)
+            if (objXElement != null)
             {
-                _objXElement.RemoveNodes();
-                _objXElement.Add(_originalXElement.Elements());
+                objXElement.RemoveNodes();
+                objXElement.Add(originalXElement.Elements());
             }
             return ActionEvent.NoEvent;
         }
     }
     public class ResetEditorSelection : Action
     {
-        RenderableFXR _ui;
-        public ResetEditorSelection(RenderableFXR ffxRelevant)
+        FFXUI ui;
+        public ResetEditorSelection(FFXUI ffxRelevant)
         {
-            _ui = ffxRelevant;
+            ui = ffxRelevant;
         }
 
         public override ActionEvent Execute()
         {
-            MainUserInterface.ResetEditorSelection(_ui);
+            MainUserInterface.ResetEditorSelection(ui);
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            MainUserInterface.ResetEditorSelection(_ui);
+            MainUserInterface.ResetEditorSelection(ui);
             return ActionEvent.NoEvent;
         }
     }
     public class XElementRemove : Action
     {
-        private XElement _objXElement;
-        private XElement _xParent;
-        private XElement _originalXElement;
-        private int _indexInParent;
+        private XElement objXElement;
+        private XElement XParent;
+        private XElement originalXElement;
+        private int indexInParent;
 
         public XElementRemove(XElement nodeToRemove)
         {
-            this._objXElement = nodeToRemove;
-            this._originalXElement = new XElement(nodeToRemove);
-            this._xParent = nodeToRemove.Parent;
-            _indexInParent = FfxHelperMethods.GetNodeIndexinParent(nodeToRemove);
+            this.objXElement = nodeToRemove;
+            this.originalXElement = new XElement(nodeToRemove);
+            this.XParent = nodeToRemove.Parent;
+            indexInParent = FFXHelperMethods.GetNodeIndexinParent(nodeToRemove);
         }
 
         public override ActionEvent Execute()
         {
-            if (_objXElement != null)
+            if (objXElement != null)
             {
-                    _objXElement.Remove();
+                    objXElement.Remove();
             }
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            if (_objXElement != null)
+            if (objXElement != null)
             {
-                if (_indexInParent > 0)
+                if (indexInParent > 0)
                 {
-                    _xParent.Elements().ElementAt(_indexInParent - 1).AddAfterSelf(_originalXElement);
-                    _objXElement = _xParent.Elements().ElementAt(_indexInParent);
+                    XParent.Elements().ElementAt(indexInParent - 1).AddAfterSelf(originalXElement);
+                    objXElement = XParent.Elements().ElementAt(indexInParent);
                 }
                 else
                 {
-                    _xParent.AddFirst(_originalXElement);
-                    _objXElement = _xParent.Elements().First();
+                    XParent.AddFirst(originalXElement);
+                    objXElement = XParent.Elements().First();
                 }
 
             }
@@ -261,62 +261,62 @@ namespace DFXR3Editor
     }
     public class XElementAdd : Action
     {
-        private XElement _objXElement;
-        private XElement _newChild;
+        private XElement objXElement;
+        private XElement newChild;
 
         public XElementAdd(XElement node, XElement newChild)
         {
-            this._objXElement = node;
-            this._newChild = new XElement(newChild);
+            this.objXElement = node;
+            this.newChild = new XElement(newChild);
         }
 
         public override ActionEvent Execute()
         {
-            if (_objXElement != null)
+            if (objXElement != null)
             {
-                _objXElement.AddAfterSelf(_newChild);
+                objXElement.AddAfterSelf(newChild);
             }
             return ActionEvent.NoEvent;
         }
 
         public override ActionEvent Undo()
         {
-            if (_objXElement != null)
+            if (objXElement != null)
             {
-                _newChild.Remove();
+                newChild.Remove();
             }
             return ActionEvent.NoEvent;
         }
     }
     public class CompoundAction : Action
     {
-        private List<Action> _actions;
+        private List<Action> Actions;
 
-        private Action<bool> _postExecutionAction = null;
+        private Action<bool> PostExecutionAction = null;
 
         public CompoundAction(List<Action> actions)
         {
-            _actions = actions;
+            Actions = actions;
         }
 
         public void SetPostExecutionAction(Action<bool> action)
         {
-            _postExecutionAction = action;
+            PostExecutionAction = action;
         }
 
         public override ActionEvent Execute()
         {
             var evt = ActionEvent.NoEvent;
-            foreach (var act in _actions)
+            foreach (var act in Actions)
             {
                 if (act != null)
                 {
                     evt |= act.Execute();
                 }
             }
-            if (_postExecutionAction != null)
+            if (PostExecutionAction != null)
             {
-                _postExecutionAction.Invoke(false);
+                PostExecutionAction.Invoke(false);
             }
             return evt;
         }
@@ -324,16 +324,16 @@ namespace DFXR3Editor
         public override ActionEvent Undo()
         {
             var evt = ActionEvent.NoEvent;
-            foreach (var act in _actions)
+            foreach (var act in Actions)
             {
                 if (act != null)
                 {
                     evt |= act.Undo();
                 }
             }
-            if (_postExecutionAction != null)
+            if (PostExecutionAction != null)
             {
-                _postExecutionAction.Invoke(true);
+                PostExecutionAction.Invoke(true);
             }
             return evt;
         }

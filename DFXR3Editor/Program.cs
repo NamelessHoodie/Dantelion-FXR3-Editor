@@ -5,60 +5,82 @@ using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using ImGuiNET;
+using ImPlotNET;
+using imnodesNET;
+using ImGuizmoNET;
 using System.Xml.Linq;
+using System.Collections;
 using ImGuiNETAddons;
 using System.IO;
 using System.Collections.Generic;
+using System.Xml;
 using System.Threading;
 using SoulsFormats;
+using System.Diagnostics;
 using DFXR3Editor.Dependencies;
 using System.Windows.Forms;
+using Veldrid.ImageSharp;
+using DDSReader;
+using SixLabors.ImageSharp.PixelFormats;
+using System.Drawing;
+using SixLabors.ImageSharp;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace DFXR3Editor
 {
     class MainUserInterface
     {
-        public static Sdl2Window Window;
-        public static GraphicsDevice Gd;
+        public static Sdl2Window _window;
+        public static GraphicsDevice _gd;
         private static CommandList _cl;
-        public static ImGuiController Controller;
+        public static ImGuiController _controller;
         public static readonly float FrameRateForDelta = 58.82352941176471f;
+
+        // Exception Handler
+        private static bool _exceptionPopupOPen = false;
+        private static string _exceptionTitleString = "";
+        private static string _exceptionContentString = "";
+        private static void ShowExceptionPopup(string exceptionTitle, Exception exceptionToDisplay)
+        {
+            _exceptionPopupOPen = true;
+            _exceptionTitleString = exceptionTitle;
+            _exceptionContentString = exceptionToDisplay.ToString();
+        }
 
         // UI state
         private static Vector3 _clearColor = new Vector3(0.45f, 0.55f, 0.6f);
         public static uint mainViewPortDockSpaceID;
         private static bool _keyboardInputGuide = false;
-        private static bool _axbyDebugger = false;
-        public static XElement DragAndDropBuffer = null;
-        public static ImGuiFxrTextureHandler FfxTextureHandler;
-        public static bool IsSearchById = false;
-        public static string SearchBarString = "";
-        public static bool IsSearchBarOpen = false;
+        public static bool _axbyDebugger = false;
+        public static XElement dragAndDropBuffer = null;
+        public static ImGuiFxrTextureHandler ffxTextureHandler;
+        public static bool _isSearchByID = false;
+        public static string _SearchBarString = "";
+        public static bool _isSearchBarOpen = false;
 
         // Config
-        private static readonly string IniPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config/EditorConfigs.ini");
-        private static readonly IniConfigFile TextureDisplaySizeConfig = new IniConfigFile("UIConfigs", "textureDisplaySizeInt32", "100", IniPath);
-        public static int TextureDisplaySize = int.Parse(TextureDisplaySizeConfig.ReadConfigsIni());
-        private static readonly IniConfigFile SelectedThemeConfig = new IniConfigFile("General", "Theme", "Red Clay", IniPath);
-        private static string _activeTheme = SelectedThemeConfig.ReadConfigsIni();
+        private static readonly string iniPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config/EditorConfigs.ini");
+        private static readonly IniConfigFile textureDisplaySizeConfig = new IniConfigFile("UIConfigs", "textureDisplaySizeInt32", "100", iniPath);
+        public static int _textureDisplaySize = int.Parse(textureDisplaySizeConfig.ReadConfigsIni());
+        private static readonly IniConfigFile selectedThemeConfig = new IniConfigFile("General", "Theme", "Red Clay", iniPath);
+        private static string _activeTheme = selectedThemeConfig.ReadConfigsIni();
 
         //Theme Selector
-        readonly static String[] ThemeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Classic" };
+        readonly static String[] _themeSelectorEntriesArray = { "Red Clay", "ImGui Dark", "ImGui Classic" };
 
-        public static bool Filtertoggle = false;
+        public static bool _filtertoggle = false;
 
-        public static RenderableFXR SelectedFfxWindow;
-        public static List<RenderableFXR> OpenFfXs = new List<RenderableFXR>();
+        public static FFXUI selectedFFXWindow;
+        public static List<FFXUI> openFFXs = new List<FFXUI>();
 
         //<Color Editor>
-        public static bool CPickerIsEnable = false;
-        public static XElement CPickerRed;
-        public static XElement CPickerGreen;
-        public static XElement CPickerBlue;
-        public static XElement CPickerAlpha;
-        public static Vector4 CPicker = new Vector4();
-        public static float ColorOverload = 1.0f;
-
+        public static bool _cPickerIsEnable = false;
+        public static XElement _cPickerRed;
+        public static XElement _cPickerGreen;
+        public static XElement _cPickerBlue;
+        public static XElement _cPickerAlpha;
+        public static Vector4 _cPicker = new Vector4();
+        public static float _colorOverload = 1.0f;
         // Color Editor
 
 
@@ -73,26 +95,26 @@ namespace DFXR3Editor
             VeldridStartup.CreateWindowAndGraphicsDevice(new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "Dantelion FXR3 Editor"),
                 new GraphicsDeviceOptions(true, null, true, ResourceBindingModel.Improved, true, true),
                 GraphicsBackend.Direct3D11,
-                out Window,
-                out Gd);
-            Window.Resized += () =>
+                out _window,
+                out _gd);
+            _window.Resized += () =>
             {
-                Gd.MainSwapchain.Resize((uint)Window.Width, (uint)Window.Height);
-                Controller.WindowResized(Window.Width, Window.Height);
+                _gd.MainSwapchain.Resize((uint)_window.Width, (uint)_window.Height);
+                _controller.WindowResized(_window.Width, _window.Height);
             };
-            _cl = Gd.ResourceFactory.CreateCommandList();
+            _cl = _gd.ResourceFactory.CreateCommandList();
 
-            Controller = new ImGuiController(Gd, Window, Gd.MainSwapchain.Framebuffer.OutputDescription, Window.Width, Window.Height);
+            _controller = new ImGuiController(_gd, _window, _gd.MainSwapchain.Framebuffer.OutputDescription, _window.Width, _window.Height);
 
             //Theme Selector
             Themes.ThemesSelectorPush(_activeTheme);
 
             // Main application loop
-            while (Window.Exists)
+            while (_window.Exists)
             {
-                InputSnapshot snapshot = Window.PumpEvents();
-                if (!Window.Exists) { break; }
-                Controller.Update(1f / FrameRateForDelta, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
+                InputSnapshot snapshot = _window.PumpEvents();
+                if (!_window.Exists) { break; }
+                _controller.Update(1f / FrameRateForDelta, snapshot); // Feed the input events to our ImGui controller, which passes them through to ImGui.
 
                 //SetupMainDockingSpace
                 ImGuiViewportPtr mainViewportPtr = ImGui.GetMainViewport();
@@ -101,37 +123,37 @@ namespace DFXR3Editor
                 ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
                 HotKeyGlobalListener();
-                if (Controller.GetWindowMinimized(mainViewportPtr) == 0 && !ExceptionManager.TryRenderException())
+                if (_controller.GetWindowMinimized(mainViewportPtr) == 0)
                 {
                     SubmitMainMenuBar();
-                    SubmitMainWindowUi();
+                    SubmitMainWindowUI();
                 }
-                SubmitDockableUi();
-                if (OpenFfXs.Any())
+                SubmitDockableUI();
+                if (openFFXs.Any())
                 {
-                    SelectedFfxWindow.HotkeyListener();
+                    selectedFFXWindow.HotkeyListener();
                 }
 
                 _cl.Begin();
-                _cl.SetFramebuffer(Gd.MainSwapchain.Framebuffer);
+                _cl.SetFramebuffer(_gd.MainSwapchain.Framebuffer);
                 _cl.ClearColorTarget(0, new RgbaFloat(_clearColor.X, _clearColor.Y, _clearColor.Z, 1f));
-                Controller.Render(Gd, _cl);
+                _controller.Render(_gd, _cl);
                 _cl.End();
-                Gd.SubmitCommands(_cl);
-                Gd.SwapBuffers(Gd.MainSwapchain);
-                Controller.SwapExtraWindows(Gd);
+                _gd.SubmitCommands(_cl);
+                _gd.SwapBuffers(_gd.MainSwapchain);
+                _controller.SwapExtraWindows(_gd);
                 Thread.Sleep(17);
             }
             //Runtime Configs Save
-            TextureDisplaySizeConfig.WriteConfigsIni(TextureDisplaySize);
+            textureDisplaySizeConfig.WriteConfigsIni(_textureDisplaySize);
 
             // Clean up Veldrid resources
-            Gd.WaitForIdle();
-            Controller.Dispose();
+            _gd.WaitForIdle();
+            _controller.Dispose();
             _cl.Dispose();
-            Gd.Dispose();
+            _gd.Dispose();
         }
-        public static void LoadFfxFromXml(XDocument fxrXml, string filePath)
+        public static void LoadFFXFromXml(XDocument fxrXml, string filePath)
         {
             if (fxrXml.Element("FXR3") == null || fxrXml.Root.Element("RootEffectCall") == null)
             {
@@ -139,8 +161,8 @@ namespace DFXR3Editor
             }
             else
             {
-                SelectedFfxWindow = new RenderableFXR(fxrXml, filePath);
-                OpenFfXs.Add(SelectedFfxWindow);
+                selectedFFXWindow = new FFXUI(fxrXml, filePath);
+                openFFXs.Add(selectedFFXWindow);
             }
         }
         public static void SubmitMainMenuBar()
@@ -151,56 +173,52 @@ namespace DFXR3Editor
                 {
                     if (ImGui.MenuItem("Load FFX"))
                     {
-#if RELEASE
                         try
                         {
-#endif
-                        System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
-                        ofd.Filter = "FFX|*.fxr;*.xml";
-                        ofd.Title = "Open FFX";
+                            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
+                            ofd.Filter = "FFX|*.fxr;*.xml";
+                            ofd.Title = "Open FFX";
 
-                        if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                        {
-                            if (Path.GetExtension(ofd.FileName) == ".fxr")
+                            if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                             {
-                                var fxrXml = FXR3_XMLR.Fxr3EnhancedSerialization.Fxr3ToXml(FXR3_XMLR.Fxr3.Read(ofd.FileName));
-                                LoadFfxFromXml(fxrXml, ofd.FileName);
-                            }
-                            else if (Path.GetExtension(ofd.FileName) == ".xml")
-                            {
-                                var fxrXml = XDocument.Load(ofd.FileName);
-                                LoadFfxFromXml(fxrXml, ofd.FileName);
+                                if (Path.GetExtension(ofd.FileName) == ".fxr")
+                                {
+                                    var fxrXml = FXR3_XMLR.FXR3EnhancedSerialization.FXR3ToXML(FXR3_XMLR.FXR3.Read(ofd.FileName));
+                                    LoadFFXFromXml(fxrXml, ofd.FileName);
+                                }
+                                else if (Path.GetExtension(ofd.FileName) == ".xml")
+                                {
+                                    var fxrXml = XDocument.Load(ofd.FileName);
+                                    LoadFFXFromXml(fxrXml, ofd.FileName);
+                                }
                             }
                         }
-#if RELEASE
-                    }
                         catch (Exception exception)
                         {
-                            ExceptionManager.PushExceptionForRendering("ERROR: FFX loading failed", exception);
+                            ShowExceptionPopup("ERROR: FFX loading failed", exception);
                         }
-#endif
                     }
-                    if (ImGui.MenuItem("Save", OpenFfXs.Any()))
+                    if (ImGui.MenuItem("Save", openFFXs.Any()))
                     {
                         try
                         {
-                            if (SelectedFfxWindow.LoadedFilePath.EndsWith(".xml"))
+                            if (selectedFFXWindow._loadedFilePath.EndsWith(".xml"))
                             {
-                                SelectedFfxWindow.XDocLinq.Save(SelectedFfxWindow.LoadedFilePath);
-                                FXR3_XMLR.Fxr3EnhancedSerialization.XmlToFxr3(SelectedFfxWindow.XDocLinq).Write(SelectedFfxWindow.LoadedFilePath.Substring(0, SelectedFfxWindow.LoadedFilePath.Length - 4));
+                                selectedFFXWindow.xDocLinq.Save(selectedFFXWindow._loadedFilePath);
+                                FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(selectedFFXWindow.xDocLinq).Write(selectedFFXWindow._loadedFilePath.Substring(0, selectedFFXWindow._loadedFilePath.Length - 4));
                             }
-                            else if (SelectedFfxWindow.LoadedFilePath.EndsWith(".fxr"))
+                            else if (selectedFFXWindow._loadedFilePath.EndsWith(".fxr"))
                             {
-                                SelectedFfxWindow.XDocLinq.Save(SelectedFfxWindow.LoadedFilePath + ".xml");
-                                FXR3_XMLR.Fxr3EnhancedSerialization.XmlToFxr3(SelectedFfxWindow.XDocLinq).Write(SelectedFfxWindow.LoadedFilePath);
+                                selectedFFXWindow.xDocLinq.Save(selectedFFXWindow._loadedFilePath + ".xml");
+                                FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(selectedFFXWindow.xDocLinq).Write(selectedFFXWindow._loadedFilePath);
                             }
                         }
                         catch (Exception exception)
                         {
-                            ExceptionManager.PushExceptionForRendering("ERROR: FFX saving failed", exception);
+                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
                         }
                     }
-                    if (ImGui.MenuItem("Save as", OpenFfXs.Any()))
+                    if (ImGui.MenuItem("Save as", openFFXs.Any()))
                     {
                         try
                         {
@@ -212,44 +230,44 @@ namespace DFXR3Editor
                             {
                                 if (Path.GetExtension(saveFileDialog1.FileName) == ".fxr")
                                 {
-                                    FXR3_XMLR.Fxr3EnhancedSerialization.XmlToFxr3(SelectedFfxWindow.XDocLinq).Write(saveFileDialog1.FileName);
+                                    FXR3_XMLR.FXR3EnhancedSerialization.XMLToFXR3(selectedFFXWindow.xDocLinq).Write(saveFileDialog1.FileName);
                                 }
                                 else if (Path.GetExtension(saveFileDialog1.FileName) == ".xml")
                                 {
-                                    SelectedFfxWindow.XDocLinq.Save(saveFileDialog1.FileName);
+                                    selectedFFXWindow.xDocLinq.Save(saveFileDialog1.FileName);
                                 }
                             }
                         }
                         catch (Exception exception)
                         {
-                            ExceptionManager.PushExceptionForRendering("ERROR: FFX saving failed", exception);
+                            ShowExceptionPopup("ERROR: FFX saving failed", exception);
                         }
                     }
-                    if (ImGui.MenuItem("Load FFX Resources For Texture Display - Requires Relatively Good Hardware", FfxTextureHandler == null))
+                    if (ImGui.MenuItem("Load FFX Resources For Texture Display - Requires Relatively Good Hardware", ffxTextureHandler == null))
                     {
                         var ofd = new OpenFileDialog() { Title = "Open frpg_sfxbnd_commoneffects_resource.ffxbnd", Filter = "FfxRes|frpg_sfxbnd_commoneffects_resource.ffxbnd.dcx" };
                         if (ofd.ShowDialog() == DialogResult.OK)
                         {
-                            FfxTextureHandler = new ImGuiFxrTextureHandler(BND4.Read(ofd.FileName));
+                            ffxTextureHandler = new ImGuiFxrTextureHandler(BND4.Read(ofd.FileName));
                         }
                     }
                     ImGui.EndMenu();
                 }
                 if (ImGui.BeginMenu("Edit"))
                 {
-                    if (ImGui.MenuItem("Undo", "Ctrl Z", false, SelectedFfxWindow != null ? SelectedFfxWindow.ActionManager.CanUndo() : false))
+                    if (ImGui.MenuItem("Undo", "Ctrl Z", false, selectedFFXWindow != null ? selectedFFXWindow.actionManager.CanUndo() : false))
                     {
-                        SelectedFfxWindow.ActionManager.UndoAction();
+                        selectedFFXWindow.actionManager.UndoAction();
                     }
-                    if (ImGui.MenuItem("Redo", "Ctrl Y", false, SelectedFfxWindow != null ? SelectedFfxWindow.ActionManager.CanRedo() : false))
+                    if (ImGui.MenuItem("Redo", "Ctrl Y", false, selectedFFXWindow != null ? selectedFFXWindow.actionManager.CanRedo() : false))
                     {
-                        SelectedFfxWindow.ActionManager.RedoAction();
+                        selectedFFXWindow.actionManager.RedoAction();
                     }
-                    if (ImGui.MenuItem("Extend Active FFX Treeview", SelectedFfxWindow != null))
+                    if (ImGui.MenuItem("Extend Active FFX Treeview", selectedFFXWindow != null))
                     {
-                        SelectedFfxWindow.CollapseExpandTreeView = true;
+                        selectedFFXWindow.collapseExpandTreeView = true;
                     }
-                    if (ImGuiAddons.IsItemHoveredForTime(500, MainUserInterface.FrameRateForDelta, "HoverTimerTreeViewExpander"))
+                    if (ImGuiAddons.isItemHoveredForTime(500, MainUserInterface.FrameRateForDelta, "HoverTimerTreeViewExpander"))
                     {
                         ImGui.Indent();
                         ImGui.Text("Holding Shift while clicking this button will expand properties aswell as the treeview itself.");
@@ -257,7 +275,7 @@ namespace DFXR3Editor
                     }
                     if (ImGui.MenuItem("Search Actions..."))
                     {
-                        IsSearchBarOpen = !IsSearchBarOpen;
+                        _isSearchBarOpen = !_isSearchBarOpen;
                     }
                     ImGui.EndMenu();
                 }
@@ -265,7 +283,7 @@ namespace DFXR3Editor
                 {
                     if (ImGuiAddons.BeginComboFixed("Theme Selector", _activeTheme))
                     {
-                        foreach (string str in ThemeSelectorEntriesArray)
+                        foreach (string str in _themeSelectorEntriesArray)
                         {
                             bool selected = false;
                             if (str == _activeTheme)
@@ -274,12 +292,12 @@ namespace DFXR3Editor
                             {
                                 _activeTheme = str;
                                 Themes.ThemesSelectorPush(_activeTheme);
-                                SelectedThemeConfig.WriteConfigsIni(_activeTheme);
+                                selectedThemeConfig.WriteConfigsIni(_activeTheme);
                             }
                         }
                         ImGuiAddons.EndComboFixed();
                     }
-                    ImGui.InputInt("Displayed Texture Size", ref TextureDisplaySize, 10, 100);
+                    ImGui.InputInt("Displayed Texture Size", ref _textureDisplaySize, 10, 100);
                     ImGui.EndMenu();
                 }
                 if (ImGui.BeginMenu("Useful Info"))
@@ -299,7 +317,7 @@ namespace DFXR3Editor
                     // No Action ID Filter Start
                     ImGui.Text("No ActionID Filter");
                     ImGui.SameLine();
-                    ImGuiAddons.ToggleButton("No ActionID Filter", ref Filtertoggle);
+                    ImGuiAddons.ToggleButton("No ActionID Filter", ref _filtertoggle);
                     // No Action ID Filter End
                     if (ImGui.MenuItem("Lock DFXR3E Input", "Shift-Escape"))
                     {
@@ -319,89 +337,78 @@ namespace DFXR3Editor
                 }
             }
         }
-        private static void SubmitMainWindowUi()
+        private static void SubmitMainWindowUI()
         {
             ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-            for (int i = 0; i < OpenFfXs.Count(); i++)
+            for (int i = 0; i < openFFXs.Count(); i++)
             {
                 ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-                if (OpenFfXs[i].RenderWithImgui())
+                if (openFFXs[i].RenderFFX())
                 {
-                    OpenFfXs[i].TreeviewExpandCollapseHandler(true);
+                    openFFXs[i].TreeviewExpandCollapseHandler(true);
                 }
             }
             ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
             if (ImGui.Begin("FFXEditor", ImGuiWindowFlags.NoMove))
             {
-                if (SelectedFfxWindow != null)
+                if (selectedFFXWindow != null)
                 {
-                    if (SelectedFfxWindow.ShowFfxEditorProperties || SelectedFfxWindow.ShowFfxEditorFields)
+                    if (selectedFFXWindow._showFFXEditorProperties || selectedFFXWindow._showFFXEditorFields)
                     {
-                        FfxEditor();
+                        FFXEditor();
                     }
                 }
                 ImGui.End();
             }
         }
-        private static void SubmitDockableUi()
+        private static void SubmitDockableUI()
         {
             { //Declare Standalone Windows here
-#if DEBUG
-                //Debug Window
-                {
-                    if (ImGui.Button("Throw Another Exception"))
-                        ExceptionManager.PushExceptionForRendering
-                        (
-                            $"DummyException:{new Random().Next()}", 
-                            new Exception("hAaaaa")
-                        );
-                }
-#endif
                 // Color Picker
-                if (CPickerIsEnable)
+                if (_cPickerIsEnable)
                 {
                     ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-                    if (ImGui.Begin("FFX Color Picker", ref CPickerIsEnable))
+                    if (ImGui.Begin("FFX Color Picker", ref _cPickerIsEnable))
                     {
-                        Vector2 mEme = ImGui.GetWindowSize();
-                        if (mEme.X > mEme.Y)
+                        Vector2 mEME = ImGui.GetWindowSize();
+                        if (mEME.X > mEME.Y)
                         {
-                            ImGui.SetNextItemWidth(mEme.Y * 0.80f);
+                            ImGui.SetNextItemWidth(mEME.Y * 0.80f);
                         }
-                        ImGui.ColorPicker4("CPicker", ref CPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.NoTooltip);
+                        ImGui.ColorPicker4("CPicker", ref _cPicker, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.NoTooltip);
                         if (ImGui.IsItemDeactivatedAfterEdit())
                         {
                             var actionList = new List<Action>();
 
-                            if (CPickerRed.Attribute(FfxHelperMethods.Xsi + "type").Value == "FFXFieldInt" || CPickerGreen.Attribute(FfxHelperMethods.Xsi + "type").Value == "FFXFieldInt" || CPickerBlue.Attribute(FfxHelperMethods.Xsi + "type").Value == "FFXFieldInt" || CPickerAlpha.Attribute(FfxHelperMethods.Xsi + "type").Value == "FFXFieldInt")
+                            if (_cPickerRed.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldInt" || _cPickerGreen.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldInt" || _cPickerBlue.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldInt" || _cPickerAlpha.Attribute(FFXHelperMethods.xsi + "type").Value == "FFXFieldInt")
                             {
-                                actionList.Add(new ModifyXAttributeString(CPickerRed.Attribute(FfxHelperMethods.Xsi + "type"), "FFXFieldFloat"));
-                                actionList.Add(new ModifyXAttributeString(CPickerGreen.Attribute(FfxHelperMethods.Xsi + "type"), "FFXFieldFloat"));
-                                actionList.Add(new ModifyXAttributeString(CPickerBlue.Attribute(FfxHelperMethods.Xsi + "type"), "FFXFieldFloat"));
-                                actionList.Add(new ModifyXAttributeString(CPickerAlpha.Attribute(FfxHelperMethods.Xsi + "type"), "FFXFieldFloat"));
+                                actionList.Add(new ModifyXAttributeString(_cPickerRed.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldFloat"));
+                                actionList.Add(new ModifyXAttributeString(_cPickerGreen.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldFloat"));
+                                actionList.Add(new ModifyXAttributeString(_cPickerBlue.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldFloat"));
+                                actionList.Add(new ModifyXAttributeString(_cPickerAlpha.Attribute(FFXHelperMethods.xsi + "type"), "FFXFieldFloat"));
                             }
-                            actionList.Add(new ModifyXAttributeFloat(CPickerRed.Attribute("Value"), CPicker.X));
-                            actionList.Add(new ModifyXAttributeFloat(CPickerGreen.Attribute("Value"), CPicker.Y));
-                            actionList.Add(new ModifyXAttributeFloat(CPickerBlue.Attribute("Value"), CPicker.Z));
-                            actionList.Add(new ModifyXAttributeFloat(CPickerAlpha.Attribute("Value"), CPicker.W));
+                            actionList.Add(new ModifyXAttributeFloat(_cPickerRed.Attribute("Value"), _cPicker.X));
+                            actionList.Add(new ModifyXAttributeFloat(_cPickerGreen.Attribute("Value"), _cPicker.Y));
+                            actionList.Add(new ModifyXAttributeFloat(_cPickerBlue.Attribute("Value"), _cPicker.Z));
+                            actionList.Add(new ModifyXAttributeFloat(_cPickerAlpha.Attribute("Value"), _cPicker.W));
 
-                            SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                            selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                         }
                         ImGui.Separator();
                         ImGui.Text("Brightness Multiplier");
-                        ImGui.SliderFloat("###Brightness Multiplier", ref ColorOverload, 0, 10f);
+                        ImGui.SliderFloat("###Brightness Multiplier", ref _colorOverload, 0, 10f);
                         ImGui.SameLine();
                         if (ImGuiAddons.ButtonGradient("Multiply Color"))
                         {
                             List<Action> actions = new List<Action>();
-                            CPicker.X *= ColorOverload;
-                            CPicker.Y *= ColorOverload;
-                            CPicker.Z *= ColorOverload;
-                            actions.Add(new EditPublicCPickerVector4(new Vector4(CPicker.X *= ColorOverload, CPicker.Y *= ColorOverload, CPicker.Z *= ColorOverload, CPicker.W)));
-                            actions.Add(new ModifyXAttributeFloat(CPickerRed.Attribute("Value"), CPicker.X));
-                            actions.Add(new ModifyXAttributeFloat(CPickerGreen.Attribute("Value"), CPicker.Y));
-                            actions.Add(new ModifyXAttributeFloat(CPickerBlue.Attribute("Value"), CPicker.Z));
-                            SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actions));
+                            _cPicker.X *= _colorOverload;
+                            _cPicker.Y *= _colorOverload;
+                            _cPicker.Z *= _colorOverload;
+                            actions.Add(new EditPublicCPickerVector4(new Vector4(_cPicker.X *= _colorOverload, _cPicker.Y *= _colorOverload, _cPicker.Z *= _colorOverload, _cPicker.W)));
+                            actions.Add(new ModifyXAttributeFloat(_cPickerRed.Attribute("Value"), _cPicker.X));
+                            actions.Add(new ModifyXAttributeFloat(_cPickerGreen.Attribute("Value"), _cPicker.Y));
+                            actions.Add(new ModifyXAttributeFloat(_cPickerBlue.Attribute("Value"), _cPicker.Z));
+                            selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actions));
                         }
                         ImGui.End();
                     }
@@ -420,12 +427,12 @@ namespace DFXR3Editor
                 {
                     ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
                     ImGui.Begin("axbxDebug", ref _axbyDebugger);
-                    if (SelectedFfxWindow.NodeListEditor != null)
+                    if (selectedFFXWindow.NodeListEditor != null)
                     {
-                        if (SelectedFfxWindow.NodeListEditor.Any() & (SelectedFfxWindow.ShowFfxEditorFields || SelectedFfxWindow.ShowFfxEditorProperties))
+                        if (selectedFFXWindow.NodeListEditor.Any() & (selectedFFXWindow._showFFXEditorFields || selectedFFXWindow._showFFXEditorProperties))
                         {
                             int integer = 0;
-                            foreach (XNode node in SelectedFfxWindow.NodeListEditor.ElementAt(0).Parent.Nodes())
+                            foreach (XNode node in selectedFFXWindow.NodeListEditor.ElementAt(0).Parent.Nodes())
                             {
                                 ImGui.Text($"Index = '{integer} Node = '{node}')");
                                 integer++;
@@ -434,54 +441,76 @@ namespace DFXR3Editor
                     }
                     ImGui.End();
                 }
-                if (MainUserInterface.IsSearchBarOpen)
+                if (_exceptionPopupOPen)
+                {
+                    if (!ImGui.IsPopupOpen(_exceptionTitleString))
+                    {
+                        ImGui.OpenPopup(_exceptionTitleString);
+                    }
+                    if (ImGui.IsPopupOpen(_exceptionTitleString))
+                    {
+                        ImGuiViewportPtr mainViewport = ImGui.GetMainViewport();
+                        Vector2 textInputSize = new Vector2(mainViewport.Size.X * 0.8f, mainViewport.Size.Y * 0.8f);
+                        ImGui.SetNextWindowPos(new Vector2(mainViewport.Pos.X + mainViewport.Size.X * 0.5f, mainViewport.Pos.Y + mainViewport.Size.Y * 0.5f), ImGuiCond.Always, new Vector2(0.5f, 0.5f));
+                        if (ImGui.BeginPopupModal(_exceptionTitleString, ref _exceptionPopupOPen, ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize))
+                        {
+                            ImGui.InputTextMultiline("TextInput", ref _exceptionContentString, 1024, textInputSize, ImGuiInputTextFlags.ReadOnly);
+                            if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
+                            {
+                                _exceptionPopupOPen = false;
+                            }
+                            ImGui.EndPopup();
+                        }
+                    }
+                }
+                if (MainUserInterface._isSearchBarOpen)
                 {
                     var viewport = ImGui.GetMainViewport();
 
-                    ImGui.SetNextWindowSize(new Vector2(300, 80));
-                    ImGui.SetNextWindowPos(new Vector2(viewport.Pos.X + viewport.Size.X - 15, viewport.Pos.Y + 38), ImGuiCond.None, new Vector2(1, 0));
+                    ImGui.SetNextWindowSize(new Vector2(300,80));
+                    ImGui.SetNextWindowPos(new Vector2(viewport.Pos.X + viewport.Size.X - 15, viewport.Pos.Y + 38), ImGuiCond.None, new Vector2(1,0));
                     ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
-                    if (ImGui.Begin("Action Search", ref MainUserInterface.IsSearchBarOpen, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
+                    if (ImGui.Begin("Action Search", ref MainUserInterface._isSearchBarOpen, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
                     {
                         ImGui.SetNextItemWidth(190);
-                        ImGui.InputText("Action Search", ref MainUserInterface.SearchBarString, 1024);
-                        ImGui.Checkbox("Search By ID", ref MainUserInterface.IsSearchById);
-
+                        ImGui.InputText("Action Search", ref MainUserInterface._SearchBarString, 1024);
+                        ImGui.Checkbox("Search By ID", ref MainUserInterface._isSearchByID);
+                        
                         ImGui.End();
                     }
                 }
             }
         }
-        public static void CloseOpenFfxWithoutSaving(RenderableFXR ffxUi)
+        public static void CloseOpenFFXWithoutSaving(FFXUI ffxUI)
         {
-            ffxUi.LoadedFilePath = "";
-            ffxUi.XDocLinq = null;
-            CPickerIsEnable = false;
-            ffxUi.ShowFfxEditorFields = false;
-            ffxUi.ShowFfxEditorProperties = false;
+            ffxUI._loadedFilePath = "";
+            ffxUI.xDocLinq = null;
+            _cPickerIsEnable = false;
+            ffxUI._showFFXEditorFields = false;
+            ffxUI._showFFXEditorProperties = false;
         }
-        public static void ResetEditorSelection(RenderableFXR ffxUi)
+        public static void ResetEditorSelection(FFXUI ffxUI)
         {
-            ffxUi.ShowFfxEditorFields = false;
-            ffxUi.ShowFfxEditorProperties = false;
-            ffxUi.TreeViewCurrentHighlighted = 0;
-            CPickerIsEnable = false;
-            if (ffxUi.NodeListEditor != null)
+            ffxUI._showFFXEditorFields = false;
+            ffxUI._showFFXEditorProperties = false;
+            ffxUI.treeViewCurrentHighlighted = 0;
+            _cPickerIsEnable = false;
+            if (ffxUI.NodeListEditor != null)
             {
-                if (ffxUi.NodeListEditor.Any())
+                if (ffxUI.NodeListEditor.Any())
                 {
-                    ffxUi.NodeListEditor = FfxHelperMethods.XmlChildNodesValid(ffxUi.NodeListEditor.First().Parent);
+                    ffxUI.NodeListEditor = FFXHelperMethods.XMLChildNodesValid(ffxUI.NodeListEditor.First().Parent);
                 }
             }
         }
-        public static void FfxEditor()
+        public static void FFXEditor()
         {
             ImGui.SetNextWindowDockID(mainViewPortDockSpaceID, ImGuiCond.FirstUseEver);
-            if (SelectedFfxWindow.ShowFfxEditorProperties)
+            if (selectedFFXWindow._showFFXEditorProperties)
             {
                 AxBySwapper();
                 ImGui.NewLine();
-                switch (SelectedFfxWindow.AxBy)
+                switch (selectedFFXWindow.AxBy)
                 {
                     case "A0B0":
                         break;
@@ -490,68 +519,68 @@ namespace DFXR3Editor
                     case "A19B7":
                         break;
                     case "A32B8":
-                        SelectedFfxWindow.FfxPropertyA32B8StaticScalar(SelectedFfxWindow.NodeListEditor);
+                        selectedFFXWindow.FFXPropertyA32B8StaticScalar(selectedFFXWindow.NodeListEditor);
                         break;
                     case "A35B11":
-                        SelectedFfxWindow.FfxPropertyA35B11StaticColor(SelectedFfxWindow.NodeListEditor);
+                        selectedFFXWindow.FFXPropertyA35B11StaticColor(selectedFFXWindow.NodeListEditor);
                         break;
                     case "A64B16":
-                        SelectedFfxWindow.FfxPropertyA64B16ScalarInterpolationLinear(SelectedFfxWindow.NodeListEditor);
+                        selectedFFXWindow.FFXPropertyA64B16ScalarInterpolationLinear(selectedFFXWindow.NodeListEditor);
                         break;
                     case "A67B19":
-                        SelectedFfxWindow.FfxPropertyA67B19ColorInterpolationLinear(SelectedFfxWindow.NodeListEditor);
+                        selectedFFXWindow.FFXPropertyA67B19ColorInterpolationLinear(selectedFFXWindow.NodeListEditor);
                         break;
                     case "A96B24":
-                        SelectedFfxWindow.FfxPropertyA96B24ScalarInterpolationWithCustomCurve(SelectedFfxWindow.NodeListEditor);
+                        selectedFFXWindow.FFXPropertyA96B24ScalarInterpolationWithCustomCurve(selectedFFXWindow.NodeListEditor);
                         break;
                     case "A99B27":
-                        SelectedFfxWindow.FfxPropertyA99B27ColorInterpolationWithCustomCurve(SelectedFfxWindow.NodeListEditor);
+                        selectedFFXWindow.FFXPropertyA99B27ColorInterpolationWithCustomCurve(selectedFFXWindow.NodeListEditor);
                         break;
                     case "A4163B35":
-                        SelectedFfxWindow.FfxPropertyA67B19ColorInterpolationLinear(SelectedFfxWindow.NodeListEditor);
+                        selectedFFXWindow.FFXPropertyA67B19ColorInterpolationLinear(selectedFFXWindow.NodeListEditor);
                         break;
                     case "A4160B32":
-                        SelectedFfxWindow.FfxPropertyA64B16ScalarInterpolationLinear(SelectedFfxWindow.NodeListEditor);
+                        selectedFFXWindow.FFXPropertyA64B16ScalarInterpolationLinear(selectedFFXWindow.NodeListEditor);
                         break;
                     default:
                         ImGui.Text("ERROR: FFX Property Handler not found, using Default Handler.");
-                        foreach (XElement node in SelectedFfxWindow.NodeListEditor)
+                        foreach (XElement node in selectedFFXWindow.NodeListEditor)
                         {
-                            string dataType = node.Attribute(FfxHelperMethods.Xsi + "type").Value;
-                            int nodeIndex = FfxHelperMethods.GetNodeIndexinParent(node);
+                            string dataType = node.Attribute(FFXHelperMethods.xsi + "type").Value;
+                            int nodeIndex = FFXHelperMethods.GetNodeIndexinParent(node);
                             if (dataType == "FFXFieldFloat")
                             {
-                                SelectedFfxWindow.FloatInputDefaultNode(node, dataType + "##" + nodeIndex.ToString());
+                                selectedFFXWindow.FloatInputDefaultNode(node, dataType + "##" + nodeIndex.ToString());
                             }
                             else if (dataType == "FFXFieldInt")
                             {
-                                SelectedFfxWindow.IntInputDefaultNode(node, dataType + "##" + nodeIndex.ToString());
+                                selectedFFXWindow.IntInputDefaultNode(node, dataType + "##" + nodeIndex.ToString());
                             }
                         }
                         break;
                 }
             }
-            else if (SelectedFfxWindow.ShowFfxEditorFields)
+            else if (selectedFFXWindow._showFFXEditorFields)
             {
-                DefParser.DefXmlParser(SelectedFfxWindow.NodeListEditor, SelectedFfxWindow.Fields[1], SelectedFfxWindow.Fields[0]);
+                DefParser.DefXMLParser(selectedFFXWindow.NodeListEditor, selectedFFXWindow.Fields[1], selectedFFXWindow.Fields[0]);
             }
         }
         private static void AxBySwapper()
         {
             ImGui.BulletText("Input Type:");
             ImGui.SameLine();
-            if (ImGuiAddons.BeginComboFixed("##Current AxBy", FfxHelperMethods.AxByToName(SelectedFfxWindow.AxBy)))
+            if (ImGuiAddons.BeginComboFixed("##Current AxBy", FFXHelperMethods.AxByToName(selectedFFXWindow.AxBy)))
             {
-                if (FfxHelperMethods.AxByColorArray.Contains(SelectedFfxWindow.AxBy))
+                if (FFXHelperMethods.AxByColorArray.Contains(selectedFFXWindow.AxBy))
                 {
-                    foreach (string str in FfxHelperMethods.AxByColorArray)
+                    foreach (string str in FFXHelperMethods.AxByColorArray)
                     {
                         bool selected = false;
-                        if (SelectedFfxWindow.AxBy == str)
+                        if (selectedFFXWindow.AxBy == str)
                             selected = true;
-                        if (ImGui.Selectable(FfxHelperMethods.AxByToName(str), selected) & str != SelectedFfxWindow.AxBy)
+                        if (ImGui.Selectable(FFXHelperMethods.AxByToName(str), selected) & str != selectedFFXWindow.AxBy)
                         {
-                            XElement axbyElement = SelectedFfxWindow.FfxPropertyEditorElement;
+                            XElement axbyElement = selectedFFXWindow.ffxPropertyEditorElement;
                             if (str == "A19B7")
                             {
                                 XElement templateXElement = DefParser.TemplateGetter("19", "7");
@@ -564,9 +593,9 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A35B11")
@@ -581,23 +610,23 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A67B19")
                             {
-                                if (SelectedFfxWindow.AxBy == "A4163B35")
+                                if (selectedFFXWindow.AxBy == "A4163B35")
                                 {
                                     var actionListQuick = new List<Action>();
 
                                     actionListQuick.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "67"));
                                     actionListQuick.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "19"));
 
-                                    actionListQuick.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionListQuick.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionListQuick));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionListQuick));
                                     return;
                                 }
                                 XElement templateXElement = DefParser.TemplateGetter("67", "19");
@@ -610,9 +639,9 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A99B27")
@@ -627,23 +656,23 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A4163B35")
                             {
-                                if (SelectedFfxWindow.AxBy == "A67B19")
+                                if (selectedFFXWindow.AxBy == "A67B19")
                                 {
                                     var actionListQuick = new List<Action>();
 
                                     actionListQuick.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumA"), "4163"));
                                     actionListQuick.Add(new ModifyXAttributeString(axbyElement.Attribute("TypeEnumB"), "35"));
 
-                                    actionListQuick.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionListQuick.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionListQuick));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionListQuick));
                                     return;
                                 }
                                 XElement templateXElement = DefParser.TemplateGetter("4163", "35");
@@ -656,25 +685,25 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             return;
                         }
                     }
                 }
-                else if (FfxHelperMethods.AxByScalarArray.Contains(SelectedFfxWindow.AxBy))
+                else if (FFXHelperMethods.AxByScalarArray.Contains(selectedFFXWindow.AxBy))
                 {
-                    foreach (string str in FfxHelperMethods.AxByScalarArray)
+                    foreach (string str in FFXHelperMethods.AxByScalarArray)
                     {
                         bool selected = false;
-                        if (SelectedFfxWindow.AxBy == str)
+                        if (selectedFFXWindow.AxBy == str)
                             selected = true;
-                        if (ImGui.Selectable(FfxHelperMethods.AxByToName(str), selected) & str != SelectedFfxWindow.AxBy)
+                        if (ImGui.Selectable(FFXHelperMethods.AxByToName(str), selected) & str != selectedFFXWindow.AxBy)
                         {
-                            XElement axbyElement = SelectedFfxWindow.FfxPropertyEditorElement;
+                            XElement axbyElement = selectedFFXWindow.ffxPropertyEditorElement;
                             if (str == "A0B0")
                             {
                                 XElement templateXElement = DefParser.TemplateGetter("0", "0");
@@ -687,9 +716,9 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A16B4")
@@ -704,9 +733,9 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A32B8")
@@ -721,9 +750,9 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A64B16")
@@ -738,9 +767,9 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A96B24")
@@ -755,9 +784,9 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             else if (str == "A4160B32")
@@ -772,9 +801,9 @@ namespace DFXR3Editor
 
                                     actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                                    actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                                    actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                                    SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                                    selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                                 }
                             }
                             return;
@@ -783,15 +812,15 @@ namespace DFXR3Editor
                 }
                 else
                 {
-                    ImGui.Selectable(SelectedFfxWindow.AxBy, true);
+                    ImGui.Selectable(selectedFFXWindow.AxBy, true);
                 }
                 ImGuiAddons.EndComboFixed();
             }
             ImGui.SameLine();
             if (ImGuiAddons.ButtonGradient("Flip C/S"))
             {
-                XElement axbyElement = SelectedFfxWindow.FfxPropertyEditorElement;
-                if (FfxHelperMethods.AxByColorArray.Contains(SelectedFfxWindow.AxBy))
+                XElement axbyElement = selectedFFXWindow.ffxPropertyEditorElement;
+                if (FFXHelperMethods.AxByColorArray.Contains(selectedFFXWindow.AxBy))
                 {
                     XElement templateXElement = DefParser.TemplateGetter("0", "0");
                     if (templateXElement != null)
@@ -803,9 +832,9 @@ namespace DFXR3Editor
 
                         actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                        actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                        actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                        SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                        selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                     }
                 }
                 else
@@ -820,9 +849,9 @@ namespace DFXR3Editor
 
                         actionList.Add(new XElementReplaceChildren(axbyElement, templateXElement));
 
-                        actionList.Add(new ResetEditorSelection(SelectedFfxWindow));
+                        actionList.Add(new ResetEditorSelection(selectedFFXWindow));
 
-                        SelectedFfxWindow.ActionManager.ExecuteAction(new CompoundAction(actionList));
+                        selectedFFXWindow.actionManager.ExecuteAction(new CompoundAction(actionList));
                     }
                 }
             }

@@ -16,28 +16,28 @@ namespace DFXR3Editor
         private static readonly string FieldDefPath = "Defs/DefActionID.xml";
         private static readonly string TemplateDefPath = "Defs/TemplateDef.xml";
         private static readonly XDocument FieldDef = XDocument.Load(FieldDefPath);
-        private static XDocument _templateDef = XDocument.Load(TemplateDefPath);
-        private static XElement _symbolsDefElements = FieldDef.Root.Element("symbolsDef");
-        private static XElement _enumsElement = FieldDef.Root.Element("Enums");
-        private static readonly IEnumerable<XElement> ActionIdElements = FieldDef.Root.Element("ActionIDs").Elements("ActionID");
-        private static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        public static void DefXmlParser(IEnumerable<XElement> nodeListEditorIEnumerable, string actionId, string fieldType)
+        private static XDocument TemplateDef = XDocument.Load(TemplateDefPath);
+        private static XElement symbolsDefElements = FieldDef.Root.Element("symbolsDef");
+        private static XElement enumsElement = FieldDef.Root.Element("Enums");
+        private static readonly IEnumerable<XElement> actionIdElements = FieldDef.Root.Element("ActionIDs").Elements("ActionID");
+        private static readonly XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        public static void DefXMLParser(IEnumerable<XElement> NodeListEditorIEnumerable, string actionID, string fieldType)
         {
-            if (ImGui.BeginTable(actionId + fieldType, 3, ImGuiTableFlags.Resizable | ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV))
+            if (ImGui.BeginTable(actionID + fieldType, 3, ImGuiTableFlags.Resizable | ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV))
             {
-                XElement[] nodeListEditor = nodeListEditorIEnumerable.ToArray();
+                XElement[] NodeListEditor = NodeListEditorIEnumerable.ToArray();
                 ImGui.TableSetupColumn("dataType", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize);
                 ImGui.TableSetupColumn("Text");
                 ImGui.TableSetupColumn("Controls");
-                IEnumerable<XElement> localNodeIEnumerable = from element0 in ActionIdElements
-                                                             where element0.Attribute("ID").Value == actionId
+                IEnumerable<XElement> LocalNodeIEnumerable = from element0 in actionIdElements
+                                                             where element0.Attribute("ID").Value == actionID
                                                              from element1 in element0.Elements(fieldType)
                                                              from element2 in element1.Elements()
                                                              select element2;
-                if (localNodeIEnumerable.Any())
+                if (LocalNodeIEnumerable.Any())
                 {
-                    XElement[] localNodeList = localNodeIEnumerable.ToArray();
-                    for (int i = 0; i < nodeListEditor.Length; i++)
+                    XElement[] localNodeList = LocalNodeIEnumerable.ToArray();
+                    for (int i = 0; i < NodeListEditor.Length; i++)
                     {
                         ImGui.TableNextRow();
                         ImGui.TableNextColumn();
@@ -71,7 +71,7 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.SelectedFfxWindow.BooleanIntInputDefaultNode(nodeListEditor[i], "##" + index);
+                                    MainUserInterface.selectedFFXWindow.BooleanIntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                                 else if (localLoopNode.Attribute("isResourceTexture") != null)
                                 {
@@ -79,18 +79,18 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.SelectedFfxWindow.TextureShowAndInput(nodeListEditor[i], "##" + index);
+                                    MainUserInterface.selectedFFXWindow.TextureShowAndInput(NodeListEditor[i], "##" + index);
                                 }
                                 else if (localLoopAttributeEnum != null)
                                 {
-                                    XElement localLoopEnum = _enumsElement.Element(localLoopAttributeEnum.Value);
+                                    XElement localLoopEnum = enumsElement.Element(localLoopAttributeEnum.Value);
                                     if (localLoopEnum != null & localLoopEnum.Elements().Any())
                                     {
                                         ImGui.Text(dataType);
                                         ImGui.TableNextColumn();
                                         ImGui.Text(name);
                                         ImGui.TableNextColumn();
-                                        MainUserInterface.SelectedFfxWindow.IntComboNotLinearDefaultNode(nodeListEditor[i], "##" + index, localLoopEnum);
+                                        MainUserInterface.selectedFFXWindow.IntComboNotLinearDefaultNode(NodeListEditor[i], "##" + index, localLoopEnum);
                                     }
                                     else
                                     {
@@ -103,7 +103,7 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.SelectedFfxWindow.IntInputDefaultNode(nodeListEditor[i], "##" + index);
+                                    MainUserInterface.selectedFFXWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                             }
                             else if (dataType == "f32")
@@ -112,18 +112,18 @@ namespace DFXR3Editor
                                 ImGui.TableNextColumn();
                                 ImGui.Text(name);
                                 ImGui.TableNextColumn();
-                                MainUserInterface.SelectedFfxWindow.FloatInputDefaultNode(nodeListEditor[i], "##" + index);
+                                MainUserInterface.selectedFFXWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                             }
                             else
                             {
-                                string unkdataType = nodeListEditor[i].Attribute(Xsi + "type").Value;
+                                string unkdataType = NodeListEditor[i].Attribute(xsi + "type").Value;
                                 if (unkdataType == "FFXFieldInt")
                                 {
                                     ImGui.Text("s32?");
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.SelectedFfxWindow.IntInputDefaultNode(nodeListEditor[i], "##" + index);
+                                    MainUserInterface.selectedFFXWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                                 else if (unkdataType == "FFXFieldFloat")
                                 {
@@ -131,13 +131,13 @@ namespace DFXR3Editor
                                     ImGui.TableNextColumn();
                                     ImGui.Text(name);
                                     ImGui.TableNextColumn();
-                                    MainUserInterface.SelectedFfxWindow.FloatInputDefaultNode(nodeListEditor[i], "##" + index);
+                                    MainUserInterface.selectedFFXWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                                 }
                             }
                             if (localLoopAttributeWiki != null)
                             {
                                 ImGui.SameLine();
-                                MainUserInterface.SelectedFfxWindow.ShowToolTipSimple(i.ToString(), $"{fieldType}: ToolTip:", localLoopAttributeWiki.Value, true, ImGuiPopupFlags.MouseButtonLeft);
+                                MainUserInterface.selectedFFXWindow.ShowToolTipSimple(i.ToString(), $"{fieldType}: ToolTip:", localLoopAttributeWiki.Value, true, ImGuiPopupFlags.MouseButtonLeft);
                             }
                         }
                         else
@@ -148,20 +148,20 @@ namespace DFXR3Editor
                 }
                 else
                 {
-                    for (int i = 0; i < nodeListEditor.Length; i++)
+                    for (int i = 0; i < NodeListEditor.Length; i++)
                     {
                         ImGui.TableNextRow();
                         ImGui.TableNextColumn();
                         string index = i.ToString();
                         string name = "Unk" + i.ToString();
-                        string unkdataType = nodeListEditor[i].Attribute(Xsi + "type").Value;
+                        string unkdataType = NodeListEditor[i].Attribute(xsi + "type").Value;
                         if (unkdataType == "FFXFieldInt")
                         {
                             ImGui.Text("s32?");
                             ImGui.TableNextColumn();
                             ImGui.Text(name);
                             ImGui.TableNextColumn();
-                            MainUserInterface.SelectedFfxWindow.IntInputDefaultNode(nodeListEditor[i], "##" + index);
+                            MainUserInterface.selectedFFXWindow.IntInputDefaultNode(NodeListEditor[i], "##" + index);
                         }
                         else if (unkdataType == "FFXFieldFloat")
                         {
@@ -169,16 +169,16 @@ namespace DFXR3Editor
                             ImGui.TableNextColumn();
                             ImGui.Text(name);
                             ImGui.TableNextColumn();
-                            MainUserInterface.SelectedFfxWindow.FloatInputDefaultNode(nodeListEditor[i], "##" + index);
+                            MainUserInterface.selectedFFXWindow.FloatInputDefaultNode(NodeListEditor[i], "##" + index);
                         }
                     }
                 }
                 ImGui.EndTable();
             }
         }
-        public static string DefXmlSymbolParser(string symbol)
+        public static string DefXMLSymbolParser(string symbol)
         {
-            IEnumerable<XAttribute> localSymbolIEnumerable = from element0 in _symbolsDefElements.Elements()
+            IEnumerable<XAttribute> localSymbolIEnumerable = from element0 in symbolsDefElements.Elements()
                                                              where element0.Attribute("symbol").Value == symbol
                                                              where element0.Attribute("def") != null
                                                              select element0.Attribute("def");
@@ -194,10 +194,10 @@ namespace DFXR3Editor
             string defaultArg = "[u]";
             string defaultName = "Unk";
             string defaultwiki = null;
-            string localActionId = root.Parent.Parent.Attribute("ActionID").Value;
-            int localPropertyIndex = FfxHelperMethods.GetNodeIndexinParent(root);
-            IEnumerable<XElement> idk = from element0 in ActionIdElements
-                                        where element0.Attribute("ID").Value == localActionId
+            string localActionID = root.Parent.Parent.Attribute("ActionID").Value;
+            int localPropertyIndex = FFXHelperMethods.GetNodeIndexinParent(root);
+            IEnumerable<XElement> idk = from element0 in actionIdElements
+                                        where element0.Attribute("ID").Value == localActionID
                                         from element1 in element0.Elements(fieldType)
                                         from element2 in element1.Elements()
                                         select element2;
@@ -258,34 +258,34 @@ namespace DFXR3Editor
         }
         public static string[] SupportedActionIDs()
         {
-            List<string> actionIdList = new List<string>();
-            foreach (XElement element in ActionIdElements)
+            List<string> ActionIDList = new List<string>();
+            foreach (XElement Element in actionIdElements)
             {
-                XAttribute attribute = element.Attribute("ID");
-                if (attribute != null)
+                XAttribute Attribute = Element.Attribute("ID");
+                if (Attribute != null)
                 {
-                    actionIdList.Add(attribute.Value);
+                    ActionIDList.Add(Attribute.Value);
                 }
             }
-            return actionIdList.ToArray();
+            return ActionIDList.ToArray();
         }
-        public static (string name, string description) ActionIdNameAndDescription(string actionId)
+        public static (string name, string description) ActionIDNameAndDescription(string ActionID)
         {
-            IEnumerable<XElement> actionIDsMatch = ActionIdElements.Where(i => i.Attribute("ID").Value == actionId);
+            IEnumerable<XElement> actionIDsMatch = actionIdElements.Where(i => i.Attribute("ID").Value == ActionID);
             if (actionIDsMatch.Any())
             {
-                var actionIdxElement = actionIDsMatch.First();
-                return (actionIdxElement.Attribute("name").Value, actionIdxElement.Attribute("description")?.Value ?? "");
+                var actionIDXElement = actionIDsMatch.First();
+                return (actionIDXElement.Attribute("name").Value, actionIDXElement.Attribute("description")?.Value ?? "");
             }
             else
             {
-                return (actionId, "");
+                return (ActionID, "");
             }
         }
-        public static XElement TemplateGetter(string typeEnumA, string typeEnumB)
+        public static XElement TemplateGetter(string TypeEnumA, string TypeEnumB)
         {
-            IEnumerable<XElement> templateXElements = from element in _templateDef.Root.Element("AxByTemplates").Elements()
-                                                      where (element.Attribute("TypeEnumA").Value == typeEnumA & element.Attribute("TypeEnumB").Value == typeEnumB)
+            IEnumerable<XElement> templateXElements = from element in TemplateDef.Root.Element("AxByTemplates").Elements()
+                                                      where (element.Attribute("TypeEnumA").Value == TypeEnumA & element.Attribute("TypeEnumB").Value == TypeEnumB)
                                                       select element;
             if (templateXElements.Any())
             {
@@ -295,18 +295,18 @@ namespace DFXR3Editor
         }
         public static void TemplateWriter(XElement newXEelement, string sectionName)
         {
-            XElement templateSection = _templateDef.Root.Element(sectionName);
+            XElement templateSection = TemplateDef.Root.Element(sectionName);
             if (templateSection != null)
             {
                 templateSection.Add(new XElement(newXEelement));
             }
             else
             {
-                _templateDef.Root.Add(new XElement(sectionName, new XElement(newXEelement)));
+                TemplateDef.Root.Add(new XElement(sectionName, new XElement(newXEelement)));
             }
 
-            _templateDef.Save(TemplateDefPath);
-            _templateDef = XDocument.Load(TemplateDefPath);
+            TemplateDef.Save(TemplateDefPath);
+            TemplateDef = XDocument.Load(TemplateDefPath);
         }
     }
 }

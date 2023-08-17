@@ -16,33 +16,33 @@ namespace DFXR3Editor
 {
     public class ImGuiFxrTextureHandler
     {
-        private Dictionary<int, IntPtr> _loadedTexturesDictionary = new Dictionary<int, IntPtr>();
+        private Dictionary<int, IntPtr> loadedTexturesDictionary = new Dictionary<int, IntPtr>();
         public List<int> FfxTexturesIdList { get; } = new List<int>();
-        private IEnumerable<BinderFile> _ffxTexturesIEnumerable;
+        private IEnumerable<BinderFile> ffxTexturesIEnumerable;
         public ImGuiFxrTextureHandler(BND4 ffxResourcesBin)
         {
-            this._ffxTexturesIEnumerable = ffxResourcesBin.Files.Where(item => item.Name.Contains("sfx\\tex"));
-            foreach (var binderFileTpf in _ffxTexturesIEnumerable)
+            this.ffxTexturesIEnumerable = ffxResourcesBin.Files.Where(item => item.Name.Contains("sfx\\tex"));
+            foreach (var binderFileTpf in ffxTexturesIEnumerable)
             {
                 var tpfBytes = binderFileTpf.Bytes;
                 var tpfTexturesList = TPF.Read(tpfBytes).Textures;
                 if (tpfTexturesList.Any())
                 {
                     var tpf = tpfTexturesList.First();
-                    if (int.TryParse(tpf.Name.TrimStart('s'), out int textureId))
+                    if (int.TryParse(tpf.Name.TrimStart('s'), out int textureID))
                     {
-                        FfxTexturesIdList.Add(textureId);
+                        FfxTexturesIdList.Add(textureID);
                     }
                 }
             }
             FfxTexturesIdList.Sort();
-            LoadAllFfxTexturesInMemory(_ffxTexturesIEnumerable);
+            LoadAllFfxTexturesInMemory(ffxTexturesIEnumerable);
         }
-        public (bool TextureExists, IntPtr TextureHandle) GetFfxTextureIntPtr(int textureId)
+        public (bool TextureExists, IntPtr TextureHandle) GetFfxTextureIntPtr(int textureID)
         {
-            if (!_loadedTexturesDictionary.ContainsKey(textureId))
+            if (!loadedTexturesDictionary.ContainsKey(textureID))
             {
-                var a = _ffxTexturesIEnumerable.Where(item => item.Name.Contains($"s{textureId.ToString("00000")}.tpf"));
+                var a = ffxTexturesIEnumerable.Where(item => item.Name.Contains($"s{textureID.ToString("00000")}.tpf"));
                 if (a.Any())
                 {
                     var tpfBytes = a.First().Bytes;
@@ -50,13 +50,13 @@ namespace DFXR3Editor
                     if (tpfTexturesList.Any())
                     {
                         var ddsBytes = tpfTexturesList.First().Bytes;
-                        DdsImage ddsImage = new DdsImage(ddsBytes);
+                        DDSImage ddsImage = new DDSImage(ddsBytes);
                         Image<Rgba32> image = Image.LoadPixelData<Rgba32>(ddsImage.Data, ddsImage.Width, ddsImage.Height);
                         var img = new ImageSharpTexture(image);
-                        var veldridTexture = img.CreateDeviceTexture(MainUserInterface.Gd, MainUserInterface.Gd.ResourceFactory);
-                        var textureHandle = MainUserInterface.Controller.GetOrCreateImGuiBinding(MainUserInterface.Gd.ResourceFactory, veldridTexture);
+                        var veldridTexture = img.CreateDeviceTexture(MainUserInterface._gd, MainUserInterface._gd.ResourceFactory);
+                        var textureHandle = MainUserInterface._controller.GetOrCreateImGuiBinding(MainUserInterface._gd.ResourceFactory, veldridTexture);
                         veldridTexture.Dispose();
-                        _loadedTexturesDictionary.Add(textureId, textureHandle);
+                        loadedTexturesDictionary.Add(textureID, textureHandle);
                         return (true, textureHandle);
                     }
                 }
@@ -64,7 +64,7 @@ namespace DFXR3Editor
             }
             else
             {
-                return (true, _loadedTexturesDictionary[textureId]);
+                return (true, loadedTexturesDictionary[textureID]);
             }
         }
         public void LoadAllFfxTexturesInMemory(IEnumerable<BinderFile> ffxTexturesIEnumerable)
@@ -76,11 +76,11 @@ namespace DFXR3Editor
                 if (tpfTexturesList.Any())
                 {
                     var tpf = tpfTexturesList.First();
-                    if (int.TryParse(tpf.Name.TrimStart('s'), out int textureId) && !_loadedTexturesDictionary.ContainsKey(textureId))
+                    if (int.TryParse(tpf.Name.TrimStart('s'), out int textureID) && !loadedTexturesDictionary.ContainsKey(textureID))
                     {
 
                         var ddsBytes = tpf.Bytes;
-                        DdsImage ddsImage = new DdsImage(ddsBytes);
+                        DDSImage ddsImage = new DDSImage(ddsBytes);
                         Image<Rgba32> image = Image.LoadPixelData<Rgba32>(ddsImage.Data, ddsImage.Width, ddsImage.Height);
                         for (int y = 0; y < image.Height; y++)
                         {
@@ -97,10 +97,10 @@ namespace DFXR3Editor
                             }
                         }
                         var img = new ImageSharpTexture(image);
-                        var veldridTexture = img.CreateDeviceTexture(MainUserInterface.Gd, MainUserInterface.Gd.ResourceFactory);
-                        var textureHandle = MainUserInterface.Controller.GetOrCreateImGuiBinding(MainUserInterface.Gd.ResourceFactory, veldridTexture);
+                        var veldridTexture = img.CreateDeviceTexture(MainUserInterface._gd, MainUserInterface._gd.ResourceFactory);
+                        var textureHandle = MainUserInterface._controller.GetOrCreateImGuiBinding(MainUserInterface._gd.ResourceFactory, veldridTexture);
                         veldridTexture.Dispose();
-                        _loadedTexturesDictionary.Add(textureId, textureHandle);
+                        loadedTexturesDictionary.Add(textureID, textureHandle);
                     }
                 }
             }

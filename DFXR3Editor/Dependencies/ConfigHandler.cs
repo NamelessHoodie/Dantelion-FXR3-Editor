@@ -6,36 +6,36 @@ namespace DFXR3Editor
 {
     class IniConfigFile
     {
-        string _section;
-        string _key;
+        string Section;
+        string Key;
         public string Value;
-        string _defaultValue;
-        IniFile _configs;
-        public IniConfigFile(string section, string key, object defaultValue, string iniPath)
+        string DefaultValue;
+        IniFile Configs;
+        public IniConfigFile(string Section, string Key, object DefaultValue, string IniPath)
         {
-            this._section = section;
-            this._key = key;
-            this._defaultValue = defaultValue.ToString();
-            this.Value = defaultValue.ToString();
-            _configs = new IniFile(iniPath);
+            this.Section = Section;
+            this.Key = Key;
+            this.DefaultValue = DefaultValue.ToString();
+            this.Value = DefaultValue.ToString();
+            Configs = new IniFile(IniPath);
         }
         public string ReadConfigsIni()
         {
-            if (!_configs.KeyExists(_key, _section))
+            if (!Configs.KeyExists(Key, Section))
             {
-                _configs.Write(_key, _defaultValue, _section);
-                return _defaultValue;
+                Configs.Write(Key, DefaultValue, Section);
+                return DefaultValue;
             }
             else
             {
-                Value = _configs.Read(_key, _section);
+                Value = Configs.Read(Key, Section);
                 return Value;
             }
         }
 
-        public void WriteConfigsIni(Object newValue)
+        public void WriteConfigsIni(Object NewValue)
         {
-            _configs.Write(_key, newValue.ToString(), _section);
+            Configs.Write(Key, NewValue.ToString(), Section);
         }
     }
 }

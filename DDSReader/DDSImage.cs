@@ -5,7 +5,7 @@ using System.IO;
 
 namespace DDSReader
 {
-	public class DdsImage
+	public class DDSImage
 	{
 		private readonly Pfim.IImage _image;
 
@@ -53,13 +53,13 @@ namespace DDSReader
 			}
 		}
 
-		public DdsImage(string file)
+		public DDSImage(string file)
 		{
 			_image = Pfim.Pfim.FromFile(file);
 			Process();
 		}
 
-		public DdsImage(Stream stream)
+		public DDSImage(Stream stream)
 		{
 			if (stream == null)
 				throw new Exception("DDSImage ctor: Stream is null");
@@ -68,7 +68,7 @@ namespace DDSReader
 			Process();
 		}
 
-		public DdsImage(byte[] data)
+		public DDSImage(byte[] data)
 		{
 			if (data == null || data.Length <= 0)
 				throw new Exception("DDSImage ctor: no data");

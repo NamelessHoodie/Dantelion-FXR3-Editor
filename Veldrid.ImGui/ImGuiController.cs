@@ -38,7 +38,7 @@ namespace DFXR3Editor
         private ResourceSet _mainResourceSet;
         private ResourceSet _fontTextureResourceSet;
 
-        private IntPtr _fontAtlasId = (IntPtr)1;
+        private IntPtr _fontAtlasID = (IntPtr)1;
         private bool _controlDown;
         private bool _shiftDown;
         private bool _altDown;
@@ -67,7 +67,7 @@ namespace DFXR3Editor
         private readonly Platform_GetWindowFocus _getWindowFocus;
         private readonly Platform_GetWindowMinimized _getWindowMinimized;
         private readonly Platform_SetWindowTitle _setWindowTitle;
-        private int _lastAssignedId = 100;
+        private int _lastAssignedID = 100;
 
         /// <summary>
         /// Constructs a new ImGuiController.
@@ -100,8 +100,8 @@ namespace DFXR3Editor
             io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
             io.ConfigFlags |= ImGuiConfigFlags.NavEnableGamepad;
 
-            ImGuiPlatformIOPtr platformIo = ImGui.GetPlatformIO();
-            ImGuiViewportPtr mainViewport = platformIo.Viewports[0];
+            ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+            ImGuiViewportPtr mainViewport = platformIO.Viewports[0];
             mainViewport.PlatformHandle = window.Handle;
             _mainViewportWindow = new VeldridImGuiWindow(gd, mainViewport, _window);
 
@@ -117,18 +117,18 @@ namespace DFXR3Editor
             _getWindowMinimized = GetWindowMinimized;
             _setWindowTitle = SetWindowTitle;
 
-            platformIo.Platform_CreateWindow = Marshal.GetFunctionPointerForDelegate(_createWindow);
-            platformIo.Platform_DestroyWindow = Marshal.GetFunctionPointerForDelegate(_destroyWindow);
-            platformIo.Platform_ShowWindow = Marshal.GetFunctionPointerForDelegate(_showWindow);
-            platformIo.Platform_SetWindowPos = Marshal.GetFunctionPointerForDelegate(_setWindowPos);
-            platformIo.Platform_SetWindowSize = Marshal.GetFunctionPointerForDelegate(_setWindowSize);
-            platformIo.Platform_SetWindowFocus = Marshal.GetFunctionPointerForDelegate(_setWindowFocus);
-            platformIo.Platform_GetWindowFocus = Marshal.GetFunctionPointerForDelegate(_getWindowFocus);
-            platformIo.Platform_GetWindowMinimized = Marshal.GetFunctionPointerForDelegate(_getWindowMinimized);
-            platformIo.Platform_SetWindowTitle = Marshal.GetFunctionPointerForDelegate(_setWindowTitle);
+            platformIO.Platform_CreateWindow = Marshal.GetFunctionPointerForDelegate(_createWindow);
+            platformIO.Platform_DestroyWindow = Marshal.GetFunctionPointerForDelegate(_destroyWindow);
+            platformIO.Platform_ShowWindow = Marshal.GetFunctionPointerForDelegate(_showWindow);
+            platformIO.Platform_SetWindowPos = Marshal.GetFunctionPointerForDelegate(_setWindowPos);
+            platformIO.Platform_SetWindowSize = Marshal.GetFunctionPointerForDelegate(_setWindowSize);
+            platformIO.Platform_SetWindowFocus = Marshal.GetFunctionPointerForDelegate(_setWindowFocus);
+            platformIO.Platform_GetWindowFocus = Marshal.GetFunctionPointerForDelegate(_getWindowFocus);
+            platformIO.Platform_GetWindowMinimized = Marshal.GetFunctionPointerForDelegate(_getWindowMinimized);
+            platformIO.Platform_SetWindowTitle = Marshal.GetFunctionPointerForDelegate(_setWindowTitle);
 
-            ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowPos(platformIo.NativePtr, Marshal.GetFunctionPointerForDelegate(_getWindowPos));
-            ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowSize(platformIo.NativePtr, Marshal.GetFunctionPointerForDelegate(_getWindowSize));
+            ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowPos(platformIO.NativePtr, Marshal.GetFunctionPointerForDelegate(_getWindowPos));
+            ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowSize(platformIO.NativePtr, Marshal.GetFunctionPointerForDelegate(_getWindowSize));
 
             unsafe
             {
@@ -199,27 +199,27 @@ namespace DFXR3Editor
             *outSize = new Vector2(bounds.Width, bounds.Height);
         }
 
-        private delegate void SdlRaiseWindowT(IntPtr sdl2Window);
-        private static SdlRaiseWindowT _pSdlRaiseWindow;
+        private delegate void SDL_RaiseWindow_t(IntPtr sdl2Window);
+        private static SDL_RaiseWindow_t p_sdl_RaiseWindow;
 
-        private unsafe delegate uint SdlGetGlobalMouseStateT(int* x, int* y);
-        private static SdlGetGlobalMouseStateT _pSdlGetGlobalMouseState;
+        private unsafe delegate uint SDL_GetGlobalMouseState_t(int* x, int* y);
+        private static SDL_GetGlobalMouseState_t p_sdl_GetGlobalMouseState;
 
-        private unsafe delegate int SdlGetDisplayUsableBoundsT(int displayIndex, Rectangle* rect);
-        private static SdlGetDisplayUsableBoundsT _pSdlGetDisplayUsableBoundsT;
+        private unsafe delegate int SDL_GetDisplayUsableBounds_t(int displayIndex, Rectangle* rect);
+        private static SDL_GetDisplayUsableBounds_t p_sdl_GetDisplayUsableBounds_t;
 
-        private delegate int SdlGetNumVideoDisplaysT();
-        private static SdlGetNumVideoDisplaysT _pSdlGetNumVideoDisplays;
+        private delegate int SDL_GetNumVideoDisplays_t();
+        private static SDL_GetNumVideoDisplays_t p_sdl_GetNumVideoDisplays;
 
         private void SetWindowFocus(ImGuiViewportPtr vp)
         {
-            if (_pSdlRaiseWindow == null)
+            if (p_sdl_RaiseWindow == null)
             {
-                _pSdlRaiseWindow = Sdl2Native.LoadFunction<SdlRaiseWindowT>("SDL_RaiseWindow");
+                p_sdl_RaiseWindow = Sdl2Native.LoadFunction<SDL_RaiseWindow_t>("SDL_RaiseWindow");
             }
 
             VeldridImGuiWindow window = (VeldridImGuiWindow)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
-            _pSdlRaiseWindow(window.Window.SdlWindowHandle);
+            p_sdl_RaiseWindow(window.Window.SdlWindowHandle);
         }
 
         private byte GetWindowFocus(ImGuiViewportPtr vp)
@@ -318,7 +318,7 @@ namespace DFXR3Editor
             if (!_setsByView.TryGetValue(textureView, out ResourceSetInfo rsi))
             {
                 ResourceSet resourceSet = factory.CreateResourceSet(new ResourceSetDescription(_textureLayout, textureView));
-                rsi = new ResourceSetInfo(GetNextImGuiBindingId(), resourceSet);
+                rsi = new ResourceSetInfo(GetNextImGuiBindingID(), resourceSet);
 
                 _setsByView.Add(textureView, rsi);
                 _viewsById.Add(rsi.ImGuiBinding, rsi);
@@ -328,10 +328,10 @@ namespace DFXR3Editor
             return rsi.ImGuiBinding;
         }
 
-        private IntPtr GetNextImGuiBindingId()
+        private IntPtr GetNextImGuiBindingID()
         {
-            int newId = _lastAssignedId++;
-            return (IntPtr)newId;
+            int newID = _lastAssignedID++;
+            return (IntPtr)newID;
         }
 
         /// <summary>
@@ -374,7 +374,7 @@ namespace DFXR3Editor
             _setsByView.Clear();
             _viewsById.Clear();
             _autoViewsByTexture.Clear();
-            _lastAssignedId = 100;
+            _lastAssignedID = 100;
         }
 
         private byte[] LoadEmbeddedShaderCode(ResourceFactory factory, string name, ShaderStages stage)
@@ -428,7 +428,7 @@ namespace DFXR3Editor
             int width, height, bytesPerPixel;
             io.Fonts.GetTexDataAsRGBA32(out pixels, out width, out height, out bytesPerPixel);
             // Store our identifier
-            io.Fonts.SetTexID(_fontAtlasId);
+            io.Fonts.SetTexID(_fontAtlasID);
 
             _fontTexture = gd.ResourceFactory.CreateTexture(TextureDescription.Texture2D(
                 (uint)width,
@@ -473,10 +473,10 @@ namespace DFXR3Editor
                 if ((ImGui.GetIO().ConfigFlags & ImGuiConfigFlags.ViewportsEnable) != 0)
                 {
                     ImGui.UpdatePlatformWindows();
-                    ImGuiPlatformIOPtr platformIo = ImGui.GetPlatformIO();
-                    for (int i = 1; i < platformIo.Viewports.Size; i++)
+                    ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+                    for (int i = 1; i < platformIO.Viewports.Size; i++)
                     {
-                        ImGuiViewportPtr vp = platformIo.Viewports[i];
+                        ImGuiViewportPtr vp = platformIO.Viewports[i];
                         VeldridImGuiWindow window = (VeldridImGuiWindow)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
                         cl.SetFramebuffer(window.Swapchain.Framebuffer);
                         RenderImDrawData(vp.DrawData, gd, cl);
@@ -487,10 +487,10 @@ namespace DFXR3Editor
 
         public void SwapExtraWindows(GraphicsDevice gd)
         {
-            ImGuiPlatformIOPtr platformIo = ImGui.GetPlatformIO();
-            for (int i = 1; i < platformIo.Viewports.Size; i++)
+            ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+            for (int i = 1; i < platformIO.Viewports.Size; i++)
             {
-                ImGuiViewportPtr vp = platformIo.Viewports[i];
+                ImGuiViewportPtr vp = platformIO.Viewports[i];
                 VeldridImGuiWindow window = (VeldridImGuiWindow)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
                 gd.SwapBuffers(window.Swapchain);
             }
@@ -521,25 +521,25 @@ namespace DFXR3Editor
 
         private unsafe void UpdateMonitors()
         {
-            if (_pSdlGetNumVideoDisplays == null)
+            if (p_sdl_GetNumVideoDisplays == null)
             {
-                _pSdlGetNumVideoDisplays = Sdl2Native.LoadFunction<SdlGetNumVideoDisplaysT>("SDL_GetNumVideoDisplays");
+                p_sdl_GetNumVideoDisplays = Sdl2Native.LoadFunction<SDL_GetNumVideoDisplays_t>("SDL_GetNumVideoDisplays");
             }
-            if (_pSdlGetDisplayUsableBoundsT == null)
+            if (p_sdl_GetDisplayUsableBounds_t == null)
             {
-                _pSdlGetDisplayUsableBoundsT = Sdl2Native.LoadFunction<SdlGetDisplayUsableBoundsT>("SDL_GetDisplayUsableBounds");
+                p_sdl_GetDisplayUsableBounds_t = Sdl2Native.LoadFunction<SDL_GetDisplayUsableBounds_t>("SDL_GetDisplayUsableBounds");
             }
 
-            ImGuiPlatformIOPtr platformIo = ImGui.GetPlatformIO();
-            Marshal.FreeHGlobal(platformIo.NativePtr->Monitors.Data);
-            int numMonitors = _pSdlGetNumVideoDisplays();
+            ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+            Marshal.FreeHGlobal(platformIO.NativePtr->Monitors.Data);
+            int numMonitors = p_sdl_GetNumVideoDisplays();
             IntPtr data = Marshal.AllocHGlobal(Unsafe.SizeOf<ImGuiPlatformMonitor>() * numMonitors);
-            platformIo.NativePtr->Monitors = new ImVector(numMonitors, numMonitors, data);
+            platformIO.NativePtr->Monitors = new ImVector(numMonitors, numMonitors, data);
             for (int i = 0; i < numMonitors; i++)
             {
                 Rectangle r;
-                _pSdlGetDisplayUsableBoundsT(i, &r);
-                ImGuiPlatformMonitorPtr monitor = platformIo.Monitors[i];
+                p_sdl_GetDisplayUsableBounds_t(i, &r);
+                ImGuiPlatformMonitorPtr monitor = platformIO.Monitors[i];
                 monitor.DpiScale = 1f;
                 monitor.MainPos = new Vector2(r.X, r.Y);
                 monitor.MainSize = new Vector2(r.Width, r.Height);
@@ -598,15 +598,15 @@ namespace DFXR3Editor
             io.MouseDown[1] = middlePressed || snapshot.IsMouseDown(MouseButton.Middle);
             io.MouseDown[2] = rightPressed || snapshot.IsMouseDown(MouseButton.Right);
 
-            if (_pSdlGetGlobalMouseState == null)
+            if (p_sdl_GetGlobalMouseState == null)
             {
-                _pSdlGetGlobalMouseState = Sdl2Native.LoadFunction<SdlGetGlobalMouseStateT>("SDL_GetGlobalMouseState");
+                p_sdl_GetGlobalMouseState = Sdl2Native.LoadFunction<SDL_GetGlobalMouseState_t>("SDL_GetGlobalMouseState");
             }
 
             int x, y;
             unsafe
             {
-                uint buttons = _pSdlGetGlobalMouseState(&x, &y);
+                uint buttons = p_sdl_GetGlobalMouseState(&x, &y);
                 io.MouseDown[0] = (buttons & 0b0001) != 0;
                 io.MouseDown[1] = (buttons & 0b0100) != 0;
                 io.MouseDown[2] = (buttons & 0b0010) != 0;
@@ -685,57 +685,57 @@ namespace DFXR3Editor
             io.KeyMap[(int)ImGuiKey.Space] = (int)Key.Space;
         }
 
-        private void RenderImDrawData(ImDrawDataPtr drawData, GraphicsDevice gd, CommandList cl)
+        private void RenderImDrawData(ImDrawDataPtr draw_data, GraphicsDevice gd, CommandList cl)
         {
             uint vertexOffsetInVertices = 0;
             uint indexOffsetInElements = 0;
 
-            if (drawData.CmdListsCount == 0)
+            if (draw_data.CmdListsCount == 0)
             {
                 return;
             }
 
-            uint totalVbSize = (uint)(drawData.TotalVtxCount * Unsafe.SizeOf<ImDrawVert>());
-            if (totalVbSize > _vertexBuffer.SizeInBytes)
+            uint totalVBSize = (uint)(draw_data.TotalVtxCount * Unsafe.SizeOf<ImDrawVert>());
+            if (totalVBSize > _vertexBuffer.SizeInBytes)
             {
                 gd.DisposeWhenIdle(_vertexBuffer);
-                _vertexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalVbSize * 1.5f), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
+                _vertexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalVBSize * 1.5f), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
             }
 
-            uint totalIbSize = (uint)(drawData.TotalIdxCount * sizeof(ushort));
-            if (totalIbSize > _indexBuffer.SizeInBytes)
+            uint totalIBSize = (uint)(draw_data.TotalIdxCount * sizeof(ushort));
+            if (totalIBSize > _indexBuffer.SizeInBytes)
             {
                 gd.DisposeWhenIdle(_indexBuffer);
-                _indexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalIbSize * 1.5f), BufferUsage.IndexBuffer | BufferUsage.Dynamic));
+                _indexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalIBSize * 1.5f), BufferUsage.IndexBuffer | BufferUsage.Dynamic));
             }
 
-            Vector2 pos = drawData.DisplayPos;
-            for (int i = 0; i < drawData.CmdListsCount; i++)
+            Vector2 pos = draw_data.DisplayPos;
+            for (int i = 0; i < draw_data.CmdListsCount; i++)
             {
-                ImDrawListPtr cmdList = drawData.CmdListsRange[i];
+                ImDrawListPtr cmd_list = draw_data.CmdListsRange[i];
 
                 cl.UpdateBuffer(
                     _vertexBuffer,
                     vertexOffsetInVertices * (uint)Unsafe.SizeOf<ImDrawVert>(),
-                    cmdList.VtxBuffer.Data,
-                    (uint)(cmdList.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>()));
+                    cmd_list.VtxBuffer.Data,
+                    (uint)(cmd_list.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>()));
 
                 cl.UpdateBuffer(
                     _indexBuffer,
                     indexOffsetInElements * sizeof(ushort),
-                    cmdList.IdxBuffer.Data,
-                    (uint)(cmdList.IdxBuffer.Size * sizeof(ushort)));
+                    cmd_list.IdxBuffer.Data,
+                    (uint)(cmd_list.IdxBuffer.Size * sizeof(ushort)));
 
-                vertexOffsetInVertices += (uint)cmdList.VtxBuffer.Size;
-                indexOffsetInElements += (uint)cmdList.IdxBuffer.Size;
+                vertexOffsetInVertices += (uint)cmd_list.VtxBuffer.Size;
+                indexOffsetInElements += (uint)cmd_list.IdxBuffer.Size;
             }
 
             // Setup orthographic projection matrix into our constant buffer
             ImGuiIOPtr io = ImGui.GetIO();
             Matrix4x4 mvp = Matrix4x4.CreateOrthographicOffCenter(
                 pos.X,
-                pos.X + drawData.DisplaySize.X,
-                pos.Y + drawData.DisplaySize.Y,
+                pos.X + draw_data.DisplaySize.X,
+                pos.Y + draw_data.DisplaySize.Y,
                 pos.Y,
                 -1.0f,
                 1.0f);
@@ -747,17 +747,17 @@ namespace DFXR3Editor
             cl.SetPipeline(_pipeline);
             cl.SetGraphicsResourceSet(0, _mainResourceSet);
 
-            drawData.ScaleClipRects(io.DisplayFramebufferScale);
+            draw_data.ScaleClipRects(io.DisplayFramebufferScale);
 
             // Render command lists
-            int vtxOffset = 0;
-            int idxOffset = 0;
-            for (int n = 0; n < drawData.CmdListsCount; n++)
+            int vtx_offset = 0;
+            int idx_offset = 0;
+            for (int n = 0; n < draw_data.CmdListsCount; n++)
             {
-                ImDrawListPtr cmdList = drawData.CmdListsRange[n];
-                for (int cmdI = 0; cmdI < cmdList.CmdBuffer.Size; cmdI++)
+                ImDrawListPtr cmd_list = draw_data.CmdListsRange[n];
+                for (int cmd_i = 0; cmd_i < cmd_list.CmdBuffer.Size; cmd_i++)
                 {
-                    ImDrawCmdPtr pcmd = cmdList.CmdBuffer[cmdI];
+                    ImDrawCmdPtr pcmd = cmd_list.CmdBuffer[cmd_i];
                     if (pcmd.UserCallback != IntPtr.Zero)
                     {
                         throw new NotImplementedException();
@@ -766,7 +766,7 @@ namespace DFXR3Editor
                     {
                         if (pcmd.TextureId != IntPtr.Zero)
                         {
-                            if (pcmd.TextureId == _fontAtlasId)
+                            if (pcmd.TextureId == _fontAtlasID)
                             {
                                 cl.SetGraphicsResourceSet(1, _fontTextureResourceSet);
                             }
@@ -783,12 +783,12 @@ namespace DFXR3Editor
                             (uint)(pcmd.ClipRect.Z - pcmd.ClipRect.X),
                             (uint)(pcmd.ClipRect.W - pcmd.ClipRect.Y));
 
-                        cl.DrawIndexed(pcmd.ElemCount, 1, (uint)idxOffset, vtxOffset, 0);
+                        cl.DrawIndexed(pcmd.ElemCount, 1, (uint)idx_offset, vtx_offset, 0);
                     }
 
-                    idxOffset += (int)pcmd.ElemCount;
+                    idx_offset += (int)pcmd.ElemCount;
                 }
-                vtxOffset += cmdList.VtxBuffer.Size;
+                vtx_offset += cmd_list.VtxBuffer.Size;
             }
         }
 
