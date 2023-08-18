@@ -8,150 +8,150 @@ namespace ImGuiNETAddons
 {
     public static class ImGuiAddons
     {
-        public static bool ToggleButton(string strId, ref bool v)
+        public static bool ToggleButton(string str_id, ref bool v)
         {
             Vector2 p = ImGuiNET.ImGui.GetCursorScreenPos();
-            ImDrawListPtr drawList = ImGuiNET.ImGui.GetWindowDrawList();
+            ImDrawListPtr draw_list = ImGuiNET.ImGui.GetWindowDrawList();
             bool isClicked = false;
 
             float height = ImGuiNET.ImGui.GetFrameHeight();
             float width = height * 1.55f;
             float radius = height * 0.50f;
 
-            if (ImGuiNET.ImGui.InvisibleButton(strId, new Vector2(width, height)))
+            if (ImGuiNET.ImGui.InvisibleButton(str_id, new Vector2(width, height)))
             {
                 isClicked = true;
                 v = !v;
             }
-            uint colBg;
-            uint colNub;
+            uint col_bg;
+            uint col_Nub;
             if (ImGuiNET.ImGui.IsItemHovered())
             {
-                colBg = v ? ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered) : ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive, 0.5f);
-                colNub = v ? ImGuiNET.ImGui.GetColorU32(ImGuiCol.ScrollbarGrabActive) : ImGuiNET.ImGui.GetColorU32(ImGuiCol.ScrollbarGrabActive);
+                col_bg = v ? ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered) : ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive, 0.5f);
+                col_Nub = v ? ImGuiNET.ImGui.GetColorU32(ImGuiCol.ScrollbarGrabActive) : ImGuiNET.ImGui.GetColorU32(ImGuiCol.ScrollbarGrabActive);
             }
             else
             {
-                colBg = v ? ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered, 0.8f) : ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered, 0.5f);
-                colNub = v ? ImGuiNET.ImGui.GetColorU32(ImGuiCol.ScrollbarGrabHovered) : ImGuiNET.ImGui.GetColorU32(ImGuiCol.ScrollbarGrabHovered);
+                col_bg = v ? ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered, 0.8f) : ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered, 0.5f);
+                col_Nub = v ? ImGuiNET.ImGui.GetColorU32(ImGuiCol.ScrollbarGrabHovered) : ImGuiNET.ImGui.GetColorU32(ImGuiCol.ScrollbarGrabHovered);
             }
-            drawList.AddRectFilled(p, new Vector2(p.X + width, p.Y + height), colBg, height * 0.5f);
-            drawList.AddCircleFilled(new Vector2(v ? (p.X + width - radius) : (p.X + radius), p.Y + radius), radius - 1.5f, colNub);
+            draw_list.AddRectFilled(p, new Vector2(p.X + width, p.Y + height), col_bg, height * 0.5f);
+            draw_list.AddCircleFilled(new Vector2(v ? (p.X + width - radius) : (p.X + radius), p.Y + radius), radius - 1.5f, col_Nub);
             return isClicked;
         }
 
-        public static bool ButtonGradient(string strId)
+        public static bool ButtonGradient(string str_id)
         {
-            String[] strIdArray = strId.Split("##");
+            String[] str_idArray = str_id.Split("##");
             Vector2 p = ImGuiNET.ImGui.GetCursorScreenPos();
-            Vector2 sizeText = ImGui.CalcTextSize(strIdArray[0]);
-            ImDrawListPtr drawList = ImGuiNET.ImGui.GetWindowDrawList();
-            float buttonHeight = ImGuiNET.ImGui.GetFrameHeight();
-            float buttonWidth = sizeText.X + sizeText.X * 0.20f;
-            Vector2 buttonSize = new Vector2(p.X + buttonWidth, p.Y + buttonHeight);
-            uint colTop;
-            uint colBottom;
-            if (strIdArray.Length > 1)
+            Vector2 sizeText = ImGui.CalcTextSize(str_idArray[0]);
+            ImDrawListPtr draw_list = ImGuiNET.ImGui.GetWindowDrawList();
+            float ButtonHeight = ImGuiNET.ImGui.GetFrameHeight();
+            float ButtonWidth = sizeText.X + sizeText.X * 0.20f;
+            Vector2 ButtonSize = new Vector2(p.X + ButtonWidth, p.Y + ButtonHeight);
+            uint col_Top;
+            uint col_Bottom;
+            if (str_idArray.Length > 1)
             {
-                if (ImGuiNET.ImGui.InvisibleButton(strIdArray[1], new Vector2(buttonWidth, buttonHeight)))
+                if (ImGuiNET.ImGui.InvisibleButton(str_idArray[1], new Vector2(ButtonWidth, ButtonHeight)))
                 {
                     return true;
                 }
             }
             else
             {
-                if (ImGuiNET.ImGui.InvisibleButton(strIdArray[0], new Vector2(buttonWidth, buttonHeight)))
+                if (ImGuiNET.ImGui.InvisibleButton(str_idArray[0], new Vector2(ButtonWidth, ButtonHeight)))
                 {
                     return true;
                 }
             }
             if (ImGuiNET.ImGui.IsItemHovered())
             {
-                colTop = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered, 1.50f);
-                colBottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button, 0.50f);
+                col_Top = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered, 1.50f);
+                col_Bottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button, 0.50f);
             }
             else
             {
-                colTop = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered);
-                colBottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button, 0.20f);
+                col_Top = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered);
+                col_Bottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button, 0.20f);
             }
-            drawList.AddRectFilledMultiColor(p, buttonSize, colTop, colTop, colBottom, colBottom);
-            drawList.AddRect(p, buttonSize, ImGuiNET.ImGui.GetColorU32(ImGuiCol.Separator));
-            drawList.AddText(new Vector2(p.X + (buttonWidth / 2) - (sizeText.X / 2), p.Y + (buttonHeight / 2) - (sizeText.Y / 2)), ImGui.GetColorU32(ImGuiCol.Text), strIdArray[0]);
+            draw_list.AddRectFilledMultiColor(p, ButtonSize, col_Top, col_Top, col_Bottom, col_Bottom);
+            draw_list.AddRect(p, ButtonSize, ImGuiNET.ImGui.GetColorU32(ImGuiCol.Separator));
+            draw_list.AddText(new Vector2(p.X + (ButtonWidth / 2) - (sizeText.X / 2), p.Y + (ButtonHeight / 2) - (sizeText.Y / 2)), ImGui.GetColorU32(ImGuiCol.Text), str_idArray[0]);
             return false;
         }
-        public static bool ButtonGradient(string strId, Vector2 buttonSizeVector)
+        public static bool ButtonGradient(string str_id, Vector2 ButtonSizeVector)
         {
-            String[] strIdArray = strId.Split("###");
+            String[] str_idArray = str_id.Split("###");
             Vector2 p = ImGuiNET.ImGui.GetCursorScreenPos();
-            Vector2 sizeText = ImGui.CalcTextSize(strIdArray[0]);
-            ImDrawListPtr drawList = ImGuiNET.ImGui.GetWindowDrawList();
+            Vector2 sizeText = ImGui.CalcTextSize(str_idArray[0]);
+            ImDrawListPtr draw_list = ImGuiNET.ImGui.GetWindowDrawList();
             //ButtonHeight += ImGuiNET.ImGui.GetFrameHeight(); //Dynamically Allocated Height
             //float ButtonWidth = sizeText.X + ButtonHeight; //Dynamically Allocated Width
-            float buttonHeight = buttonSizeVector.Y; //Fixed Height
-            float buttonWidth = buttonSizeVector.X; //Dynamically Allocated Width
-            if (buttonWidth < sizeText.X)
+            float ButtonHeight = ButtonSizeVector.Y; //Fixed Height
+            float ButtonWidth = ButtonSizeVector.X; //Dynamically Allocated Width
+            if (ButtonWidth < sizeText.X)
             {
-                buttonWidth = sizeText.X + sizeText.X * 0.20f;
+                ButtonWidth = sizeText.X + sizeText.X * 0.20f;
             }
-            Vector2 buttonSize = new Vector2(p.X + buttonWidth, p.Y + buttonHeight);
-            uint colTop;
-            uint colBottom;
-            if (strIdArray.Length > 1)
+            Vector2 ButtonSize = new Vector2(p.X + ButtonWidth, p.Y + ButtonHeight);
+            uint col_Top;
+            uint col_Bottom;
+            if (str_idArray.Length > 1)
             {
-                if (ImGuiNET.ImGui.InvisibleButton(strIdArray[1], new Vector2(buttonWidth, buttonHeight)))
+                if (ImGuiNET.ImGui.InvisibleButton(str_idArray[1], new Vector2(ButtonWidth, ButtonHeight)))
                 {
                     return true;
                 }
             }
             else
             {
-                if (ImGuiNET.ImGui.InvisibleButton(strIdArray[0], new Vector2(buttonWidth, buttonHeight)))
+                if (ImGuiNET.ImGui.InvisibleButton(str_idArray[0], new Vector2(ButtonWidth, ButtonHeight)))
                 {
                     return true;
                 }
             }
             if (ImGuiNET.ImGui.IsItemHovered())
             {
-                colTop = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive);
-                colBottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered);
+                col_Top = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive);
+                col_Bottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered);
             }
             else
             {
-                colTop = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered);
-                colBottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button);
+                col_Top = ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonHovered);
+                col_Bottom = ImGuiNET.ImGui.GetColorU32(ImGuiCol.Button);
             }
-            drawList.AddRectFilledMultiColor(p, buttonSize, colTop, colTop, colBottom, colBottom);
-            drawList.AddRect(p, buttonSize, ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive));
-            drawList.AddText(new Vector2(p.X + (buttonWidth / 2) - (sizeText.X / 2), p.Y + (buttonHeight / 2) - (sizeText.Y / 2)), ImGui.GetColorU32(ImGuiCol.Text), strIdArray[0]);
+            draw_list.AddRectFilledMultiColor(p, ButtonSize, col_Top, col_Top, col_Bottom, col_Bottom);
+            draw_list.AddRect(p, ButtonSize, ImGuiNET.ImGui.GetColorU32(ImGuiCol.ButtonActive));
+            draw_list.AddText(new Vector2(p.X + (ButtonWidth / 2) - (sizeText.X / 2), p.Y + (ButtonHeight / 2) - (sizeText.Y / 2)), ImGui.GetColorU32(ImGuiCol.Text), str_idArray[0]);
             return false;
         }
-        public static Vector2 CalcItemSize(Vector2 size, float defaultW, float defaultH)
+        public static Vector2 CalcItemSize(Vector2 size, float default_w, float default_h)
         {
             Vector2 windowCursorPos = ImGuiNET.ImGui.GetCursorScreenPos();
 
-            Vector2 regionMax = new Vector2(0f, 0f);
+            Vector2 region_max = new Vector2(0f, 0f);
             if (size.X < 0.0f || size.Y < 0.0f)
-                regionMax = GetContentRegionMaxAbs();
+                region_max = GetContentRegionMaxAbs();
 
             if (size.X == 0.0f)
-                size.X = defaultW;
+                size.X = default_w;
             else if (size.X < 0.0f)
-                size.X = Math.Max(4.0f, regionMax.X - windowCursorPos.X + size.X);
+                size.X = Math.Max(4.0f, region_max.X - windowCursorPos.X + size.X);
 
             if (size.Y == 0.0f)
-                size.Y = defaultH;
+                size.Y = default_h;
             else if (size.Y < 0.0f)
-                size.Y = Math.Max(4.0f, regionMax.Y - windowCursorPos.Y + size.Y);
+                size.Y = Math.Max(4.0f, region_max.Y - windowCursorPos.Y + size.Y);
 
             return size;
         }
         public static Vector2 GetContentRegionMaxAbs()
         {
             ImGui.GetCurrentContext();
-            IntPtr imGuiContext = ImGui.GetCurrentContext();
-            Vector2 imGuiWindowContentRegionRectMax = ImGui.GetWindowContentRegionMax();
-            Vector2 mx = imGuiWindowContentRegionRectMax;
+            IntPtr ImGuiContext = ImGui.GetCurrentContext();
+            Vector2 ImGuiWindowContentRegionRectMax = ImGui.GetWindowContentRegionMax();
+            Vector2 mx = ImGuiWindowContentRegionRectMax;
             if (ImGui.GetColumnIndex() > 1)
                 mx.X = ImGui.GetItemRectMax().X;
             return mx;
@@ -183,13 +183,13 @@ namespace ImGuiNETAddons
         public static bool TreeNodeTitleColored(string label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
         {
             Vector4 color = GetStyleColorVec4Safe(ImGuiCol.CheckMark);
-            string[] splitId = label.Split("##");
-            string[] textForLabelArray = splitId[0].Split("'");
+            string[] splitID = label.Split("##");
+            string[] textForLabelArray = splitID[0].Split("'");
 
             //SplitID and Text
             string id = "";
-            if (splitId.Length > 1)
-                id = splitId[1];
+            if (splitID.Length > 1)
+                id = splitID[1];
 
             //Create Padding String consisting of whitespaces
             string paddingString = "";
@@ -235,13 +235,13 @@ namespace ImGuiNETAddons
         {
 
             Vector4 color = highlightColor;
-            string[] splitId = label.Split("##");
-            string[] textForLabelArray = splitId[0].Split("'");
+            string[] splitID = label.Split("##");
+            string[] textForLabelArray = splitID[0].Split("'");
 
             //SplitID and Text
             string id = "";
-            if (splitId.Length > 1)
-                id = splitId[1];
+            if (splitID.Length > 1)
+                id = splitID[1];
 
             //Create Padding String consisting of whitespaces
             string paddingString = "";
@@ -285,13 +285,13 @@ namespace ImGuiNETAddons
         }
         public static bool TreeNodeTitleColored(string label, Vector4 lowlightColor, Vector4 highlightColor, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
         {
-            string[] splitId = label.Split("##");
-            string[] textForLabelArray = splitId[0].Split("'");
+            string[] splitID = label.Split("##");
+            string[] textForLabelArray = splitID[0].Split("'");
 
             //SplitID and Text
             string id = "";
-            if (splitId.Length > 1)
-                id = splitId[1];
+            if (splitID.Length > 1)
+                id = splitID[1];
 
             //Create Padding String consisting of whitespaces
             string paddingString = "";
@@ -333,19 +333,19 @@ namespace ImGuiNETAddons
             ImGui.Text(paddingString + "     ");
             return passThrough;
         }
-        public static bool IsItemHoveredForTime(float timeMs, float frameRate, string hoveredStringId)
+        public static bool isItemHoveredForTime(float timeMs, float frameRate, string hoveredStringID)
         {
             bool hovered = ImGui.IsItemHovered();
-            uint idStorage = ImGui.GetID(hoveredStringId);
+            uint IDStorage = ImGui.GetID(hoveredStringID);
             ImGuiStoragePtr storage = ImGui.GetStateStorage();
-            int frameCounter = storage.GetInt(idStorage);
+            int frameCounter = storage.GetInt(IDStorage);
 
             int framesHoveredGoal = Convert.ToInt32((frameRate / 1000f) * timeMs);
 
             if (hovered & frameCounter < framesHoveredGoal)
-                storage.SetInt(idStorage, frameCounter + 1);
+                storage.SetInt(IDStorage, frameCounter + 1);
             else if (!hovered & frameCounter > 0)
-                storage.SetInt(idStorage, 0);
+                storage.SetInt(IDStorage, 0);
 
             if (frameCounter >= framesHoveredGoal)
             {
@@ -361,20 +361,20 @@ namespace ImGuiNETAddons
             string labelOnly = label.Contains("##") ? label.Split("##")[0] : label;
             ImGui.Text(labelOnly);
             ImGui.SameLine();
-            string popupId = label + "Popup";
+            string popupID = label + "Popup";
             var popupPos = ImGui.GetMousePosOnOpeningCurrentPopup();
             ImGui.ArrowButton("##" + label + "ButtonArrow", ImGuiDir.Right);
-            ImGui.OpenPopupOnItemClick(popupId, ImGuiPopupFlags.MouseButtonLeft);
+            ImGui.OpenPopupOnItemClick(popupID, ImGuiPopupFlags.MouseButtonLeft);
             ImGui.SameLine();
             var cursorPosAfterArrowButton = ImGui.GetCursorPos();
             ImGui.SetCursorPos(new Vector2(cursorPosAfterArrowButton.X - 10, cursorPosAfterArrowButton.Y));
             ButtonGradient(previewValue + "##" + label + "ButtonMain");
-            ImGui.OpenPopupOnItemClick(popupId, ImGuiPopupFlags.MouseButtonLeft);
-            if (ImGui.IsPopupOpen(popupId))
+            ImGui.OpenPopupOnItemClick(popupID, ImGuiPopupFlags.MouseButtonLeft);
+            if (ImGui.IsPopupOpen(popupID))
             {
                 ImGui.SetNextWindowPos(popupPos, ImGuiCond.Appearing);
                 ImGui.SetNextWindowSize(new Vector2(300, 400));
-                return ImGui.BeginPopupContextItem(popupId);
+                return ImGui.BeginPopupContextItem(popupID);
             }
             return false;
 
